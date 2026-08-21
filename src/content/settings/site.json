@@ -1,0 +1,49 @@
+{
+  "name": "Policlinica Bastion",
+  "legalName": "Policlinica Bastion SRL",
+  "tagline": "Policlinica medicală privată din Timișoara",
+  "defaultSeo": {
+    "title": "Policlinica Bastion Timișoara — servicii medicale de specialitate",
+    "description": "Policlinică medicală privată în Timișoara: nefrologie, urologie, neurologie, psihiatrie, diabet și nutriție, medicină de familie. Consultații decontate prin CNAS.",
+    "image": "/uploads/og-default.jpg"
+  },
+  "topBar": {
+    "addressShort": "Str. Mircea cel Bătrân 122C, Timișoara",
+    "phonesShort": "0738.826.587 / 0356.829.555",
+    "hoursShort": "Luni - Vineri 08:00 - 22:00"
+  },
+  "phones": [
+    { "label": "Programări", "value": "0738.826.587", "href": "tel:+40738826587" },
+    { "label": "Recepție", "value": "0356.829.555", "href": "tel:+40356829555" }
+  ],
+  "email": "receptie@policlinicabastion.ro",
+  "address": {
+    "street": "Str. Mircea cel Bătrân nr. 122C",
+    "city": "Timișoara",
+    "county": "Timiș",
+    "postalCode": "300210",
+    "mapsUrl": "https://maps.google.com/?q=Policlinica+Bastion+Timisoara",
+    "mapEmbedUrl": ""
+  },
+  "schedule": [
+    { "days": "Luni – Vineri", "hours": "08:00 – 22:00" },
+    { "days": "Sâmbătă", "hours": "09:00 – 14:00" },
+    { "days": "Duminică", "hours": "Închis" }
+  ],
+  "whatsapp": {
+    "number": "+40738826587",
+    "message": "Bună ziua! Aș dori o programare la Policlinica Bastion."
+  },
+  "booking": {
+    "label": "Programează-te",
+    "href": "/contact"
+  },
+  "social": {
+    "facebook": "https://www.facebook.com/policlinicabastion",
+    "instagram": "https://www.instagram.com/policlinicabastion",
+    "linkedin": "https://www.linkedin.com/company/policlinica-bastion"
+  },
+  "analytics": {
+    "gtmId": ""
+  }
+}

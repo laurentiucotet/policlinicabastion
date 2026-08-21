@@ -1,0 +1,39 @@
+---
+import Button from '../ui/Button.astro';
+import { home } from '../../lib/site';
+
+const { hero } = home;
+---
+
+<section class="bg-surface">
+  <div class="container-page flex flex-col items-center py-16 text-center lg:py-24">
+    <h1 class="font-sans text-4xl leading-tight font-normal text-balance sm:text-5xl lg:text-6xl lg:leading-[1.1] xl:text-7xl 2xl:text-8xl">
+      {hero.titleBefore}<br />
+      <span class="text-brand">{hero.titleHighlight}</span>{' '}{hero.titleAfter}
+    </h1>
+
+    <p class="text-ink-muted mt-6 max-w-2xl text-base leading-6 text-pretty">{hero.subtitle}</p>
+
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <Button href={hero.primaryCta.href}>{hero.primaryCta.label}</Button>
+      <Button href={hero.secondaryCta.href} variant="outline">{hero.secondaryCta.label}</Button>
+    </div>
+
+    {
+      hero.stats.length > 0 && (
+        <div class="border-stroke mt-12 w-full max-w-3xl border-t pt-8">
+          <dl class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {hero.stats.map((stat) => (
+              <div class="flex flex-col gap-1">
+                <dt class="sr-only">{stat.label}</dt>
+                <dd class="text-brand font-heading text-2xl leading-8 font-bold lg:text-3xl">{stat.value}</dd>
+                <p class="text-ink-muted text-sm leading-5 text-pretty">{stat.label}</p>
+              </div>
+            ))}
+          </dl>
+          {hero.statsNote && <p class="text-ink-subtle mt-6 text-xs leading-[18px]">{hero.statsNote}</p>}
+        </div>
+      )
+    }
+  </div>
+</section>

@@ -1,0 +1,61 @@
+---
+import SectionHeading from '../ui/SectionHeading.astro';
+import Button from '../ui/Button.astro';
+import DoctorCard from '../cards/DoctorCard.astro';
+import { getMedici } from '../../lib/content';
+
+interface Props {
+  badge?: string;
+  title: string;
+  subtitle?: string;
+  cta?: { label: string; href: string };
+  count?: number;
+  tone?: 'white' | 'alt';
+  /** Filtreaza medicii dupa id-ul unei specializari. */
+  specialityId?: string;
+  /** Exclude un medic (ex. pe pagina lui: "Alți medici"). */
+  exclude?: string;
+  /** Foloseste doar medicii marcati pentru homepage. */
+  onlyHomepage?: boolean;
+}
+
+const {
+  badge,
+  title,
+  subtitle,
+  cta,
+  count = 8,
+  tone = 'white',
+  specialityId,
+  exclude,
+  onlyHomepage = false,
+} = Astro.props;
+
+let items = await getMedici();
+if (specialityId) items = items.filter((m) => m.data.specialities.some((ref) => ref.id === specialityId));
+if (exclude) items = items.filter((m) => m.id !== exclude);
+if (onlyHomepage) items = items.filter((m) => m.data.showOnHomepage);
+items = items.slice(0, count);
+
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+---
+
+{
+  items.length > 0 && (
+    <section class:list={[tones[tone], 'py-12']}>
+      <div class="container-page flex flex-col items-center gap-8">
+        {title && <SectionHeading badge={badge} title={title} subtitle={subtitle} />}
+        <div class="grid w-full gap-4 grid-cols-2 lg:grid-cols-4">
+          {items.map((doctor) => (
+            <DoctorCard doctor={doctor} />
+          ))}
+        </div>
+        {cta && (
+          <Button href={cta.href} variant="outline">
+            {cta.label}
+          </Button>
+        )}
+      </div>
+    </section>
+  )
+}

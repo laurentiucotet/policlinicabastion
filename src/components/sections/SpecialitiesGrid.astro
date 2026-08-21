@@ -1,0 +1,35 @@
+---
+import SectionHeading from '../ui/SectionHeading.astro';
+import SpecialityCard from '../cards/SpecialityCard.astro';
+import { getSpecializari } from '../../lib/content';
+
+interface Props {
+  badge?: string;
+  title: string;
+  subtitle?: string;
+  tone?: 'white' | 'alt';
+  onlyHomepage?: boolean;
+}
+
+const { badge, title, subtitle, tone = 'alt', onlyHomepage = false } = Astro.props;
+
+const all = await getSpecializari();
+const items = onlyHomepage ? all.filter((item) => item.data.showOnHomepage) : all;
+
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+---
+
+{
+  items.length > 0 && (
+    <section class:list={[tones[tone], 'py-12']}>
+      <div class="container-page flex flex-col items-center gap-8">
+        {title && <SectionHeading badge={badge} title={title} subtitle={subtitle} />}
+        <div class="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {items.map((speciality) => (
+            <SpecialityCard speciality={speciality} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

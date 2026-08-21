@@ -1,0 +1,124 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+   Design tokens - preluate 1:1 din variabilele Figma (Website Bastion).
+   Paleta este practic paleta default Tailwind, asa ca pastram scara standard
+   si adaugam doar aliasurile semantice folosite in design.
+   --------------------------------------------------------------------------- */
+@theme {
+  /* Tipografie -------------------------------------------------------------
+     Variabilele --font-inter / --font-public-sans sunt injectate de Astro
+     Fonts API (vezi astro.config.mjs + <Font /> in BaseLayout). */
+  --font-sans: var(--font-inter), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-heading: var(--font-public-sans), var(--font-inter), system-ui, sans-serif;
+
+  /* Brand ------------------------------------------------------------------ */
+  --color-brand: #2563eb; /* brand-primary   / blue-600 */
+  --color-brand-dark: #1e40af; /* brand-secondary / blue-800 */
+  --color-brand-light: #3b82f6; /* blue-500 */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+
+  /* Text ------------------------------------------------------------------- */
+  --color-ink: #1f2937; /* text-primary   / gray-800 */
+  --color-ink-muted: #4b5563; /* text-secondary / gray-600 */
+  --color-ink-subtle: #6b7280; /* gray-500 */
+
+  /* Suprafete -------------------------------------------------------------- */
+  --color-surface: #ffffff;
+  --color-surface-alt: #f9fafb; /* gray-50 */
+  --color-stroke: #e5e7eb; /* stroke */
+  --color-chip: #e0f2fe; /* sky-100 */
+  --color-chip-ink: #0284c7; /* sky-600 */
+
+  /* Accente ---------------------------------------------------------------- */
+  --color-star: #f59e0b; /* amber-500 */
+  --color-whatsapp: #10b981; /* emerald-500 */
+
+  /* Layout ----------------------------------------------------------------- */
+  --container-page: 1280px; /* container/7xl din Figma */
+  --container-prose: 768px; /* container/3xl */
+
+  /* Umbre ------------------------------------------------------------------ */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+/* ---------------------------------------------------------------------------
+   Baza
+   --------------------------------------------------------------------------- */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* compenseaza header-ul sticky la ancore */
+    scroll-padding-top: 7rem;
+  }
+
+  body {
+    @apply bg-surface text-ink-muted font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading text-ink;
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    @apply outline-brand outline-2 outline-offset-2;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Utilitare reutilizate des in sectiuni
+   --------------------------------------------------------------------------- */
+@utility container-page {
+  width: 100%;
+  max-width: calc(var(--container-page) + 2 * --spacing(6));
+  margin-inline: auto;
+  padding-inline: --spacing(6);
+}
+
+/* Continut generat din Markdown (articole, descrieri specializari, pagini) */
+@utility prose-bastion {
+  & > * + * {
+    margin-top: --spacing(4);
+  }
+  & p,
+  & li {
+    @apply text-base leading-7 text-ink-muted;
+  }
+  & h2 {
+    @apply mt-10 text-2xl font-bold text-ink;
+  }
+  & h3 {
+    @apply mt-8 text-xl font-semibold text-ink;
+  }
+  & ul {
+    @apply list-disc space-y-2 pl-5;
+  }
+  & ol {
+    @apply list-decimal space-y-2 pl-5;
+  }
+  & a {
+    @apply text-brand underline underline-offset-2 hover:text-brand-dark;
+  }
+  & strong {
+    @apply font-semibold text-ink;
+  }
+  & blockquote {
+    @apply border-brand text-ink border-l-4 pl-4 italic;
+  }
+  & img {
+    @apply rounded-2xl;
+  }
+  & table {
+    @apply w-full border-collapse text-sm;
+  }
+  & th,
+  & td {
+    @apply border-stroke border px-3 py-2 text-left;
+  }
+}

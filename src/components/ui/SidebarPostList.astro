@@ -1,0 +1,35 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, isoDate } from '../../lib/utils';
+
+interface Props {
+  title?: string;
+  posts: CollectionEntry<'articole'>[];
+}
+
+const { title = 'Articole recente', posts } = Astro.props;
+---
+
+{
+  posts.length > 0 && (
+    <nav aria-labelledby="articole-recente">
+      <p id="articole-recente" class="text-ink text-sm leading-5 font-semibold">
+        {title}
+      </p>
+      <ul class="divide-stroke mt-3 divide-y">
+        {posts.map((post) => (
+          <li class="py-3 first:pt-0 last:pb-0">
+            <a href={`/noutati/${post.id}`} class="group block">
+              <span class="text-ink group-hover:text-brand block text-sm leading-5 font-medium">
+                {post.data.title}
+              </span>
+              <time datetime={isoDate(post.data.date)} class="text-ink-subtle mt-1 block text-xs">
+                {formatDate(post.data.date)}
+              </time>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}

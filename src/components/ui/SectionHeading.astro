@@ -1,0 +1,22 @@
+---
+import Badge from './Badge.astro';
+
+interface Props {
+  badge?: string;
+  title: string;
+  subtitle?: string;
+  /** Nivelul titlului: h1 pe paginile care nu au alt h1, altfel h2. */
+  tag?: 'h1' | 'h2';
+  class?: string;
+}
+
+const { badge, title, subtitle, tag: Tag = 'h2', class: className = '' } = Astro.props;
+---
+
+<header class:list={['flex flex-col items-center gap-3 text-center', className]}>
+  {badge && <Badge>{badge}</Badge>}
+  <Tag class="text-3xl leading-tight font-bold text-balance sm:text-4xl lg:text-5xl lg:leading-[62px]">
+    {title}
+  </Tag>
+  {subtitle && <p class="text-ink-muted max-w-3xl text-base leading-6 text-pretty">{subtitle}</p>}
+</header>

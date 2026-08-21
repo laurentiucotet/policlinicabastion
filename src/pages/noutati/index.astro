@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
+import CategoryChips from '../../components/ui/CategoryChips.astro';
+import BlogCard from '../../components/cards/BlogCard.astro';
+import CtaBand from '../../components/sections/CtaBand.astro';
+import { getArticole, getCategorii } from '../../lib/content';
+import { home } from '../../lib/site';
+
+const [posts, categories] = await Promise.all([getArticole(), getCategorii()]);
+const categoryName = new Map(categories.map((category) => [category.id, category.data.name]));
+---
+
+<BaseLayout
+  title="Noutăți"
+  description="Articole, noutăți și informații medicale de la echipa Policlinicii Bastion Timișoara."
+>
+  <PageTitleHeader
+    badge="Blog & Noutăți"
+    title="Noutăți"
+    subtitle="Informații noi despre Policlinica Bastion și sfaturi de la medicii noștri."
+  />
+
+  <section class="bg-surface py-12">
+    <div class="container-page flex flex-col gap-8">
+      <CategoryChips categories={categories} />
+
+      {
+        posts.length > 0 ? (
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => (
+              <BlogCard
+                post={post}
+                categoryName={post.data.category ? categoryName.get(post.data.category.id) : undefined}
+              />
+            ))}
+          </div>
+        ) : (
+          <p class="text-ink-muted text-center">Momentan nu există articole publicate.</p>
+        )
+      }
+    </div>
+  </section>
+
+  <CtaBand title={home.ctaSecondary.title} text={home.ctaSecondary.text} cta={home.ctaSecondary.cta} tone="alt" />
+</BaseLayout>

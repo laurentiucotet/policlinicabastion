@@ -1,0 +1,67 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  title: string;
+  url: string;
+}
+
+const { title, url } = Astro.props;
+const encodedUrl = encodeURIComponent(url);
+const encodedTitle = encodeURIComponent(title);
+
+const links = [
+  { label: 'Distribuie pe Facebook', icon: 'facebook' as const, href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}` },
+  { label: 'Distribuie pe LinkedIn', icon: 'linkedin' as const, href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}` },
+  { label: 'Distribuie pe WhatsApp', icon: 'whatsapp' as const, href: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}` },
+];
+---
+
+<div class="border-stroke flex flex-wrap items-center gap-3 border-t pt-4">
+  <span class="text-ink-subtle text-xs leading-[18px] font-semibold">Distribuie articolul</span>
+  <ul class="flex items-center gap-2">
+    {
+      links.map((link) => (
+        <li>
+          <a
+            href={link.href}
+            target="_blank"
+            rel="noopener"
+            aria-label={link.label}
+            class="text-ink-subtle border-stroke hover:bg-brand flex h-8 w-8 items-center justify-center rounded-full border transition-colors hover:border-transparent hover:text-white"
+          >
+            <Icon name={link.icon} size={15} />
+          </a>
+        </li>
+      ))
+    }
+    <li>
+      <button
+        type="button"
+        data-copy-link={url}
+        aria-label="Copiază linkul articolului"
+        class="text-ink-subtle border-stroke hover:bg-brand flex h-8 w-8 items-center justify-center rounded-full border transition-colors hover:border-transparent hover:text-white"
+      >
+        <Icon name="send" size={15} />
+      </button>
+    </li>
+  </ul>
+  <span data-copy-feedback class="text-brand hidden text-xs">Link copiat.</span>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copy-link]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const url = button.dataset.copyLink;
+      if (!url) return;
+      try {
+        await navigator.clipboard.writeText(url);
+        const feedback = button.closest('div')?.querySelector<HTMLElement>('[data-copy-feedback]');
+        feedback?.classList.remove('hidden');
+        setTimeout(() => feedback?.classList.add('hidden'), 2000);
+      } catch {
+        /* clipboard indisponibil - ignoram */
+      }
+    });
+  });
+</script>

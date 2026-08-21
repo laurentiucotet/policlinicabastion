@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
+import SpecialitiesGrid from '../../components/sections/SpecialitiesGrid.astro';
+import CtaBand from '../../components/sections/CtaBand.astro';
+import { home } from '../../lib/site';
+---
+
+<BaseLayout
+  title="Specializări"
+  description="Toate specializările medicale disponibile la Policlinica Bastion Timișoara."
+>
+  <PageTitleHeader
+    badge="Specializări"
+    title="Specializările noastre"
+    subtitle="Consultații de specialitate în multiple domenii medicale, majoritatea decontate prin CNAS."
+  />
+  <SpecialitiesGrid title="" tone="white" />
+  <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} tone="alt" />
+</BaseLayout>

@@ -1,0 +1,19 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  speciality: CollectionEntry<'specializari'>;
+}
+
+const { speciality } = Astro.props;
+const href = `/specializari/${speciality.id}`;
+---
+
+<a
+  href={href}
+  class="border-stroke bg-surface shadow-card hover:border-brand/40 flex h-full flex-col items-center gap-2 rounded-2xl border px-5 py-6 text-center transition hover:shadow-md"
+>
+  <span class="text-4xl leading-none" aria-hidden="true">{speciality.data.icon}</span>
+  <h3 class="mt-2 text-base leading-6 font-semibold">{speciality.data.title}</h3>
+  <p class="text-ink-muted text-sm leading-5 text-pretty">{speciality.data.shortDescription}</p>
+</a>

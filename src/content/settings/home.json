@@ -1,0 +1,55 @@
+{
+  "seo": {
+    "title": "Policlinica Bastion Timișoara — Sănătatea ta, prioritatea noastră",
+    "description": "Policlinică medicală privată în Timișoara cu servicii medicale de calitate superioară. Nefrologie, urologie, neurologie, psihiatrie, diabet, medicină de familie."
+  },
+  "hero": {
+    "titleBefore": "Sănătatea ta,",
+    "titleHighlight": "Prioritatea",
+    "titleAfter": "noastră",
+    "subtitle": "Policlinica medicală privată din Timișoara cu servicii medicale de calitate superioară. Echipa noastră de specialiști dedicați este aici pentru tine.",
+    "primaryCta": { "label": "Programează-te", "href": "/contact" },
+    "secondaryCta": { "label": "Ultimele noutăți", "href": "/noutati" },
+    "stats": [
+      { "value": "20,000+", "label": "Pacienti" },
+      { "value": "30+", "label": "Experiență medicală*" },
+      { "value": "€5,000,000+", "label": "Investiții în domeniul medical" }
+    ],
+    "statsNote": "*Experiența profesională a medicilor din clinica noastră"
+  },
+  "news": {
+    "badge": "Blog & Noutăți",
+    "title": "Ultimele noutăți",
+    "subtitle": "Informații noi despre Policlinica Bastion",
+    "cta": { "label": "Vezi toate noutățile", "href": "/noutati" },
+    "count": 3
+  },
+  "services": {
+    "badge": "Specializările noastre",
+    "title": "Servicii medicale complete",
+    "subtitle": "Oferim consultații de specialitate în multiple domenii medicale, majoritatea decontate prin Casa Națională de Asigurări de Sănătate (CNAS)."
+  },
+  "ctaPrimary": {
+    "title": "Servicii decontate prin CNAS",
+    "text": "Consultațiile în Nefrologie, Urologie, Neurologie, Psihiatrie, Medicină de Familie și Diabet pot fi decontate prin CNAS cu bilet de trimitere.",
+    "cta": { "label": "Programează-te", "href": "/contact" }
+  },
+  "testimonials": {
+    "badge": "Testimoniale",
+    "title": "Ce spun pacienții noștri",
+    "subtitle": "Peste 15.000 de pacienți mulțumiți ne-au acordat încrederea lor. Citește experiențele lor!",
+    "count": 6
+  },
+  "team": {
+    "badge": "Medici",
+    "title": "Echipa noastră",
+    "subtitle": "Informații noi despre echipa Policlinica Bastion",
+    "cta": { "label": "Vezi toți medicii", "href": "/medici" },
+    "count": 8
+  },
+  "ctaSecondary": {
+    "title": "Ai nevoie de o programare?",
+    "text": "Sună-ne sau completează formularul de contact — revenim cu confirmarea programării în cel mai scurt timp.",
+    "cta": { "label": "Contactează-ne", "href": "/contact" }
+  }
+}

@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
+import TeamGrid from '../../components/sections/TeamGrid.astro';
+import CtaBand from '../../components/sections/CtaBand.astro';
+import { home } from '../../lib/site';
+---
+
+<BaseLayout title="Echipa noastră" description="Medicii Policlinicii Bastion din Timișoara.">
+  <PageTitleHeader
+    badge="Medici"
+    title="Echipa noastră"
+    subtitle="Profesori universitari, conferențiari și medici primari cu experiență clinică și de cercetare."
+  />
+  <TeamGrid title="" count={200} />
+  <CtaBand title={home.ctaSecondary.title} text={home.ctaSecondary.text} cta={home.ctaSecondary.cta} tone="alt" />
+</BaseLayout>

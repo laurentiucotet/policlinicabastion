@@ -1,0 +1,21 @@
+---
+interface Props {
+  /** Fundalul sectiunii - alterneaza alb / gray-50 ca in design. */
+  tone?: 'white' | 'alt';
+  /** Spatiere verticala. `tight` pentru benzile CTA. */
+  space?: 'default' | 'tight' | 'none';
+  id?: string;
+  class?: string;
+}
+
+const { tone = 'white', space = 'default', id, class: className = '' } = Astro.props;
+
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+const spaces = { default: 'py-12', tight: 'py-6', none: '' };
+---
+
+<section id={id} class:list={[tones[tone], spaces[space], className]}>
+  <div class="container-page">
+    <slot />
+  </div>
+</section>

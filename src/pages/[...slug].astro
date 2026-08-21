@@ -1,0 +1,31 @@
+---
+import { render, getCollection } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageTitleHeader from '../components/sections/PageTitleHeader.astro';
+
+/**
+ * Pagini statice editabile din CMS (GDPR, termeni, drepturile pacientilor...).
+ * Rutele explicite (/contact, /noutati, ...) au prioritate fata de aceasta.
+ */
+export const getStaticPaths = (async () => {
+  const pages = await getCollection('pagini', (page) => import.meta.env.DEV || !page.data.draft);
+  return pages.map((page) => ({ params: { slug: page.id }, props: { page } }));
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const { Content } = await render(page);
+const { title, subtitle, badge, seo } = page.data;
+---
+
+<BaseLayout title={seo?.title ?? title} description={seo?.description ?? subtitle} noindex={seo?.noindex}>
+  <PageTitleHeader badge={badge} title={title} subtitle={subtitle} />
+
+  <section class="bg-surface py-12">
+    <div class="container-page">
+      <div class="prose-bastion mx-auto max-w-3xl">
+        <Content />
+      </div>
+    </div>
+  </section>
+</BaseLayout>

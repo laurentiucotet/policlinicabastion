@@ -1,0 +1,30 @@
+---
+import SimpleHeading from '../ui/SimpleHeading.astro';
+
+interface Props {
+  title: string;
+  items: string[];
+  tone?: 'white' | 'alt';
+}
+
+const { title, items, tone = 'white' } = Astro.props;
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+---
+
+{
+  items.length > 0 && (
+    <section class:list={[tones[tone], 'py-12']}>
+      <div class="container-page">
+        <SimpleHeading title={title} />
+        <ul class="text-ink-muted mt-8 grid gap-x-8 gap-y-2 text-base leading-6 md:grid-cols-2">
+          {items.map((item) => (
+            <li class="flex gap-2">
+              <span class="bg-brand mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden="true" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}

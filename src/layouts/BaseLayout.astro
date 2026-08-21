@@ -1,0 +1,98 @@
+---
+import { Font } from 'astro:assets';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import { site } from '../lib/site';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  noindex?: boolean;
+  /** Adauga „| Policlinica Bastion" la titlu. Dezactivat pe prima pagina. */
+  appendSiteName?: boolean;
+  /** JSON-LD suplimentar pentru pagina curenta (articol, medic, etc.) */
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const {
+  title,
+  description = site.defaultSeo.description,
+  image = site.defaultSeo.image,
+  noindex = false,
+  appendSiteName = true,
+  schema,
+} = Astro.props;
+
+const pageTitle = title ? (appendSiteName ? `${title} | ${site.name}` : title) : site.defaultSeo.title;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString();
+const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
+
+const organization = {
+  '@context': 'https://schema.org',
+  '@type': 'MedicalClinic',
+  name: site.name,
+  url: Astro.site?.toString() ?? canonical,
+  email: site.email,
+  telephone: site.phones.map((phone) => phone.value),
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.address.street,
+    addressLocality: site.address.city,
+    addressRegion: site.address.county,
+    postalCode: site.address.postalCode,
+    addressCountry: 'RO',
+  },
+  sameAs: Object.values(site.social).filter(Boolean),
+};
+
+const schemas = [organization, ...(Array.isArray(schema) ? schema : schema ? [schema] : [])];
+---
+
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="ro_RO" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <Font cssVariable="--font-inter" preload />
+    <Font cssVariable="--font-public-sans" preload />
+
+    <script type="application/ld+json" set:html={JSON.stringify(schemas)} is:inline />
+    <slot name="head" />
+  </head>
+
+  <body class="flex min-h-dvh flex-col">
+    <a
+      href="#continut"
+      class="focus:bg-brand sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[60] focus:rounded-lg focus:px-4 focus:py-2 focus:text-white"
+    >
+      Sari la conținut
+    </a>
+
+    <Header />
+
+    <main id="continut" class="flex-1">
+      <slot />
+    </main>
+
+    <Footer />
+  </body>
+</html>

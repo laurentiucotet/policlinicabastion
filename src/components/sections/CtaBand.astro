@@ -1,0 +1,23 @@
+---
+import Button from '../ui/Button.astro';
+
+interface Props {
+  title: string;
+  text?: string;
+  cta?: { label: string; href: string };
+  tone?: 'white' | 'alt';
+}
+
+const { title, text, cta, tone = 'white' } = Astro.props;
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+---
+
+<section class:list={[tones[tone], 'py-6']}>
+  <div class="container-page">
+    <div class="bg-brand-dark flex flex-col items-center gap-4 rounded-2xl px-6 py-10 text-center">
+      <h2 class="font-heading text-2xl leading-8 font-bold text-white">{title}</h2>
+      {text && <p class="max-w-3xl text-sm leading-6 text-white/90 text-pretty">{text}</p>}
+      {cta && <Button href={cta.href} variant="white">{cta.label}</Button>}
+    </div>
+  </div>
+</section>

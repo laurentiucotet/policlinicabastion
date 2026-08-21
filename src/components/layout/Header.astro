@@ -1,0 +1,143 @@
+---
+import Logo from './Logo.astro';
+import TopBar from './TopBar.astro';
+import Icon from '../ui/Icon.astro';
+import Button from '../ui/Button.astro';
+import { navigation, site } from '../../lib/site';
+import { getSpecializari } from '../../lib/content';
+
+const pathname = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+
+// Meniul "Specializari" se completeaza automat din colectia de specializari,
+// ca sa nu fie nevoie sa fie tinut manual in sincron din CMS.
+const specializari = await getSpecializari();
+const items = navigation.main.map((item) => {
+  if (item.href !== '/specializari') return item;
+  return {
+    ...item,
+    children: specializari.map((s) => ({ label: s.data.title, href: `/specializari/${s.id}` })),
+  };
+});
+---
+
+<header class="sticky top-0 z-50">
+  <TopBar />
+
+  <div class="border-stroke bg-surface/95 border-b backdrop-blur">
+    <div class="container-page flex h-[84px] items-center justify-between gap-6">
+      <Logo />
+
+      <nav class="hidden items-center gap-4 xl:flex 2xl:gap-6" aria-label="Meniu principal">
+        {
+          items.map((item) =>
+            item.children.length ? (
+              <div class="group relative">
+                <a
+                  href={item.href}
+                  class:list={[
+                    'flex items-center gap-1 py-3 text-sm font-semibold whitespace-nowrap transition-colors 2xl:text-base',
+                    isActive(item.href) ? 'text-brand' : 'text-ink hover:text-brand',
+                  ]}
+                  aria-haspopup="true"
+                >
+                  {item.label}
+                  <Icon name="chevron-down" size={16} />
+                </a>
+                <div class="invisible absolute top-full left-0 z-10 min-w-56 translate-y-1 opacity-0 transition group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                  <ul class="border-stroke bg-surface rounded-2xl border p-2 shadow-lg">
+                    {item.children.map((child) => (
+                      <li>
+                        <a
+                          href={child.href}
+                          class="text-ink-muted hover:bg-surface-alt hover:text-brand block rounded-lg px-3 py-2 text-sm"
+                        >
+                          {child.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              <a
+                href={item.href}
+                class:list={[
+                  'py-3 text-sm font-semibold whitespace-nowrap transition-colors 2xl:text-base',
+                  isActive(item.href) ? 'text-brand' : 'text-ink hover:text-brand',
+                ]}
+              >
+                {item.label}
+              </a>
+            ),
+          )
+        }
+        <a href="/cautare" class="text-ink hover:text-brand flex items-center gap-1 text-sm font-semibold whitespace-nowrap 2xl:text-base">
+          Căutare
+          <Icon name="search" size={16} />
+        </a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <Button href={site.booking.href} class="hidden whitespace-nowrap sm:inline-flex">{site.booking.label}</Button>
+        <button
+          type="button"
+          class="text-ink hover:bg-surface-alt rounded-lg p-2 xl:hidden"
+          aria-label="Deschide meniul"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+          data-menu-toggle
+        >
+          <Icon name="menu" size={24} />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="mobile-menu"
+    hidden
+    class="border-stroke bg-surface max-h-[calc(100dvh-140px)] overflow-y-auto border-b xl:hidden"
+  >
+    <nav class="container-page flex flex-col gap-1 py-4" aria-label="Meniu mobil">
+      {
+        items.map((item) =>
+          item.children.length ? (
+            <details class="border-stroke border-b last:border-0">
+              <summary class="text-ink flex cursor-pointer list-none items-center justify-between py-3 text-base font-semibold">
+                {item.label}
+                <Icon name="chevron-down" size={18} />
+              </summary>
+              <ul class="pb-2">
+                {item.children.map((child) => (
+                  <li>
+                    <a href={child.href} class="text-ink-muted hover:text-brand block py-2 pl-3 text-sm">
+                      {child.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : (
+            <a href={item.href} class="border-stroke text-ink hover:text-brand border-b py-3 text-base font-semibold last:border-0">
+              {item.label}
+            </a>
+          ),
+        )
+      }
+      <Button href={site.booking.href} class="mt-3 w-full">{site.booking.label}</Button>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.getElementById('mobile-menu');
+
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!open));
+    toggle.setAttribute('aria-label', open ? 'Deschide meniul' : 'Închide meniul');
+    if (menu) menu.hidden = open;
+  });
+</script>

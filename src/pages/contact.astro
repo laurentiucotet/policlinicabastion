@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageTitleHeader from '../components/sections/PageTitleHeader.astro';
+import ContactForm from '../components/sections/ContactForm.astro';
+import Orar from '../components/sections/Orar.astro';
+import Icon from '../components/ui/Icon.astro';
+import { site, whatsappHref } from '../lib/site';
+
+// Statusul revine ca query param dupa POST-ul formularului (`/api/contact`).
+// Pagina ramane statica: citim parametrul in browser, prin scriptul de mai jos.
+const contactCards = [
+  {
+    icon: 'phone' as const,
+    title: 'Programări',
+    lines: site.phones.map((phone) => phone.value),
+    href: site.phones[0]?.href,
+  },
+  { icon: 'mail' as const, title: 'Email', lines: [site.email], href: `mailto:${site.email}` },
+  {
+    icon: 'map-pin' as const,
+    title: 'Adresă',
+    lines: [site.address.street, `${site.address.city}, ${site.address.county}`],
+    href: site.address.mapsUrl,
+  },
+  {
+    icon: 'whatsapp' as const,
+    title: 'WhatsApp',
+    lines: [site.whatsapp.number],
+    href: whatsappHref,
+  },
+];
+---
+
+<BaseLayout
+  title="Contact"
+  description={`Contact Policlinica Bastion Timișoara: ${site.address.street}, ${site.address.city}. Telefon ${site.phones[0]?.value}.`}
+>
+  <PageTitleHeader
+    badge="Contact"
+    title="Contactează-ne"
+    subtitle="Suntem aici să te ajutăm. Sună-ne sau trimite-ne un mesaj și revenim cu confirmarea programării."
+  />
+
+  <section class="bg-surface py-12">
+    <div class="container-page grid gap-8 lg:grid-cols-2">
+      <ContactForm />
+
+      <div class="flex flex-col gap-6">
+        <div class="border-stroke bg-surface-alt aspect-[16/10] overflow-hidden rounded-2xl border">
+          {
+            site.address.mapEmbedUrl ? (
+              <iframe
+                src={site.address.mapEmbedUrl}
+                title="Harta - Policlinica Bastion"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                class="h-full w-full border-0"
+              />
+            ) : (
+              <a
+                href={site.address.mapsUrl}
+                target="_blank"
+                rel="noopener"
+                class="text-ink-muted hover:text-brand flex h-full w-full flex-col items-center justify-center gap-2 text-sm"
+              >
+                <Icon name="map-pin" size={28} />
+                Vezi locația pe Google Maps
+              </a>
+            )
+          }
+        </div>
+
+        <Orar />
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-surface-alt py-12">
+    <div class="container-page grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        contactCards.map((card) => (
+          <a
+            href={card.href}
+            class="border-stroke bg-surface shadow-card hover:border-brand/40 flex flex-col items-center gap-2 rounded-2xl border p-5 text-center transition hover:shadow-md"
+          >
+            <span class="bg-brand-50 text-brand flex h-10 w-10 items-center justify-center rounded-full">
+              <Icon name={card.icon} size={18} />
+            </span>
+            <p class="text-ink text-sm leading-5 font-semibold">{card.title}</p>
+            {card.lines.map((line) => (
+              <p class="text-ink-muted text-sm leading-5">{line}</p>
+            ))}
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Afiseaza mesajul de succes/eroare returnat de /api/contact.
+  const status = new URLSearchParams(location.search).get('status');
+  if (status === 'ok' || status === 'eroare') {
+    const form = document.querySelector('form[action="/api/contact"]');
+    const box = document.createElement('p');
+    box.className =
+      status === 'ok'
+        ? 'mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700'
+        : 'mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700';
+    box.textContent =
+      status === 'ok'
+        ? 'Mulțumim! Mesajul a fost trimis, revenim cât mai curând.'
+        : 'Mesajul nu a putut fi trimis. Te rugăm să ne suni la 0738.826.587.';
+    form?.parentElement?.insertBefore(box, form);
+    form?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+</script>

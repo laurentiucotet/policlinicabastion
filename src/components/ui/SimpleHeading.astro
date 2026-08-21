@@ -1,0 +1,13 @@
+---
+interface Props {
+  title: string;
+  tag?: 'h2' | 'h3';
+  class?: string;
+}
+const { title, tag: Tag = 'h2', class: className = '' } = Astro.props;
+---
+
+<div class:list={['flex flex-col gap-3', className]}>
+  <Tag class="text-2xl leading-[34px] font-bold">{title}</Tag>
+  <span class="bg-brand block h-1 w-16 rounded-full" aria-hidden="true"></span>
+</div>

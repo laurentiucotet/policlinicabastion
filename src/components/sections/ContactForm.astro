@@ -1,0 +1,70 @@
+---
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+import { getSpecializari } from '../../lib/content';
+
+const specializari = await getSpecializari();
+
+const field =
+  'w-full rounded-lg border border-stroke bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-subtle focus:border-brand focus:outline-none';
+const label = 'text-sm font-semibold text-ink';
+---
+
+<div class="border-stroke bg-surface shadow-card rounded-2xl border p-6">
+  <h2 class="font-heading text-2xl leading-8 font-bold">Trimite-ne un mesaj</h2>
+  <p class="text-ink-muted mt-1 text-sm leading-5">
+    Completează formularul și te contactăm pentru confirmarea programării.
+  </p>
+
+
+  <form method="POST" action="/api/contact" class="mt-5 grid gap-4 sm:grid-cols-2">
+    <!-- honeypot anti-spam: campul trebuie sa ramana gol -->
+    <p class="hidden" aria-hidden="true">
+      <label for="website">Nu completa acest câmp</label>
+      <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+    </p>
+
+    <div class="flex flex-col gap-1.5">
+      <label class={label} for="name">Nume și prenume *</label>
+      <input class={field} id="name" name="name" type="text" required autocomplete="name" />
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class={label} for="phone">Telefon *</label>
+      <input class={field} id="phone" name="phone" type="tel" required autocomplete="tel" />
+    </div>
+
+    <div class="flex flex-col gap-1.5 sm:col-span-2">
+      <label class={label} for="email">Email</label>
+      <input class={field} id="email" name="email" type="email" autocomplete="email" />
+    </div>
+
+    <div class="flex flex-col gap-1.5 sm:col-span-2">
+      <label class={label} for="speciality">Specializare</label>
+      <select class={field} id="speciality" name="speciality">
+        <option value="">Alege specializarea</option>
+        {specializari.map((item) => <option value={item.data.title}>{item.data.title}</option>)}
+      </select>
+    </div>
+
+    <div class="flex flex-col gap-1.5 sm:col-span-2">
+      <label class={label} for="message">Mesaj *</label>
+      <textarea class={field} id="message" name="message" rows="4" required></textarea>
+    </div>
+
+    <div class="flex items-start gap-2 sm:col-span-2">
+      <input id="gdpr" name="gdpr" type="checkbox" required class="border-stroke mt-1 h-4 w-4 rounded" />
+      <label for="gdpr" class="text-ink-muted text-xs leading-[18px]">
+        Sunt de acord cu prelucrarea datelor mele personale conform{' '}
+        <a href="/politica-de-confidentialitate" class="text-brand underline">politicii de confidențialitate</a>.
+      </label>
+    </div>
+
+    <div class="sm:col-span-2">
+      <Button type="submit">
+        <Icon name="send" size={16} />
+        Trimite mesajul
+      </Button>
+    </div>
+  </form>
+</div>

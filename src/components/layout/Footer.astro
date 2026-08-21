@@ -1,0 +1,101 @@
+---
+import Icon from '../ui/Icon.astro';
+import Button from '../ui/Button.astro';
+import { navigation, site, whatsappHref } from '../../lib/site';
+
+const year = new Date().getFullYear();
+
+const contactItems = [
+  ...site.phones.map((phone) => ({ icon: 'phone' as const, label: phone.value, href: phone.href })),
+  { icon: 'send' as const, label: site.email, href: `mailto:${site.email}` },
+  {
+    icon: 'map-pin' as const,
+    label: `${site.address.street} ${site.address.city}`,
+    href: site.address.mapsUrl,
+  },
+];
+
+const social = [
+  { icon: 'facebook' as const, href: site.social.facebook, label: 'Facebook' },
+  { icon: 'instagram' as const, href: site.social.instagram, label: 'Instagram' },
+  { icon: 'linkedin' as const, href: site.social.linkedin, label: 'LinkedIn' },
+].filter((item) => Boolean(item.href));
+---
+
+<footer class="bg-surface pt-6 pb-8">
+  <div class="container-page">
+    <div class="bg-brand flex flex-col gap-4 rounded-2xl px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+      <div class="text-white">
+        <p class="text-sm leading-5">Suntem aici să vă ajutăm</p>
+        <p class="font-heading text-2xl leading-8 font-bold tracking-wide">PROGRAMAȚI-VĂ</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <Button href={site.phones[0]?.href} variant="white">
+          <Icon name="phone" size={16} />
+          Sună-ne
+        </Button>
+        {
+          whatsappHref && (
+            <Button href={whatsappHref} variant="whatsapp" rel="noopener" target="_blank">
+              <Icon name="whatsapp" size={16} />
+              Whatsapp
+            </Button>
+          )
+        }
+      </div>
+    </div>
+
+    <ul class="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+      {
+        contactItems.map((item) => (
+          <li>
+            <a href={item.href} class="text-ink-muted hover:text-brand flex items-center gap-2">
+              <span class="text-brand">
+                <Icon name={item.icon} size={16} />
+              </span>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <nav class="mt-6" aria-label="Linkuri utile">
+      <ul class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+        {
+          navigation.footer.map((link) => (
+            <li>
+              <a href={link.href} class="text-brand hover:text-brand-dark hover:underline">
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    {
+      social.length > 0 && (
+        <ul class="mt-6 flex items-center justify-center gap-3">
+          {social.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noopener"
+                aria-label={item.label}
+                class="text-ink-subtle hover:bg-brand border-stroke flex h-8 w-8 items-center justify-center rounded-full border transition-colors hover:border-transparent hover:text-white"
+              >
+                <Icon name={item.icon} size={16} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <p class="text-ink-subtle mt-6 text-center text-xs">
+      © {site.name} 2020–{year}. Toate drepturile rezervate.
+    </p>
+  </div>
+</footer>

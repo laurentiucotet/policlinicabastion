@@ -1,0 +1,34 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  categories: CollectionEntry<'categorii'>[];
+  activeId?: string;
+}
+
+const { categories, activeId } = Astro.props;
+
+const chip = 'rounded-full px-3 py-1.5 text-xs leading-[18px] font-semibold transition-colors';
+const active = 'bg-brand text-white';
+const idle = 'bg-chip text-chip-ink hover:bg-brand-100 hover:text-brand-dark';
+---
+
+<nav aria-label="Categorii articole">
+  <ul class="flex flex-wrap items-center justify-center gap-2">
+    <li>
+      <a href="/noutati" class:list={[chip, activeId ? idle : active]}>Toate</a>
+    </li>
+    {
+      categories.map((category) => (
+        <li>
+          <a
+            href={`/noutati/categorie/${category.id}`}
+            class:list={[chip, activeId === category.id ? active : idle]}
+          >
+            {category.data.name}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

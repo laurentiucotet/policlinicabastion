@@ -1,0 +1,39 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+type Variant = 'primary' | 'outline' | 'white' | 'whatsapp' | 'ghost';
+type Size = 'sm' | 'md';
+
+interface Props extends Omit<HTMLAttributes<'a'>, 'href'> {
+  href?: string;
+  type?: 'button' | 'submit';
+  variant?: Variant;
+  size?: Size;
+  class?: string;
+}
+
+const { href, type = 'button', variant = 'primary', size = 'md', class: className = '', ...rest } = Astro.props;
+
+const base =
+  'inline-flex items-center justify-center gap-2 rounded-lg font-semibold shadow-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60';
+
+const variants: Record<Variant, string> = {
+  primary: 'bg-brand text-white hover:bg-brand-dark focus-visible:outline-brand',
+  outline: 'border-2 border-brand bg-white text-brand hover:bg-brand-50 focus-visible:outline-brand',
+  white: 'bg-white text-brand hover:bg-brand-50 focus-visible:outline-white',
+  whatsapp: 'bg-whatsapp text-white hover:brightness-95 focus-visible:outline-whatsapp',
+  ghost: 'text-brand hover:bg-brand-50 shadow-none',
+};
+
+const sizes: Record<Size, string> = {
+  sm: 'px-3.5 py-2 text-xs',
+  md: 'px-4 py-2.5 text-sm',
+};
+
+const classes = [base, variants[variant], sizes[size], className];
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag class:list={classes} href={href} type={href ? undefined : type} {...rest}>
+  <slot />
+</Tag>

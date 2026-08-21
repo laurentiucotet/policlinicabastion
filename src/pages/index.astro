@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/sections/Hero.astro';
+import LatestNews from '../components/sections/LatestNews.astro';
+import SpecialitiesGrid from '../components/sections/SpecialitiesGrid.astro';
+import CtaBand from '../components/sections/CtaBand.astro';
+import TestimonialsGrid from '../components/sections/TestimonialsGrid.astro';
+import TeamGrid from '../components/sections/TeamGrid.astro';
+import { home } from '../lib/site';
+---
+
+<BaseLayout title={home.seo.title} description={home.seo.description} appendSiteName={false}>
+  <Hero />
+
+  <LatestNews
+    badge={home.news.badge}
+    title={home.news.title}
+    subtitle={home.news.subtitle}
+    cta={home.news.cta}
+    count={home.news.count}
+  />
+
+  <SpecialitiesGrid
+    badge={home.services.badge}
+    title={home.services.title}
+    subtitle={home.services.subtitle}
+    onlyHomepage
+  />
+
+  <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} />
+
+  <TestimonialsGrid
+    badge={home.testimonials.badge}
+    title={home.testimonials.title}
+    subtitle={home.testimonials.subtitle}
+    count={home.testimonials.count}
+  />
+
+  <TeamGrid
+    badge={home.team.badge}
+    title={home.team.title}
+    subtitle={home.team.subtitle}
+    cta={home.team.cta}
+    count={home.team.count}
+    onlyHomepage
+  />
+
+  <CtaBand title={home.ctaSecondary.title} text={home.ctaSecondary.text} cta={home.ctaSecondary.cta} tone="alt" />
+</BaseLayout>

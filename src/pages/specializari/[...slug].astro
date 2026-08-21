@@ -1,0 +1,53 @@
+---
+import { render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
+import ServicesAccordion from '../../components/sections/ServicesAccordion.astro';
+import TeamGrid from '../../components/sections/TeamGrid.astro';
+import CtaBand from '../../components/sections/CtaBand.astro';
+import { getSpecializari } from '../../lib/content';
+import { home } from '../../lib/site';
+
+export const getStaticPaths = (async () => {
+  const items = await getSpecializari();
+  return items.map((speciality) => ({
+    params: { slug: speciality.id },
+    props: { speciality },
+  }));
+}) satisfies GetStaticPaths;
+
+const { speciality } = Astro.props;
+const { Content } = await render(speciality);
+const { title, subtitle, badge, services, seo } = speciality.data;
+---
+
+<BaseLayout
+  title={seo?.title ?? title}
+  description={seo?.description ?? speciality.data.shortDescription}
+  noindex={seo?.noindex}
+>
+  <PageTitleHeader badge={badge} title={title} subtitle={subtitle} />
+
+  <section class="bg-surface py-12">
+    <div class="container-page">
+      <h2 class="sr-only">Despre {title}</h2>
+      <div class="prose-bastion max-w-none">
+        <Content />
+      </div>
+    </div>
+  </section>
+
+  <ServicesAccordion title={`Servicii ${title.toLowerCase()}`} services={services} />
+
+  <TeamGrid
+    badge="Medici"
+    title="Echipa noastră"
+    subtitle={`Medicii care asigură consultațiile de ${title.toLowerCase()} la Policlinica Bastion.`}
+    specialityId={speciality.id}
+    tone="alt"
+    count={12}
+  />
+
+  <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} />
+</BaseLayout>

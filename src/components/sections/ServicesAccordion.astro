@@ -1,0 +1,44 @@
+---
+import SimpleHeading from '../ui/SimpleHeading.astro';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  title: string;
+  services: Array<{ name: string; description: string }>;
+}
+
+const { title, services } = Astro.props;
+---
+
+{
+  services.length > 0 && (
+    <section class="bg-surface py-12">
+      <div class="container-page">
+        <SimpleHeading title={title} />
+
+        <div class="border-stroke bg-surface shadow-card mt-8 divide-y divide-[color:var(--color-stroke)] overflow-hidden rounded-2xl border">
+          {services.map((service, index) => (
+            <details class="group" open={index === 0}>
+              <summary class="hover:bg-surface-alt flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-sm leading-5 font-semibold">
+                <span class="text-brand flex h-5 w-5 shrink-0 items-center justify-center">
+                  <span class="group-open:hidden">
+                    <Icon name="plus" size={16} />
+                  </span>
+                  <span class="hidden group-open:block">
+                    <Icon name="minus" size={16} />
+                  </span>
+                </span>
+                {service.name}
+              </summary>
+              <div class="prose-bastion px-4 pt-1 pb-4 pl-11 text-sm">
+                {service.description.split(/\n{2,}/).map((paragraph) => (
+                  <p>{paragraph}</p>
+                ))}
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

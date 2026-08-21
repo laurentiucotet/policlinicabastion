@@ -1,0 +1,21 @@
+---
+import Icon from '../ui/Icon.astro';
+import { site } from '../../lib/site';
+---
+
+<div class="border-stroke bg-surface shadow-card rounded-2xl border p-6">
+  <h2 class="text-ink flex items-center gap-2 text-base leading-6 font-semibold">
+    <span class="text-brand"><Icon name="clock" size={18} /></span>
+    Program de lucru
+  </h2>
+  <dl class="divide-stroke mt-3 divide-y">
+    {
+      site.schedule.map((row) => (
+        <div class="flex items-center justify-between py-2 text-sm">
+          <dt class="text-ink-muted">{row.days}</dt>
+          <dd class="text-ink font-semibold">{row.hours}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</div>

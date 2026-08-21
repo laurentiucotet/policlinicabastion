@@ -1,0 +1,45 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { formatDate, isoDate } from '../../lib/utils';
+
+interface Props {
+  post: CollectionEntry<'articole'>;
+  categoryName?: string;
+}
+
+const { post, categoryName } = Astro.props;
+const href = `/noutati/${post.id}`;
+---
+
+<article
+  class="border-stroke bg-surface shadow-card group flex h-full flex-col overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
+>
+  <a href={href} class="block aspect-[16/9] overflow-hidden" tabindex="-1" aria-hidden="true">
+    {
+      post.data.cover ? (
+        <Image
+          src={post.data.cover}
+          alt={post.data.coverAlt ?? ''}
+          widths={[416, 832]}
+          sizes="(min-width: 1024px) 416px, 100vw"
+          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+        />
+      ) : (
+        <div class="from-brand to-brand-dark h-full w-full bg-gradient-to-br" />
+      )
+    }
+  </a>
+
+  <div class="flex flex-1 flex-col gap-2 p-4">
+    <p class="text-ink-subtle flex items-center gap-2 text-xs">
+      <time datetime={isoDate(post.data.date)}>{formatDate(post.data.date)}</time>
+      {categoryName && <><span aria-hidden="true">·</span><span>{categoryName}</span></>}
+    </p>
+    <h3 class="text-base leading-6 font-semibold">
+      <a href={href} class="hover:text-brand after:absolute after:inset-0 after:content-['']">
+        {post.data.title}
+      </a>
+    </h3>
+  </div>
+</article>

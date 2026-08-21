@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/ui/Button.astro';
+---
+
+<BaseLayout title="Pagina nu a fost găsită" noindex>
+  <section class="bg-surface py-24">
+    <div class="container-page flex flex-col items-center gap-4 text-center">
+      <p class="text-brand font-heading text-5xl font-bold">404</p>
+      <h1 class="text-3xl leading-tight font-bold sm:text-4xl">Pagina nu a fost găsită</h1>
+      <p class="text-ink-muted max-w-xl text-base leading-6">
+        Linkul accesat nu mai există sau a fost mutat. Poți reveni pe pagina principală sau ne poți contacta direct.
+      </p>
+      <div class="mt-2 flex flex-wrap justify-center gap-3">
+        <Button href="/">Mergi la pagina principală</Button>
+        <Button href="/contact" variant="outline">Contactează-ne</Button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

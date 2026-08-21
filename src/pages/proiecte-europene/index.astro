@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
+import SimpleHeading from '../../components/ui/SimpleHeading.astro';
+import ProjectCard from '../../components/cards/ProjectCard.astro';
+import LatestNews from '../../components/sections/LatestNews.astro';
+import { getProiecte } from '../../lib/content';
+
+const projects = await getProiecte();
+---
+
+<BaseLayout
+  title="Proiecte Europene"
+  description="Proiectele cu finanțare europeană derulate de Policlinica Bastion Timișoara."
+>
+  <PageTitleHeader
+    badge="Proiecte Europene"
+    title="Proiecte Europene"
+    subtitle="Investim constant în modernizarea soluțiilor și a aparaturii medicale."
+  />
+
+  <section class="bg-surface py-12">
+    <div class="container-page">
+      <SimpleHeading title="Proiecte în derulare" />
+      <p class="text-ink-muted mt-6 max-w-4xl text-base leading-6">
+        Policlinica Bastion investește constant în modernizarea soluțiilor și a aparaturii medicale, pentru a oferi
+        pacienților servicii de cea mai bună calitate, bazate pe tehnologie de ultimă generație.
+      </p>
+
+      {
+        projects.length > 0 ? (
+          <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.map((project) => (
+              <ProjectCard project={project} />
+            ))}
+          </div>
+        ) : (
+          <p class="text-ink-muted mt-8">Momentan nu există proiecte publicate.</p>
+        )
+      }
+    </div>
+  </section>
+
+  <LatestNews title="Noutăți despre proiecte" subtitle="Ultimele articole publicate" tone="alt" count={3} />
+</BaseLayout>

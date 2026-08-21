@@ -1,0 +1,35 @@
+{
+  "main": [
+    {
+      "label": "Acasă",
+      "href": "/",
+      "children": [
+        { "label": "Despre noi", "href": "/despre-noi" },
+        { "label": "Echipa noastră", "href": "/medici" }
+      ]
+    },
+    {
+      "label": "Specializări",
+      "href": "/specializari",
+      "children": []
+    },
+    {
+      "label": "Oncologie Urologică",
+      "href": "/specializari/oncologie-urologica",
+      "children": []
+    },
+    { "label": "Programări", "href": "/contact", "children": [] },
+    { "label": "Contact", "href": "/contact", "children": [] },
+    { "label": "Noutăți", "href": "/noutati", "children": [] },
+    { "label": "Proiecte Europene", "href": "/proiecte-europene", "children": [] }
+  ],
+  "footer": [
+    { "label": "Drepturi și obligații asigurați", "href": "/drepturi-si-obligatii-asigurati" },
+    { "label": "Drepturile și obligațiile pacienților", "href": "/drepturile-pacientilor" },
+    { "label": "Servicii decontate prin C.N.A.S", "href": "/servicii-decontate-cnas" },
+    { "label": "Termeni și Condiții", "href": "/termeni-si-conditii" },
+    { "label": "Politica de Confidențialitate", "href": "/politica-de-confidentialitate" },
+    { "label": "Newsletter", "href": "/newsletter" },
+    { "label": "Feedback Pacienți", "href": "/feedback" }
+  ]
+}

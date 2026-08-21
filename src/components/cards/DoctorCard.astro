@@ -1,0 +1,38 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  doctor: CollectionEntry<'medici'>;
+}
+
+const { doctor } = Astro.props;
+const href = `/medici/${doctor.id}`;
+---
+
+<article
+  class="border-stroke bg-surface shadow-card group flex h-full flex-col overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
+>
+  <div class="bg-surface-alt aspect-[4/5] overflow-hidden">
+    {
+      doctor.data.photo ? (
+        <Image
+          src={doctor.data.photo}
+          alt={doctor.data.name}
+          widths={[296, 592]}
+          sizes="(min-width: 1024px) 296px, 50vw"
+          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+        />
+      ) : (
+        <div class="text-ink-subtle flex h-full w-full items-center justify-center text-4xl">🩺</div>
+      )
+    }
+  </div>
+
+  <div class="flex flex-1 flex-col gap-1 p-4 text-center">
+    <h3 class="text-sm leading-5 font-semibold">
+      <a href={href} class="hover:text-brand">{doctor.data.name}</a>
+    </h3>
+    <p class="text-ink-muted text-sm leading-5">{doctor.data.role}</p>
+  </div>
+</article>

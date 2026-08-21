@@ -1,0 +1,78 @@
+---
+import { render, getEntry } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DoctorHero from '../../components/sections/DoctorHero.astro';
+import SimpleHeading from '../../components/ui/SimpleHeading.astro';
+import ListColumns from '../../components/sections/ListColumns.astro';
+import ServicesAccordion from '../../components/sections/ServicesAccordion.astro';
+import TeamGrid from '../../components/sections/TeamGrid.astro';
+import CtaBand from '../../components/sections/CtaBand.astro';
+import { getMedici } from '../../lib/content';
+import { home } from '../../lib/site';
+
+export const getStaticPaths = (async () => {
+  const items = await getMedici();
+  return items.map((doctor) => ({ params: { slug: doctor.id }, props: { doctor } }));
+}) satisfies GetStaticPaths;
+
+const { doctor } = Astro.props;
+const { Content } = await render(doctor);
+const { name, role, procedures, pathologies, education, memberships, specialities, seo } = doctor.data;
+
+// Serviciile afisate pe pagina de medic vin din prima lui specializare,
+// ca sa nu fie nevoie sa fie duplicate in CMS.
+const primarySpeciality = specialities[0] ? await getEntry(specialities[0]) : undefined;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Physician',
+  name,
+  medicalSpecialty: primarySpeciality?.data.title,
+  jobTitle: role,
+  worksFor: { '@type': 'MedicalClinic', name: 'Policlinica Bastion' },
+};
+---
+
+<BaseLayout
+  title={seo?.title ?? name}
+  description={seo?.description ?? `${name} — ${role} la Policlinica Bastion Timișoara.`}
+  noindex={seo?.noindex}
+  schema={schema}
+>
+  <DoctorHero doctor={doctor} />
+
+  <section class="bg-surface py-12">
+    <div class="container-page">
+      <SimpleHeading title="Despre medic" />
+      <div class="prose-bastion mt-8 max-w-none">
+        <Content />
+      </div>
+    </div>
+  </section>
+
+  <ListColumns title="Proceduri și investigații" items={procedures} tone="alt" />
+  <ListColumns title="Patologii tratate" items={pathologies} />
+  <ListColumns title="Formare profesională" items={education} tone="alt" />
+  <ListColumns title="Afilieri profesionale" items={memberships} />
+
+  {
+    primarySpeciality && (
+      <ServicesAccordion
+        title={`Servicii ${primarySpeciality.data.title.toLowerCase()}`}
+        services={primarySpeciality.data.services}
+      />
+    )
+  }
+
+  <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} tone="alt" />
+
+  <TeamGrid
+    badge="Medici"
+    title="Alți medici"
+    subtitle="Descoperă restul echipei Policlinica Bastion."
+    exclude={doctor.id}
+    count={4}
+    cta={{ label: 'Vezi toți medicii', href: '/medici' }}
+  />
+</BaseLayout>

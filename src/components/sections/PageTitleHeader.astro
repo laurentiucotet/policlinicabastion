@@ -1,0 +1,19 @@
+---
+import Badge from '../ui/Badge.astro';
+
+interface Props {
+  badge?: string;
+  title: string;
+  subtitle?: string;
+}
+
+const { badge, title, subtitle } = Astro.props;
+---
+
+<section class="bg-surface-alt border-stroke border-b">
+  <div class="container-page flex flex-col items-center gap-3 py-12 text-center">
+    {badge && <Badge>{badge}</Badge>}
+    <h1 class="text-3xl leading-tight font-bold text-balance sm:text-4xl lg:text-5xl">{title}</h1>
+    {subtitle && <p class="text-ink-muted max-w-3xl text-base leading-6 text-pretty">{subtitle}</p>}
+  </div>
+</section>
