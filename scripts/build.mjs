@@ -2,14 +2,21 @@
 /**
  * Build de productie.
  *
- * `tinacms build` genereaza panoul de admin (public/admin). Are doua cerinte:
- *   1. credentialele TinaCloud (TINA_PUBLIC_CLIENT_ID + TINA_TOKEN);
- *   2. branch-ul curent sa fie indexat in TinaCloud.
+ * Site-ul (astro build) NU depinde de TinaCloud — vezi docs/ARHITECTURA.md.
+ * Singurul lucru care depinde de el este panoul /admin, generat de
+ * `tinacms build`.
  *
- * A doua cerinta pica pe deploy-urile de preview: Vercel construieste fiecare
- * branch, dar TinaCloud indexeaza doar branch-urile adaugate explicit. Ca sa nu
- * blocheze deploy-ul, pe preview sarim peste verificarea de cloud si tolerăm
- * esecul. Pe productie ramane strict — vrem sa aflam daca ceva e gresit.
+ * De aceea, o problema la TinaCloud nu trebuie sa opreasca niciodata deploy-ul
+ * clinicii: nici lipsa credentialelor, nici un branch neindexat (normal pe
+ * orice preview), nici un proiect care nu raspunde inca (`project not found` —
+ * de obicei conexiunea GitHub <-> TinaCloud nu s-a terminat de procesat, sau
+ * o variabila de mediu are un spatiu/newline in plus). Sarim mereu peste
+ * verificarea de cloud (`--skip-cloud-checks`) si toleram orice esec al
+ * `tinacms build`: /admin poate lipsi sau poate sa nu functioneze temporar,
+ * dar site-ul public trebuie sa mearga oricum.
+ *
+ * Pentru verificarea stricta, manuala, a configurarii TinaCloud, foloseste
+ * `npm run build:full` (fara toleranta la erori).
  */
 import { spawnSync } from 'node:child_process';
 
@@ -23,7 +30,6 @@ const run = (command, args, { tolerateFailure = false } = {}) => {
 const warn = (message) => console.warn(`\n⚠️  ${message}\n`);
 
 const hasTinaCredentials = Boolean(process.env.TINA_PUBLIC_CLIENT_ID && process.env.TINA_TOKEN);
-const isVercelProduction = process.env.VERCEL_ENV === 'production';
 const branch = process.env.TINA_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || 'local';
 
 if (!hasTinaCredentials) {
@@ -32,20 +38,22 @@ if (!hasTinaCredentials) {
       '   Site-ul se construieste normal, dar /admin nu va fi disponibil.\n' +
       '   Adauga variabilele in Vercel → Settings → Environment Variables.',
   );
-} else if (isVercelProduction) {
-  // Productie: orice problema de configurare trebuie sa opreasca deploy-ul.
-  run('tinacms', ['build']);
 } else {
-  // Preview / build local: nu blocam deploy-ul daca branch-ul nu e in TinaCloud.
   const ok = run('tinacms', ['build', '--skip-cloud-checks'], { tolerateFailure: true });
   if (ok) {
     warn(
-      `Build de preview pe branch-ul \`${branch}\`.\n` +
-        '   Panoul /admin a fost construit, dar poate citi continut doar daca\n' +
-        '   branch-ul este indexat in TinaCloud. Editarea se face pe productie.',
+      `tinacms build reusit pentru branch-ul \`${branch}\`.\n` +
+        '   /admin poate citi/scrie continut doar daca acest branch este\n' +
+        '   conectat si indexat in proiectul TinaCloud.',
     );
   } else {
-    warn('`tinacms build` a esuat pe un build care nu e de productie — continui doar cu site-ul.');
+    warn(
+      `\`tinacms build\` a esuat pentru branch-ul \`${branch}\` — continui doar cu site-ul.\n` +
+        '   Motive frecvente: proiectul TinaCloud nu e inca conectat la\n' +
+        '   acest repo/branch ("project not found"), sau credentialele au\n' +
+        '   spatii/ghilimele in plus copiate din greseala in Vercel.\n' +
+        '   Verificare stricta, manuala: `npm run build:full`.',
+    );
   }
 }
 

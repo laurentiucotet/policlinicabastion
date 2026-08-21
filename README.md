@@ -39,8 +39,8 @@ npm run dev               # site pe :4321, CMS pe :4321/admin/index.html
 | --- | --- |
 | `npm run dev` | Pornește serverul GraphQL local al Tinei **și** `astro dev` |
 | `npm run dev:astro` | Doar Astro (fără CMS) — mai rapid când lucrezi la UI |
-| `npm run build` | Ce rulează Vercel: construiește panoul Tina (dacă există credențiale) + site-ul |
-| `npm run build:full` | Forțează build-ul Tina strict — eșuează dacă lipsesc credențialele sau branch-ul |
+| `npm run build` | Ce rulează Vercel: încearcă panoul Tina, tolerant la orice eșec, apoi site-ul |
+| `npm run build:full` | Build Tina strict, fără toleranță — pentru verificare manuală a configurării |
 | `npm run preview` | Servește build-ul de producție local |
 | `npm run tina:lock` | Regenerează `tina/tina-lock.json` după ce modifici schema |
 | `npm run check` | Verificare TypeScript / Astro |
@@ -69,9 +69,10 @@ direct în fișierele de pe disc, fără să atingă GitHub.
    nu poate indexa conținutul.
 6. Invită editorii din TinaCloud → *Collaborators*. Ei nu au nevoie de cont GitHub.
 
-Fără aceste variabile site-ul se construiește normal (`npm run build` sare peste
-pasul Tina și afișează un avertisment), dar `/admin` nu va exista. Poți deci să
-faci primul deploy imediat și să configurezi TinaCloud după.
+Fără aceste variabile, sau dacă TinaCloud nu răspunde încă, site-ul se
+construiește normal — `npm run build` afișează un avertisment și continuă doar
+cu site-ul; vezi secțiunea următoare. Poți deci să faci primul deploy imediat
+și să configurezi TinaCloud după.
 
 ---
 
@@ -94,30 +95,37 @@ Fișierul se regenerează în două feluri:
 > `tina/__generated__/` este ignorat în git — se reconstruiește la fiecare build
 > și nu e nevoie de el în repo.
 
-## Branch-uri și TinaCloud
+## Site-ul nu depinde niciodată de TinaCloud
 
-TinaCloud indexează **doar branch-urile adăugate explicit** în proiect (implicit,
-branch-ul default). Vercel însă construiește fiecare branch. Rezultatul, pe un
-deploy de preview:
+`npm run build` rulează mereu `tinacms build --skip-cloud-checks` și **tolerează
+orice eșec** al acestui pas — indiferent de mediu (producție sau preview),
+indiferent de motiv. Abia după aceea rulează `astro build`, care chiar trebuie
+să reușească.
 
-```
-ERROR: Branch 'claude/...' is not on TinaCloud.
-Error: Branch is not on TinaCloud   errorCode: 'ERR_CLOUD_CHECK_FAILED'
-```
+Motivul: site-ul propriu-zis (`astro build`) nu citește nimic din TinaCloud —
+citește direct fișierele din `src/content` (vezi `docs/ARHITECTURA.md`).
+Singurul lucru care depinde de TinaCloud e panoul `/admin`. O problemă acolo
+nu trebuie să oprească niciodată deploy-ul unei clinici reale.
 
-`npm run build` tratează asta în funcție de mediu:
+Eșecuri frecvente ale `tinacms build`, toate tolerate:
 
-| `VERCEL_ENV` | Comportament |
-| --- | --- |
-| `production` | `tinacms build` strict — orice problemă oprește deploy-ul |
-| `preview` sau local | `tinacms build --skip-cloud-checks`, iar dacă tot eșuează se continuă doar cu site-ul |
+- **Credențiale lipsă** — `/admin` nu se construiește deloc.
+- **`Branch '...' is not on TinaCloud`** — TinaCloud indexează doar
+  branch-urile adăugate explicit în proiect; normal pe orice deploy de preview.
+- **`project not found` (404), pe orice branch, inclusiv cel implicit** —
+  de obicei proiectul TinaCloud nu a terminat încă de procesat conectarea la
+  repo (webhook-ul de la primul push), sau `TINA_PUBLIC_CLIENT_ID` /
+  `TINA_TOKEN` au un spațiu sau o ghilimea în plus, lipite din greșeală la
+  copiere în Vercel. Așteaptă câteva minute și redeployează; dacă persistă,
+  verifică valorile variabilelor caracter cu caracter.
 
-Deci preview-urile nu mai pică niciodată din cauza asta. Pe un preview, `/admin`
-se construiește, dar poate citi conținut doar dacă branch-ul e indexat în
-TinaCloud — editarea se face pe producție.
+În toate cazurile, `/admin` poate lipsi sau poate să nu funcționeze temporar —
+site-ul public rămâne neafectat. Pentru o verificare strictă și manuală a
+configurării TinaCloud (fără toleranță la erori), rulează `npm run build:full`.
 
-Ca să editezi de pe un branch anume, adaugă-l în TinaCloud, în lista de branch-uri
-a proiectului. Altfel, calea normală e să faci merge în branch-ul de producție.
+Ca să editezi efectiv de pe un branch anume (nu doar ca site-ul să se
+construiască), branch-ul trebuie adăugat explicit în TinaCloud. Altfel, calea
+normală e să faci merge în branch-ul de producție și să editezi de acolo.
 
 ## Deploy pe Vercel
 

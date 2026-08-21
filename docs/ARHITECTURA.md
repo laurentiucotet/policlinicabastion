@@ -180,6 +180,31 @@ are honeypot anti-spam și trimite emailul prin Resend dacă este configurat.
 
 ---
 
+## 6bis. Build-ul nu depinde de TinaCloud
+
+`scripts/build.mjs` (folosit de `npm run build`) rulează `tinacms build
+--skip-cloud-checks` și **tolerează orice eșec** al acestui pas, apoi rulează
+mereu `astro build`.
+
+Această decizie a apărut direct dintr-un incident: primul deploy de producție
+a picat cu `project not found` (404) — TinaCloud nu terminase încă de procesat
+conectarea proiectului la repo. Eroarea nu avea nicio legătură cu site-ul, dar
+oprea complet deploy-ul unei clinici reale.
+
+Varianta inițială trata diferit producția (strict) față de preview (tolerant).
+S-a dovedit greșită: o clinică cu programări reale nu ar trebui să depindă de
+disponibilitatea unui serviciu extern de CMS, în niciun mediu. Astro citește
+conținutul direct din fișiere (§3), deci `astro build` nu are nevoie de
+TinaCloud sub nicio formă — motiv suficient ca eșecul lui `tinacms build` să
+nu fie niciodată blocant.
+
+Consecința: `/admin` poate lipsi sau poate fi temporar nefuncțional (branch
+neindexat, credențiale greșite, proiect TinaCloud neconectat încă), dar site-ul
+public se construiește oricum. Pentru o verificare strictă, manuală, a
+configurării TinaCloud există `npm run build:full` (fără toleranță).
+
+---
+
 ## 7. Design tokens
 
 Definite o singură dată în `src/styles/global.css`, în blocul `@theme` al
