@@ -7,10 +7,8 @@ dist/
 node_modules/
 
 # tina
-tina/__generated__/**
-!tina/__generated__/_graphql.json
-!tina/__generated__/_lookup.json
-!tina/__generated__/_schema.json
+# `tina/tina-lock.json` NU se ignora: TinaCloud citeste schema din el, din repo.
+tina/__generated__/
 public/admin/
 
 # env

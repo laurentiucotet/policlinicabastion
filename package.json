@@ -11,6 +11,7 @@
     "dev:astro": "astro dev",
     "build": "node scripts/build.mjs",
     "build:full": "tinacms build && astro build",
+    "tina:lock": "node scripts/tina-lock.mjs",
     "preview": "astro preview",
     "check": "astro check",
     "sync": "astro sync"

@@ -92,7 +92,9 @@ mult decât preview-ul live. De aceea `client: { skip: true }` în `tina/config.
 - `src/content.config.ts` — validarea Zod + tipurile pentru cod
 - `tina/collections/*.ts` — formularele din panoul de admin
 
-Când adaugi un câmp, **adaugă-l în ambele**. E singura regulă de disciplină a
+Când adaugi un câmp, **adaugă-l în ambele** — și regenerează `tina-lock.json`
+(`npm run tina:lock`), pentru că TinaCloud citește schema din acel fișier, nu
+din `tina/collections/`. Astea sunt singurele două reguli de disciplină ale
 proiectului.
 
 ---

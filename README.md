@@ -42,6 +42,7 @@ npm run dev               # site pe :4321, CMS pe :4321/admin/index.html
 | `npm run build` | Ce rulează Vercel: construiește panoul Tina (dacă există credențiale) + site-ul |
 | `npm run build:full` | Forțează build-ul Tina strict — eșuează dacă lipsesc credențialele sau branch-ul |
 | `npm run preview` | Servește build-ul de producție local |
+| `npm run tina:lock` | Regenerează `tina/tina-lock.json` după ce modifici schema |
 | `npm run check` | Verificare TypeScript / Astro |
 
 În dezvoltare, Tina rulează în **local mode**: modificările din `/admin` scriu
@@ -62,13 +63,36 @@ direct în fișierele de pe disc, fără să atingă GitHub.
    | `TINA_TOKEN` | Read Only Token | toate mediile |
    | `TINA_BRANCH` | `main` (opțional — altfel se ia branch-ul curent) | toate mediile |
 
-4. Invită editorii din TinaCloud → *Collaborators*. Ei nu au nevoie de cont GitHub.
+4. În TinaCloud → *Site URLs*, pune adresele reale ale site-ului. Portul de
+   development al Astro este **4321**, nu 3000: `http://localhost:4321`.
+5. Comite `tina/tina-lock.json` (vezi secțiunea de mai jos) — fără el TinaCloud
+   nu poate indexa conținutul.
+6. Invită editorii din TinaCloud → *Collaborators*. Ei nu au nevoie de cont GitHub.
 
 Fără aceste variabile site-ul se construiește normal (`npm run build` sare peste
 pasul Tina și afișează un avertisment), dar `/admin` nu va exista. Poți deci să
 faci primul deploy imediat și să configurezi TinaCloud după.
 
 ---
+
+## `tina-lock.json` — schema pe care o vede TinaCloud
+
+TinaCloud **nu** citește `tina/collections/*.ts`. Citește `tina/tina-lock.json`,
+direct din repo. Fișierul e o compilare a schemei și trebuie comis în git.
+
+Consecința practică: dacă modifici un câmp în `tina/collections/` și nu
+regenerezi fișierul, panoul `/admin` va arăta în continuare câmpurile vechi —
+chiar dacă site-ul s-a rebuild-uit corect. Nu primești nicio eroare.
+
+Fișierul se regenerează în două feluri:
+
+- automat, de fiecare dată când rulezi `npm run dev`;
+- manual, cu `npm run tina:lock` (nu pornește serverul, nu cere credențiale).
+
+**După orice modificare de schemă: regenerează și comite `tina/tina-lock.json`.**
+
+> `tina/__generated__/` este ignorat în git — se reconstruiește la fiecare build
+> și nu e nevoie de el în repo.
 
 ## Branch-uri și TinaCloud
 
