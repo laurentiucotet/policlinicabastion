@@ -13,11 +13,6 @@
       "href": "/specializari",
       "children": []
     },
-    {
-      "label": "Oncologie Urologică",
-      "href": "/specializari/oncologie-urologica",
-      "children": []
-    },
     { "label": "Programări", "href": "/contact", "children": [] },
     { "label": "Contact", "href": "/contact", "children": [] },
     { "label": "Noutăți", "href": "/noutati", "children": [] },

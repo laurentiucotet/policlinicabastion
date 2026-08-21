@@ -227,16 +227,106 @@ către Google la runtime (GDPR) și fără layout shift.
 
 ---
 
-## 8. Ce urmează
+## 8. Migrarea conținutului de pe policlinicabastion.ro (WordPress)
+
+Site-ul vechi rulează pe WordPress, la `policlinicabastion.ro`. Conținutul din acest
+repo a fost completat cu date reale de pe acel site — dar cu o limitare de mediu
+importantă, explicată mai jos.
+
+### Limitare: WebFetch e blocat în acest sandbox
+
+Mediul în care rulează Claude Code aici **nu are voie să descarce pagini web**
+(egress blocat prin proxy, confirmat inclusiv pe domenii banale ca wikipedia.org).
+Singurul instrument disponibil a fost `WebSearch`, care întoarce titluri, URL-uri
+și **rezumate scurte** generate de un model, nu HTML-ul brut al paginilor.
+
+Consecința practică: am putut reconstrui cu încredere ridicată **structura**
+site-ului vechi (slug-uri URL, titluri, date, roluri, categorii), dar **nu**
+și textul exact, cuvânt cu cuvânt, al fiecărei pagini. Unde nu am avut acces la
+textul original, l-am înlocuit cu un paragraf scurt, generic, medical corect,
+urmat de o notă explicită `*(...)* ` care spune clar că textul integral trebuie
+adus din site-ul vechi.
+
+**Nu presupune că orice text din acest repo e citat identic din site-ul vechi.**
+Doar câmpurile marcate ca atare (fără nota de mai sus) au fost verificate prin
+căutare directă.
+
+### Ce a fost verificat prin căutare (are încredere ridicată)
+
+- Contact: telefon `0738.826.587`, email `receptie@policlinicabastion.ro`,
+  adresă `Str. Mircea cel Bătrân nr. 122C, Timișoara` — din pagina de contact
+  și din politica de confidențialitate a site-ului vechi.
+- Program: Luni/Miercuri/Vineri 08:00–22:00, Marți/Joi 08:00–23:30,
+  Sâmbătă–Duminică închis.
+- Pagina de Facebook: `facebook.com/policlinicabastion`.
+- 4 medici reali, cu pagină proprie pe site-ul vechi: Asist. Univ. Dr. Lațcu
+  Silviu-Constantin (urologie), Dr. Chiriac Ionel (urologie), Dr. Găină
+  Adriana-Margareta (neurologie), Dr. Voichescu Otilia (medicină de familie).
+- Prof. Univ. Dr. Ligia Petrica (nefrologie) — cabinetul ei, fost Centru Medical
+  Nefrotim, a fost preluat de Policlinica Bastion în 2020.
+- ~28 de articole reale de blog (titluri + URL-uri confirmate; vezi tabelul de
+  mai jos). 8 dintre ele au dată de publicare confirmată și sunt marcate
+  `draft: false`; restul sunt `draft: true` până la completare.
+- Proiectul european real: „Creșterea eficienței prin tehnologii avansate la
+  Policlinica Bastion", prin Programul Regional Vest 2021–2027 (sterilizator
+  cu plasmă LowTem + laser Holmium MultiPulse HoPLUS) — nu „eficiență
+  energetică", cum inventasem inițial din eroare.
+
+### Ce am eliminat pentru că nu era real
+
+- „Oncologie Urologică" ca pagină/specializare separată — nu există pe site-ul
+  vechi; e tratată ca temă în cadrul urologiei, așa cum e acum și aici.
+- Recenziile inițiale erau text identic, inventat, la toate 6 — risc real de
+  „recenzii false" pentru o clinică medicală. Înlocuite cu 4 recenzii generice,
+  distincte, care trebuie oricum completate cu recenzii reale copiate din
+  Google Business Profile înainte de lansare.
+
+### Mapare slug vechi → slug nou (pentru redirect-uri 301)
+
+Site-ul vechi (WordPress) folosește slug-uri plate la rădăcină
+(`/urologie/`, `/nefrologie/`, `/medici/dr-x/`, articolele direct în `/`).
+Noul site grupează logic sub `/specializari/`, `/medici/`, `/noutati/`. La
+migrare, aceste redirect-uri 301 sunt **obligatorii** ca să nu se piardă
+poziționarea în Google:
+
+| Vechi (WordPress) | Nou (acest site) |
+| --- | --- |
+| `/nefrologie/` | `/specializari/nefrologie` |
+| `/urologie/` | `/specializari/urologie` |
+| `/neurologie/` | `/specializari/neurologie` |
+| `/psihiatrie/` | `/specializari/psihiatrie` |
+| `/mf/` | `/specializari/medicina-de-familie` |
+| `/diabet/` | `/specializari/diabet-si-nutritie` |
+| `/chirurgie-generala/` | `/specializari/chirurgie-generala` |
+| `/servicii-casa/` | `/servicii-decontate-cnas` |
+| `/medici/asist-univ-dr-latcu-silviu-constantin/` | `/medici/asist-univ-dr-latcu-silviu-constantin` (identic) |
+| `/medici/dr-chiriac-ionel/` | `/medici/dr-chiriac-ionel` (identic) |
+| `/medici/dr-gaina-adriana-margareta/` | `/medici/dr-gaina-adriana-margareta` (identic) |
+| `/drepturile-si-obligatiile-pacientilor/` | `/drepturile-pacientilor` |
+| `/politica-de-confidentialitate/` | `/politica-de-confidentialitate` (identic) |
+| orice `/<slug-articol>/` de la rădăcină | `/noutati/<slug-articol>` (slug păstrat identic) |
+
+Toate slug-urile articolelor din `src/content/articole/` au fost păstrate
+identice cu cele găsite pe site-ul vechi — deci maparea pentru fiecare articol
+e mereu `/<slug>/` → `/noutati/<slug>`.
+
+---
+
+## 9. Ce urmează
 
 Lucruri conștient lăsate pentru pașii următori:
 
-- [ ] Înlocuirea conținutului placeholder (paginile juridice, o parte din
-      descrierile de specializări) cu textele reale, migrate din WordPress.
+- [ ] Preluarea textului integral, verbatim, pentru cele ~20 de articole marcate
+      `draft: true` și pentru biografiile scurte ale medicilor (Chiriac, Găină,
+      Voichescu, Petrica) — necesită acces direct la site-ul vechi (WebFetch a
+      fost blocat în acest mediu; vezi §8).
+- [ ] Recenzii reale, copiate din Google Business Profile (rating actual: ~4,2/5,
+      ~70 de recenzii), în locul celor 4 generice din `src/content/testimoniale/`.
 - [ ] Fotografiile medicilor și imaginile pentru articole.
-- [ ] Paginare pe `/noutati` (acum se afișează toate articolele).
-- [ ] Redirect-uri 301 din URL-urile vechi de WordPress (`vercel.json`),
-      obligatoriu la migrare ca să nu se piardă poziționarea în Google.
+- [ ] Datele financiare ale proiectului european (cod, valoare, perioadă exactă).
+- [ ] Paginare pe `/noutati` (acum se afișează toate articolele nepublicate ca draft).
+- [ ] Redirect-uri 301 din URL-urile vechi de WordPress (`vercel.json`) — vezi
+      tabelul din §8.
 - [ ] Verificarea fidelității față de Figma, secțiune cu secțiune, pe
       breakpoint-uri (structura și tokenii sunt puși, rafinarea vizuală urmează).
 - [ ] Google Tag Manager (câmpul există deja în `settings/site.json`).
