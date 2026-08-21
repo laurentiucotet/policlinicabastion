@@ -40,7 +40,7 @@ npm run dev               # site pe :4321, CMS pe :4321/admin/index.html
 | `npm run dev` | Pornește serverul GraphQL local al Tinei **și** `astro dev` |
 | `npm run dev:astro` | Doar Astro (fără CMS) — mai rapid când lucrezi la UI |
 | `npm run build` | Ce rulează Vercel: construiește panoul Tina (dacă există credențiale) + site-ul |
-| `npm run build:full` | Forțează și build-ul Tina — eșuează dacă lipsesc credențialele |
+| `npm run build:full` | Forțează build-ul Tina strict — eșuează dacă lipsesc credențialele sau branch-ul |
 | `npm run preview` | Servește build-ul de producție local |
 | `npm run check` | Verificare TypeScript / Astro |
 
@@ -69,6 +69,31 @@ pasul Tina și afișează un avertisment), dar `/admin` nu va exista. Poți deci
 faci primul deploy imediat și să configurezi TinaCloud după.
 
 ---
+
+## Branch-uri și TinaCloud
+
+TinaCloud indexează **doar branch-urile adăugate explicit** în proiect (implicit,
+branch-ul default). Vercel însă construiește fiecare branch. Rezultatul, pe un
+deploy de preview:
+
+```
+ERROR: Branch 'claude/...' is not on TinaCloud.
+Error: Branch is not on TinaCloud   errorCode: 'ERR_CLOUD_CHECK_FAILED'
+```
+
+`npm run build` tratează asta în funcție de mediu:
+
+| `VERCEL_ENV` | Comportament |
+| --- | --- |
+| `production` | `tinacms build` strict — orice problemă oprește deploy-ul |
+| `preview` sau local | `tinacms build --skip-cloud-checks`, iar dacă tot eșuează se continuă doar cu site-ul |
+
+Deci preview-urile nu mai pică niciodată din cauza asta. Pe un preview, `/admin`
+se construiește, dar poate citi conținut doar dacă branch-ul e indexat în
+TinaCloud — editarea se face pe producție.
+
+Ca să editezi de pe un branch anume, adaugă-l în TinaCloud, în lista de branch-uri
+a proiectului. Altfel, calea normală e să faci merge în branch-ul de producție.
 
 ## Deploy pe Vercel
 
