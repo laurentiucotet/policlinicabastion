@@ -110,7 +110,6 @@ Derivat direct din paginile din Figma.
 | `specializari` | `src/content/specializari` | `.mdx` | `/specializari/[slug]` |
 | `medici` | `src/content/medici` | `.mdx` | `/medici/[slug]` |
 | `afectiuni` | `src/content/afectiuni` | `.mdx` | `/afectiuni/[slug]` |
-| `interventii` | `src/content/interventii` | `.mdx` | `/interventii/[slug]` |
 | `servicii` | `src/content/servicii` | `.mdx` | `/servicii/[slug]` |
 | `articole` | `src/content/articole` | `.mdx` | `/noutati/[slug]` |
 | `categorii` | `src/content/categorii` | `.json` | `/noutati/categorie/[slug]` |
@@ -139,13 +138,12 @@ intervenții și noutăți.
 ```
 specializare ─┬─ medici           (medicul își declară specializările)
               ├─ afecțiuni        (afecțiunea își declară specializarea)
-              ├─ intervenții      (intervenția își declară specializarea)
               └─ servicii         (serviciul își declară specializarea)
 
-afecțiune ◄──────► intervenție    (relație bidirecțională, vezi mai jos)
-serviciu  ───────► intervenție    (serviciul „se efectuează ca" intervenție)
-serviciu  ───────► afecțiuni      (pentru ce este recomandat)
-articol   ───────► afecțiuni / intervenții
+afecțiune ◄──────► serviciu       (relație bidirecțională, vezi mai jos)
+serviciu  ───────► medici         (gol = toți medicii specializării)
+serviciu  ───────► servicii       (alternative cu aceeași indicație)
+articol   ───────► afecțiuni / servicii / proiecte europene
 ```
 
 - Un **medic** are una sau mai multe **specializări**.
@@ -153,23 +151,21 @@ articol   ───────► afecțiuni / intervenții
 - Un **articol** are o **categorie** și, opțional, un **autor** (medic).
 - O **afecțiune** aparține unei singure specializări — care devine și categoria
   ei în catalogul `/afecțiuni`.
-- O **intervenție** aparține unei specializări, tratează una sau mai multe
-  afecțiuni și poate declara explicit medicii care o efectuează. Dacă nu îi
+- Un **serviciu** este ce programează pacientul: o consultație, o investigație
+  sau o intervenție. Aparține unei specializări, tratează una sau mai multe
+  afecțiuni și poate declara explicit medicii care îl asigură. Dacă nu îi
   declară, pagina afișează toți medicii specializării.
-- Un **serviciu** este oferta comercială: ce programează pacientul. Când are un
-  protocol complet (biopsia fusion, ESWL, cistoscopia), serviciul trimite către
-  pagina intervenției, unde stau pregătirea, pașii și recuperarea.
 
 **Regula relațiilor bidirecționale.** O relație se declară o singură dată în
-CMS, dar se citește din ambele capete. Dacă intervenția „Biopsia fusion" declară
-că tratează „Cancerul de prostată", pagina afecțiunii o afișează automat, chiar
-dacă afecțiunea nu a listat-o ea. Helperele care fac asta sunt în
-`src/lib/content.ts` (`getInterventiiForAfectiune`, `getAfectiuniForInterventie`,
-`getMediciForInterventie`, …). Așa nu există relații „pe jumătate", oricine ar
+CMS, dar se citește din ambele capete. Dacă serviciul „Biopsia fusion" declară
+că tratează „Cancerul de prostată", pagina afecțiunii îl afișează automat, chiar
+dacă afecțiunea nu l-a listat ea. Helperele care fac asta sunt în
+`src/lib/content.ts` (`getServiciiForAfectiune`, `getAfectiuniForServiciu`,
+`getMediciForServiciu`, …). Așa nu există relații „pe jumătate", oricine ar
 edita din Tina.
 
 **Legătura cu articolele are și un mecanism automat.** Un articol poate declara
-explicit afecțiunile și intervențiile de care ține. Dacă nu o face,
+explicit afecțiunile și serviciile de care ține. Dacă nu o face,
 `getArticoleForEntity()` caută potriviri după titlu și cuvinte-cheie, reduse la
 rădăcini de 6 litere („prostata" → „prostat"), ca să treacă peste flexiunea din
 română. Rezultatul: relația funcționează din prima, fără ca editorul să fie
@@ -189,54 +185,98 @@ Pentru specializările unui medic folosim o listă de obiecte cu câte o referin
 
 ## 4bis. Catalogul medical și structura fixă a paginilor
 
-### Catalogul (`/afecțiuni`, `/intervenții`, `/servicii`)
+### De ce intervențiile nu sunt o colecție separată
 
-Cele trei pagini folosesc aceeași componentă, `components/catalog/CatalogBrowser.astro`:
-categorii în stânga (expandabile), căutare după cuvinte-cheie, carduri în dreapta.
+O consultație, o ecografie și o biopsie sunt același lucru din perspectiva
+pacientului: **ceva ce programează**. Diferă prin cât de mult protocol au (o
+consultație nu are anestezie, pași și recuperare; o biopsie are) și prin
+eticheta sub care apar.
+
+Prima variantă a acestui catalog le ținea separat — `interventii` și `servicii`
+— și a ieșit prost: biopsia fusion, ESWL și cistoscopia existau de două ori, ca
+două documente care trebuiau ținute în sincron manual. Acum există o singură
+colecție, `servicii`, cu un câmp `type` (Consultație / Investigație / Analize /
+Procedură / **Intervenție**), care este în același timp eticheta din catalog și
+filtrul din pagina `/servicii`.
+
+Consecință practică: câmpurile de protocol (`anesthesia`, `timeline`,
+`aftercare`, `risks`) rămân goale la o consultație, iar secțiunile lor pur și
+simplu nu se randează. Nimic nu trebuie duplicat.
+
+Vechile URL-uri `/interventii` și `/interventii/<slug>` redirecționează 301
+către `/servicii`, respectiv `/servicii/<slug>` (`astro.config.mjs`).
+
+### Prețuri
+
+Fiecare serviciu are un câmp `price` cu `from`, `to`, `currency` și `note`:
+
+| Completat în CMS | Afișat |
+| --- | --- |
+| `from: 350` | `350 lei` |
+| `from: 1500`, `to: 2500` | `1.500–2.500 lei` |
+| nimic | `La cerere` |
+
+Formatarea e într-un singur loc, `formatPrice()` din `src/lib/utils.ts`. Chip-ul
+de preț apare pe carduri **doar dacă prețul e completat** — „La cerere" pe toate
+cardurile ar fi doar zgomot. Pe pagina serviciului, prețul este primul câmp din
+bara de date esențiale, pentru că e prima întrebare a pacientului.
+
+### Catalogul (`/afecțiuni`, `/servicii`)
+
+Ambele pagini folosesc aceeași componentă, `components/catalog/CatalogBrowser.astro`:
+categorii în stânga (expandabile), filtre pe etichetă deasupra grilei (doar la
+servicii), căutare după cuvinte-cheie, carduri în dreapta.
 
 - **Categoriile sunt specializările.** Nu am introdus o colecție separată de
-  categorii: gruparea după specializare este și taxonomie, și relație. Un
-  filtru în plus ar fi însemnat încă o listă de întreținut în CMS, care s-ar
-  fi desincronizat de specializări.
+  categorii: gruparea după specializare este și taxonomie, și relație.
 - **Filtrarea se face în browser**, fără request suplimentar: toate intrările
-  sunt deja în HTML, scriptul doar ascunde ce nu se potrivește. La ~50 de
-  intrări, un index de căutare separat ar fi fost complexitate fără câștig.
-- **Deschiderea unei categorii o și selectează**, iar starea se reflectă în URL
-  (`/afectiuni?categorie=urologie`) — de aceea meniul din header poate trimite
-  direct în catalogul filtrat pe o specializare.
-- **Căutarea acoperă și `keywords`**, câmpul cu sinonime și termeni populari
-  („pietre la rinichi", „nu pot dormi") care nu apar pe pagină, dar sunt exact
-  ce scrie pacientul.
+  sunt deja în HTML, scriptul doar le ascunde.
+- **Căutarea acoperă și conținut care nu încape pe card**: `keywords`
+  (sinonime populare — „pietre la rinichi", „nu pot dormi"), simptome,
+  indicații și întrebările frecvente, puse într-un atribut `data-haystack`.
+- **Starea se reflectă în URL** (`/servicii?categorie=urologie&tip=interventie`),
+  deci meniul din header poate trimite direct în catalogul filtrat.
+- **O căutare nouă anulează categoria selectată.** Altfel, o categorie deschisă
+  mai devreme ar ascunde tăcut rezultate din alte specializări.
+
+⚠️ **Capcană rezolvată, de reținut.** Selecția categoriei ascultă `click`-ul pe
+`<summary>`, nu evenimentul `toggle` al lui `<details>`. Motivul: `toggle` se
+declanșează **asincron**, deci se declanșa și când scriptul deschidea singur
+categoriile în timpul unei căutări — iar handlerul interpreta asta drept „a ales
+utilizatorul categoria" și filtra rezultatele. Efectul vizibil era o căutare
+care „nu funcționează": scriai „prostata" și rămâneau doar rezultatele din
+ultima categorie deschisă automat.
 
 ### Structura paginilor
 
-Paginile de afecțiune și de intervenție au **aceleași secțiuni, în aceeași
+Paginile de afecțiune și de serviciu au **aceleași secțiuni, în aceeași
 ordine**, oricare ar fi subiectul. Secțiunile fără conținut sunt sărite, iar
 fundalul alternează automat între cele rămase (`toneOf()` în fiecare pagină).
 Din aceeași listă se generează și sub-navigația lipicioasă din capul paginii.
 
-| Afecțiune | Intervenție |
+| Afecțiune | Serviciu / intervenție |
 | --- | --- |
-| Despre | Ce este |
-| Simptome | Când este recomandată |
-| Cauze | Afecțiuni tratate |
-| Factori de risc | Contraindicații |
-| Cum se pune diagnosticul | Cum te pregătești |
-| Cum se tratează | **Cum decurge** (timeline numerotat) |
-| Intervenții care o tratează | După intervenție |
-| Servicii recomandate | Beneficii |
-| Când mergi la medic | Riscuri |
-| Prevenție | Întrebări frecvente |
-| Întrebări frecvente | Medici care o efectuează |
-| Medici · Specializare · Noutăți · Afecțiuni înrudite | Specializare · Noutăți · Serviciu · Alternative |
+| Despre | Despre |
+| Simptome | Ce include |
+| Cauze | Când este recomandat |
+| Factori de risc | Afecțiuni tratate |
+| Cum se pune diagnosticul | Contraindicații |
+| Cum se tratează | Cum te pregătești |
+| Intervenții care o tratează | **Cum decurge** (timeline numerotat) |
+| Consultații și investigații | După intervenție |
+| Când mergi la medic | Beneficii |
+| Prevenție | Riscuri |
+| Întrebări frecvente | Întrebări frecvente |
+| Medici · Specializare · Noutăți · Afecțiuni înrudite | Medici · Specializare · Noutăți · Alternative |
 
 Blocurile sunt componente reutilizabile în `components/entity/`: `PointsSection`,
 `NamedListSection`, `Timeline`, `FaqSection`, `KeyFacts`, `AnchorNav`,
-`SpecialityCallout`, `RelatedCards`, `RelatedArticles`. Adăugarea unei secțiuni
-noi înseamnă un câmp în ambele scheme și o linie în lista de secțiuni.
+`SpecialityCallout`, `RelatedCards`, `RelatedArticles`. Aceleași blocuri
+construiesc și paginile de proiect european (§4quater).
 
 Fiecare pagină emite și JSON-LD potrivit tipului (`MedicalCondition`,
-`MedicalProcedure`, `FAQPage`, `BreadcrumbList`) — vezi `src/lib/schema.ts`.
+`MedicalProcedure` / `MedicalTest`, `FAQPage`, `BreadcrumbList`) — vezi
+`src/lib/schema.ts`.
 
 ### Offsetul ancorelor
 
@@ -251,16 +291,39 @@ la prima schimbare de font sau de breakpoint.
 ## 4ter. Căutarea
 
 Căutarea **nu este o pagină**, ci o funcție disponibilă în header, pe orice
-pagină (`components/layout/SearchBox.astro`): butonul deschide un panou cu
-sugestii live. Enter duce la `/rezultate-cautare`, singurul loc unde căutarea are
+pagină (`components/layout/SearchBox.astro`): butonul — doar iconița de lupă,
+fără etichetă — deschide un panou cu sugestii live. Enter duce la `/rezultate-cautare`, singurul loc unde căutarea are
 pagină proprie — cu filtre pe tip de rezultat.
 
 Ambele consumă `/cautare-index.json`, generat la build din toate colecțiile
-(specializări, afecțiuni, intervenții, servicii, medici, articole, proiecte,
-pagini), cu `keywords` incluse. Rezultatele sunt ordonate după relevanță:
+(specializări, afecțiuni, servicii, medici, articole, proiecte, pagini), cu
+`keywords` incluse. Serviciile intră în index cu tipul lor real — „Intervenție"
+sau „Serviciu" — ca filtrul din pagina de rezultate să fie util. Rezultatele sunt ordonate după relevanță:
 potrivirile din titlu înaintea celor din descriere sau din cuvinte-cheie.
 
 Vechiul URL `/cautare` redirecționează către `/rezultate-cautare` (`astro.config.mjs`).
+
+---
+
+## 4quater. Proiectele europene
+
+Fiecare proiect are pagină proprie, construită din aceleași blocuri ca restul
+catalogului: fir de navigare, etichetă de stadiu, bara de date de identificare,
+descriere, obiective, rezultate, galerie și **noutăți**.
+
+- **Stadiul** (`status`) este `in-derulare` sau `incheiat`. Se afișează ca
+  etichetă pe card și în capul paginii și, în listă, grupează proiectele în
+  „Proiecte în derulare" și „Proiecte încheiate".
+- **Datele de identificare** (cod SMIS, număr de contract, perioadă de
+  implementare, beneficiar, program, valoare totală și nerambursabilă) au
+  câmpuri proprii, nu o listă liberă — sunt obligatorii pentru respectarea
+  regulilor de vizibilitate a finanțării. `details` a rămas, pentru orice câmp
+  în plus.
+- **Noutățile** se leagă din articol (câmpul „Proiecte europene legate") sau de
+  pe proiect (`articles`). Ca peste tot, relația se citește din ambele capete.
+- Nota obligatorie („Conținutul acestui material nu reprezintă în mod
+  obligatoriu poziția oficială a Uniunii Europene…") apare și în listă, și pe
+  fiecare pagină de proiect.
 
 ---
 
@@ -402,8 +465,8 @@ căutare directă.
 
 ### ⚠️ Conținutul medical din catalog trebuie validat înainte de lansare
 
-Cele 16 afecțiuni, 7 intervenții și 11 servicii din `src/content/afectiuni`,
-`src/content/interventii` și `src/content/servicii` au fost **redactate în acest
+Cele 16 afecțiuni și 15 servicii (dintre care 7 intervenții) din
+`src/content/afectiuni` și `src/content/servicii` au fost **redactate în acest
 repo**, nu preluate din site-ul vechi. Sunt scrise pornind de la articolele
 existente și de la serviciile declarate pe fiecare specializare, cu formulări
 prudente și fără promisiuni de rezultat.
@@ -414,6 +477,10 @@ respective**, cu atenție specială la:
 
 - lista de intervenții — trebuie să conțină exact ce se efectuează în clinică,
   nu ce se efectuează în general în specialitate;
+- **prețurile**, care momentan nu sunt completate deloc: câmpul `price` există
+  pe fiecare serviciu, dar e gol, iar pagina afișează „La cerere". Prețurile nu
+  au fost inventate intenționat — o cifră greșită pe site-ul unei clinici e mai
+  rea decât lipsa ei;
 - datele esențiale (durată, anestezie, regim, recuperare) și pașii din timeline,
   care trebuie să reflecte protocolul real al clinicii;
 - decontarea CNAS (`cnas: true/false`) pentru fiecare serviciu;
@@ -440,6 +507,8 @@ poziționarea în Google:
 | `/diabet/` | `/specializari/diabet-si-nutritie` |
 | `/chirurgie-generala/` | `/specializari/chirurgie-generala` |
 | `/servicii-casa/` | `/servicii-decontate-cnas` |
+| `/interventii/` (URL intern, versiune anterioară) | `/servicii` |
+| `/interventii/<slug>` (URL intern, versiune anterioară) | `/servicii/<slug>` |
 | `/medici/asist-univ-dr-latcu-silviu-constantin/` | `/medici/asist-univ-dr-latcu-silviu-constantin` (identic) |
 | `/medici/dr-chiriac-ionel/` | `/medici/dr-chiriac-ionel` (identic) |
 | `/medici/dr-gaina-adriana-margareta/` | `/medici/dr-gaina-adriana-margareta` (identic) |
@@ -471,10 +540,19 @@ Lucruri conștient lăsate pentru pașii următori:
 - [ ] Verificarea fidelității față de Figma, secțiune cu secțiune, pe
       breakpoint-uri (structura și tokenii sunt puși, rafinarea vizuală urmează).
 - [ ] Google Tag Manager (câmpul există deja în `settings/site.json`).
-- [ ] **Validarea medicală a catalogului** (afecțiuni, intervenții, servicii) —
+- [ ] **Validarea medicală a catalogului** (afecțiuni, servicii, intervenții) —
       vezi avertismentul din §8. Blocant pentru lansare.
+- [ ] **Prețurile serviciilor** — câmpul `price` există pe fiecare serviciu, dar
+      este gol; până la completare, pagina afișează „La cerere". Blocant pentru
+      lansare, dacă se dorește afișarea prețurilor.
+- [ ] **Al doilea proiect european** — `proiect-nou-sablon` este o intrare-șablon
+      marcată ciornă (nu apare pe site-ul public). Se completează cu datele reale
+      ale următorului proiect, apoi se debifează „Ciornă". Datele de identificare
+      ale proiectului existent (cod SMIS, contract, valoare, perioadă) sunt tot
+      `DE COMPLETAT ÎN CMS`.
 - [ ] Redirect-uri 301 și pentru paginile de catalog, dacă site-ul vechi are
       URL-uri echivalente pentru servicii.
-- [ ] Fotografii pentru paginile de intervenții (câmpul `cover` există deja).
-- [ ] Etichetarea articolelor existente cu afecțiunile și intervențiile de care
-      țin — momentan legătura se face automat, după cuvinte-cheie (§4).
+- [ ] Fotografii pentru paginile de servicii și de proiecte (câmpul `cover`
+      există deja pe ambele).
+- [ ] Etichetarea articolelor existente cu afecțiunile, serviciile și proiectele
+      de care țin — momentan legătura se face automat, după cuvinte-cheie (§4).

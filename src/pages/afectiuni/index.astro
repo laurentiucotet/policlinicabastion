@@ -23,6 +23,13 @@ const items: CatalogItem[] = afectiuni.map((item) => ({
   href: `/afectiuni/${item.id}`,
   groupId: item.data.speciality.id,
   keywords: [...item.data.keywords, ...item.data.alsoKnownAs],
+  // Cautarea acopera si continut care nu incape pe card.
+  searchText: [
+    ...item.data.symptoms,
+    ...item.data.diagnosis.map((entry) => entry.name),
+    ...item.data.treatments.map((entry) => entry.name),
+    ...item.data.faq.map((entry) => entry.question),
+  ].join(' '),
   meta: item.data.alsoKnownAs.slice(0, 2),
 }));
 ---

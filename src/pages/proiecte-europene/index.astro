@@ -3,43 +3,74 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
 import SimpleHeading from '../../components/ui/SimpleHeading.astro';
 import ProjectCard from '../../components/cards/ProjectCard.astro';
-import LatestNews from '../../components/sections/LatestNews.astro';
+import CtaBand from '../../components/sections/CtaBand.astro';
 import { getProiecte } from '../../lib/content';
+import { home } from '../../lib/site';
 
 const projects = await getProiecte();
+
+/* Proiectele se afiseaza grupate pe stadiu: cele in derulare primele, pentru ca
+ * acolo apar noutati, apoi cele incheiate, care raman publice ca arhiva. */
+const groups = [
+  {
+    id: 'in-derulare',
+    title: 'Proiecte în derulare',
+    intro:
+      'Proiecte aflate în implementare. Fiecare are pagină proprie, cu obiectivele, perioada de implementare, datele de identificare și noutățile publicate pe parcurs.',
+    items: projects.filter((project) => project.data.status === 'in-derulare'),
+  },
+  {
+    id: 'incheiate',
+    title: 'Proiecte încheiate',
+    intro: 'Proiecte finalizate, ale căror rezultate se regăsesc în dotarea actuală a clinicii.',
+    items: projects.filter((project) => project.data.status === 'incheiat'),
+  },
+].filter((group) => group.items.length > 0);
 ---
 
 <BaseLayout
   title="Proiecte Europene"
-  description="Proiectele cu finanțare europeană derulate de Policlinica Bastion Timișoara."
+  description="Proiectele cu finanțare europeană derulate de Policlinica Bastion Timișoara: obiective, perioadă de implementare, coduri SMIS și rezultate."
 >
   <PageTitleHeader
     badge="Proiecte Europene"
     title="Proiecte Europene"
-    subtitle="Investim constant în modernizarea soluțiilor și a aparaturii medicale."
+    subtitle="Policlinica Bastion investește constant în modernizarea aparaturii și a serviciilor medicale, inclusiv prin proiecte cu finanțare europeană."
   />
 
-  <section class="bg-surface py-12">
-    <div class="container-page">
-      <SimpleHeading title="Proiecte în derulare" />
-      <p class="text-ink-muted mt-6 max-w-4xl text-base leading-6">
-        Policlinica Bastion investește constant în modernizarea soluțiilor și a aparaturii medicale, pentru a oferi
-        pacienților servicii de cea mai bună calitate, bazate pe tehnologie de ultimă generație.
-      </p>
+  {
+    groups.length > 0 ? (
+      groups.map((group, index) => (
+        <section id={group.id} class:list={[index % 2 === 0 ? 'bg-surface' : 'bg-surface-alt', 'py-12']}>
+          <div class="container-page">
+            <SimpleHeading title={group.title} />
+            <p class="text-ink-muted mt-6 max-w-4xl text-base leading-7">{group.intro}</p>
 
-      {
-        projects.length > 0 ? (
-          <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => (
-              <ProjectCard project={project} />
-            ))}
+            <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {group.items.map((project) => (
+                <ProjectCard project={project} />
+              ))}
+            </div>
           </div>
-        ) : (
-          <p class="text-ink-muted mt-8">Momentan nu există proiecte publicate.</p>
-        )
-      }
+        </section>
+      ))
+    ) : (
+      <section class="bg-surface py-12">
+        <div class="container-page">
+          <p class="text-ink-muted">Momentan nu există proiecte publicate.</p>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="bg-surface-alt py-12">
+    <div class="container-page">
+      <p class="border-stroke text-ink-subtle bg-surface rounded-2xl border p-6 text-sm leading-6">
+        Conținutul acestor materiale nu reprezintă în mod obligatoriu poziția oficială a Uniunii Europene sau a
+        Guvernului României.
+      </p>
     </div>
   </section>
 
-  <LatestNews title="Noutăți despre proiecte" subtitle="Ultimele articole publicate" tone="alt" count={3} />
+  <CtaBand title={home.ctaSecondary.title} text={home.ctaSecondary.text} cta={home.ctaSecondary.cta} />
 </BaseLayout>

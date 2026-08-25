@@ -3,9 +3,11 @@ import { render, getEntry } from 'astro:content';
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import EntityHeader from '../../components/entity/EntityHeader.astro';
+import AnchorNav from '../../components/entity/AnchorNav.astro';
 import KeyFacts from '../../components/entity/KeyFacts.astro';
 import NamedListSection from '../../components/entity/NamedListSection.astro';
 import PointsSection from '../../components/entity/PointsSection.astro';
+import Timeline from '../../components/entity/Timeline.astro';
 import FaqSection from '../../components/entity/FaqSection.astro';
 import SpecialityCallout from '../../components/entity/SpecialityCallout.astro';
 import RelatedCards from '../../components/entity/RelatedCards.astro';
@@ -14,14 +16,16 @@ import SimpleHeading from '../../components/ui/SimpleHeading.astro';
 import SectionHeading from '../../components/ui/SectionHeading.astro';
 import DoctorCard from '../../components/cards/DoctorCard.astro';
 import CtaBand from '../../components/sections/CtaBand.astro';
-import Button from '../../components/ui/Button.astro';
-import Icon from '../../components/ui/Icon.astro';
 import {
+  getAfectiuniForServiciu,
   getArticoleForEntity,
   getMediciForServiciu,
   getServicii,
 } from '../../lib/content';
+import { serviceTypes } from '../../lib/catalog';
 import { breadcrumbSchema, faqSchema, serviceSchema } from '../../lib/schema';
+import { formatPrice, hasPrice } from '../../lib/utils';
+import type { Price } from '../../lib/utils';
 import { home, site } from '../../lib/site';
 
 export const getStaticPaths = (async () => {
@@ -31,34 +35,77 @@ export const getStaticPaths = (async () => {
 
 const { serviciu } = Astro.props;
 const { Content } = await render(serviciu);
-const { title, subtitle, badge, shortDescription, type, cnas, duration, quickFacts, includes, preparation, faq, seo } =
-  serviciu.data;
-
-const typeLabels = {
-  consultatie: 'Consultație',
-  investigatie: 'Investigație',
-  procedura: 'Procedură',
-  analize: 'Analize',
-} as const;
+const {
+  title,
+  subtitle,
+  badge,
+  shortDescription,
+  type,
+  price,
+  cnas,
+  duration,
+  anesthesia,
+  admission,
+  recovery,
+  quickFacts,
+  includes,
+  indications,
+  contraindications,
+  preparation,
+  timeline,
+  aftercare,
+  benefits,
+  risks,
+  faq,
+  alternatives,
+  seo,
+} = serviciu.data;
 
 const speciality = await getEntry(serviciu.data.speciality);
-const intervention = serviciu.data.intervention ? await getEntry(serviciu.data.intervention) : undefined;
-
-const [doctors, articles] = await Promise.all([
+const [afectiuni, doctors, articles] = await Promise.all([
+  getAfectiuniForServiciu(serviciu),
   getMediciForServiciu(serviciu),
-  getArticoleForEntity(serviciu, 'interventions'),
+  getArticoleForEntity(serviciu, 'services'),
 ]);
 
-const conditions = (
-  await Promise.all(serviciu.data.conditions.map((ref) => getEntry(ref)))
+const alternativeEntries = (
+  await Promise.all(alternatives.map((ref) => getEntry(ref)))
 ).filter((item): item is NonNullable<typeof item> => Boolean(item) && (import.meta.env.DEV || !item!.data.draft));
 
+/** Datele esentiale. Pretul e primul: e prima intrebare a pacientului. */
 const facts = [
-  { label: 'Tip serviciu', value: typeLabels[type] },
+  { label: 'Preț', value: formatPrice(price) },
+  { label: 'Tip', value: serviceTypes[type] },
   duration && { label: 'Durată', value: duration },
   { label: 'Decontare CNAS', value: cnas ? 'Da, cu bilet de trimitere' : 'Nu, serviciu cu plată' },
+  anesthesia && { label: 'Anestezie', value: anesthesia },
+  admission && { label: 'Regim', value: admission },
+  recovery && { label: 'Recuperare', value: recovery },
   ...quickFacts,
 ].filter((fact): fact is { label: string; value: string } => Boolean(fact));
+
+/* Structura paginii: aceleasi sectiuni, in aceeasi ordine, pentru toate
+ * serviciile. O consultatie completeaza doar primele, o interventie le are pe
+ * toate. Sectiunile goale sunt sarite, iar fundalul alterneaza intre cele
+ * ramase. */
+const sections = [
+  { id: 'despre', label: 'Despre', present: true },
+  { id: 'ce-include', label: 'Ce include', present: includes.length > 0 },
+  { id: 'indicatii', label: 'Când este recomandat', present: indications.length > 0 },
+  { id: 'afectiuni', label: 'Afecțiuni tratate', present: afectiuni.length > 0 },
+  { id: 'contraindicatii', label: 'Contraindicații', present: contraindications.length > 0 },
+  { id: 'pregatire', label: 'Pregătire', present: preparation.length > 0 },
+  { id: 'cum-decurge', label: 'Cum decurge', present: timeline.length > 0 },
+  { id: 'dupa-interventie', label: 'După intervenție', present: aftercare.length > 0 },
+  { id: 'beneficii', label: 'Beneficii', present: benefits.length > 0 },
+  { id: 'riscuri', label: 'Riscuri', present: risks.length > 0 },
+  { id: 'intrebari-frecvente', label: 'Întrebări frecvente', present: faq.length > 0 },
+  { id: 'medici', label: 'Medici', present: doctors.length > 0 },
+  { id: 'noutati', label: 'Noutăți', present: articles.length > 0 },
+].filter((section) => section.present);
+
+const tones = new Map(sections.map((section, index) => [section.id, index % 2 === 0 ? 'white' : 'alt'] as const));
+const toneOf = (id: string): 'white' | 'alt' => tones.get(id) ?? 'white';
 
 const origin = Astro.site?.toString() ?? Astro.url.origin;
 const schema = [
@@ -74,9 +121,13 @@ const schema = [
   faqSchema(faq),
 ].filter(Boolean) as Record<string, unknown>[];
 
-const tags: Array<{ label: string; href?: string }> = [{ label: typeLabels[type] }];
+const tags: Array<{ label: string; href?: string }> = [{ label: serviceTypes[type] }];
 if (speciality) tags.unshift({ label: speciality.data.title, href: `/specializari/${speciality.id}` });
 if (cnas) tags.push({ label: 'Decontat CNAS', href: '/servicii-decontate-cnas' });
+if (hasPrice(price)) tags.push({ label: formatPrice(price) });
+
+/** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
+const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : undefined);
 ---
 
 <BaseLayout
@@ -97,63 +148,101 @@ if (cnas) tags.push({ label: 'Decontat CNAS', href: '/servicii-decontate-cnas' }
     tags={tags}
   />
 
-  <KeyFacts facts={facts} />
+  <AnchorNav items={sections.map(({ id, label }) => ({ id, label }))} />
 
-  <section class="bg-surface py-12">
+  <KeyFacts facts={facts} note={price?.note} />
+
+  <section id="despre" class:list={[toneOf('despre') === 'alt' ? 'bg-surface-alt' : 'bg-surface', 'py-12']}>
     <div class="container-page">
-      <SimpleHeading title="Despre serviciu" />
+      <SimpleHeading title={`Despre ${title.toLowerCase()}`} />
       <div class="prose-bastion mt-8 max-w-3xl">
         <Content />
       </div>
     </div>
   </section>
 
-  {
-    intervention && (
-      <section class="bg-surface-alt py-12">
-        <div class="container-page">
-          <div class="border-brand/30 bg-brand-50 flex flex-col gap-4 rounded-2xl border p-6 sm:flex-row sm:items-center">
-            <div class="flex-1">
-              <p class="text-chip-ink text-xs leading-4 font-semibold">Serviciul se efectuează ca intervenție</p>
-              <h2 class="text-ink mt-1 text-xl leading-7 font-bold">{intervention.data.title}</h2>
-              <p class="text-ink-muted mt-1 text-sm leading-6 text-pretty">
-                Protocolul complet — indicații, pregătire, cum decurge pas cu pas, recuperare și întrebări frecvente —
-                este descris pe pagina intervenției.
-              </p>
-            </div>
-            <Button href={`/interventii/${intervention.id}`} class="shrink-0">
-              Vezi protocolul
-              <Icon name="arrow-right" size={16} />
-            </Button>
-          </div>
-        </div>
-      </section>
-    )
-  }
+  <NamedListSection id="ce-include" title="Ce include" items={includes} tone={toneOf('ce-include')} />
 
-  <NamedListSection id="ce-include" title="Ce include" items={includes} />
-
-  <PointsSection id="pregatire" title="Cum te pregătești" items={preparation} variant="info" tone="alt" columns={1} />
+  <PointsSection
+    id="indicatii"
+    title="Când este recomandat"
+    intro="Indicația se stabilește de medic, după consultație și investigații. Lista de mai jos este orientativă."
+    items={indications}
+    variant="check"
+    tone={toneOf('indicatii')}
+  />
 
   <RelatedCards
+    id="afectiuni"
     badge="Afecțiuni"
-    title="Când este recomandat"
-    subtitle="Afecțiunile pentru care acest serviciu este indicat."
-    items={conditions.map((item) => ({
+    title="Afecțiuni pentru care este recomandat"
+    tone={toneOf('afectiuni')}
+    items={afectiuni.map((item) => ({
       href: `/afectiuni/${item.id}`,
       title: item.data.title,
       description: item.data.shortDescription,
       eyebrow: 'Afecțiune',
     }))}
+    cta={{ label: 'Vezi toate afecțiunile', href: '/afectiuni' }}
   />
 
-  <FaqSection items={faq} tone="alt" />
+  <PointsSection
+    id="contraindicatii"
+    title="Contraindicații"
+    intro="Situații în care intervenția se amână sau se înlocuiește cu o alternativă. Discută întotdeauna cu medicul întreaga ta medicație și istoricul medical."
+    items={contraindications}
+    variant="alert"
+    tone={toneOf('contraindicatii')}
+  />
+
+  <PointsSection
+    id="pregatire"
+    title="Cum te pregătești"
+    items={preparation}
+    variant="info"
+    tone={toneOf('pregatire')}
+    columns={1}
+  />
+
+  <Timeline
+    id="cum-decurge"
+    title="Cum decurge"
+    intro="Pas cu pas, de la sosirea în clinică până la externare."
+    steps={timeline}
+    tone={toneOf('cum-decurge')}
+  />
+
+  <PointsSection
+    id="dupa-interventie"
+    title="După intervenție"
+    items={aftercare}
+    variant="info"
+    tone={toneOf('dupa-interventie')}
+    columns={1}
+  />
+
+  <PointsSection id="beneficii" title="Beneficii" items={benefits} variant="check" tone={toneOf('beneficii')} />
+
+  <PointsSection
+    id="riscuri"
+    title="Riscuri și posibile complicații"
+    intro="Orice intervenție are riscuri. Sunt rare, iar echipa le previne activ — dar trebuie să le cunoști înainte de a-ți da acordul."
+    items={risks}
+    variant="alert"
+    tone={toneOf('riscuri')}
+  />
+
+  <FaqSection items={faq} tone={toneOf('intrebari-frecvente')} />
 
   {
     doctors.length > 0 && (
-      <section class="bg-surface py-12">
+      <section id="medici" class:list={[toneOf('medici') === 'alt' ? 'bg-surface-alt' : 'bg-surface', 'py-12']}>
         <div class="container-page flex flex-col items-center gap-8">
-          <SectionHeading badge="Medici" title="Cine asigură acest serviciu" />
+          <SectionHeading
+            badge="Medici"
+            title="Cine asigură acest serviciu"
+            subtitle={speciality ? `Echipa de ${speciality.data.title.toLowerCase()} a Policlinicii Bastion.` : undefined}
+          />
           <div class="grid w-full grid-cols-2 gap-4 lg:grid-cols-4">
             {doctors.map((doctor) => (
               <DoctorCard doctor={doctor} />
@@ -166,7 +255,21 @@ if (cnas) tags.push({ label: 'Decontat CNAS', href: '/servicii-decontate-cnas' }
 
   <SpecialityCallout speciality={speciality!} doctorsCount={doctors.length} tone="alt" />
 
-  <RelatedArticles posts={articles} tone="white" />
+  <RelatedArticles posts={articles} tone={toneOf('noutati')} />
+
+  <RelatedCards
+    title="Alternative"
+    subtitle="Alte servicii cu aceeași indicație. Alegerea se face împreună cu medicul."
+    tone="white"
+    items={alternativeEntries.map((item) => ({
+      href: `/servicii/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: serviceTypes[item.data.type],
+      meta: [priceChip(item.data.price)].filter(Boolean) as string[],
+    }))}
+    cta={{ label: 'Vezi toate serviciile', href: '/servicii' }}
+  />
 
   <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} tone="alt" />
 </BaseLayout>

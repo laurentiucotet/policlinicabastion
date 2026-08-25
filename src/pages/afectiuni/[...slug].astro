@@ -14,13 +14,10 @@ import RelatedArticles from '../../components/entity/RelatedArticles.astro';
 import SimpleHeading from '../../components/ui/SimpleHeading.astro';
 import TeamGrid from '../../components/sections/TeamGrid.astro';
 import CtaBand from '../../components/sections/CtaBand.astro';
-import {
-  getAfectiuni,
-  getArticoleForEntity,
-  getInterventiiForAfectiune,
-  getMediciBySpecialitate,
-  getServiciiForAfectiune,
-} from '../../lib/content';
+import { getAfectiuni, getArticoleForEntity, getMediciBySpecialitate, getServiciiForAfectiune } from '../../lib/content';
+import { serviceTypes } from '../../lib/catalog';
+import { formatPrice, hasPrice } from '../../lib/utils';
+import type { Price } from '../../lib/utils';
 import { breadcrumbSchema, conditionSchema, faqSchema } from '../../lib/schema';
 import { home } from '../../lib/site';
 
@@ -51,12 +48,16 @@ const {
 } = afectiune.data;
 
 const speciality = await getEntry(afectiune.data.speciality);
-const [interventii, servicii, doctors, articles] = await Promise.all([
-  getInterventiiForAfectiune(afectiune),
+const [servicii, doctors, articles] = await Promise.all([
   getServiciiForAfectiune(afectiune),
   getMediciBySpecialitate(afectiune.data.speciality.id),
   getArticoleForEntity(afectiune, 'conditions'),
 ]);
+
+// Intervențiile sunt servicii cu eticheta `interventie` - le afisam separat,
+// pentru ca ele sunt raspunsul la "cum se rezolva", nu la "ce programez".
+const interventii = servicii.filter((item) => item.data.type === 'interventie');
+const alteServicii = servicii.filter((item) => item.data.type !== 'interventie');
 
 const relatedConditions = (
   await Promise.all(related.map((ref) => getEntry(ref)))
@@ -73,7 +74,7 @@ const sections = [
   { id: 'diagnostic', label: 'Diagnostic', present: diagnosis.length > 0 },
   { id: 'tratament', label: 'Cum se tratează', present: treatments.length > 0 },
   { id: 'interventii', label: 'Intervenții', present: interventii.length > 0 },
-  { id: 'servicii', label: 'Servicii', present: servicii.length > 0 },
+  { id: 'servicii', label: 'Consultații și investigații', present: alteServicii.length > 0 },
   { id: 'cand-la-medic', label: 'Când mergi la medic', present: whenToSeeDoctor.length > 0 },
   { id: 'preventie', label: 'Prevenție', present: prevention.length > 0 },
   { id: 'intrebari-frecvente', label: 'Întrebări frecvente', present: faq.length > 0 },
@@ -97,6 +98,9 @@ const schema = [
   ),
   faqSchema(faq),
 ].filter(Boolean) as Record<string, unknown>[];
+
+/** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
+const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : undefined);
 ---
 
 <BaseLayout
@@ -175,27 +179,32 @@ const schema = [
     subtitle="Protocolul complet — indicații, pregătire, cum decurge pas cu pas și recuperare — este descris pe pagina fiecărei intervenții."
     tone={toneOf('interventii')}
     items={interventii.map((item) => ({
-      href: `/interventii/${item.id}`,
+      href: `/servicii/${item.id}`,
       title: item.data.title,
       description: item.data.shortDescription,
       eyebrow: 'Intervenție',
-      meta: [item.data.admission, item.data.anesthesia].filter((value): value is string => Boolean(value)),
+      meta: [priceChip(item.data.price), item.data.admission, item.data.anesthesia].filter(
+        (value): value is string => Boolean(value),
+      ),
     }))}
-    cta={{ label: 'Vezi toate intervențiile', href: '/interventii' }}
+    cta={{ label: 'Vezi toate intervențiile', href: '/servicii?tip=interventie' }}
   />
 
   <RelatedCards
     id="servicii"
     badge="Servicii"
-    title="Servicii recomandate"
+    title="Consultații și investigații recomandate"
     tone={toneOf('servicii')}
-    items={servicii.map((item) => ({
+    items={alteServicii.map((item) => ({
       href: `/servicii/${item.id}`,
       title: item.data.title,
       description: item.data.shortDescription,
-      eyebrow: 'Serviciu',
-      meta: item.data.cnas ? ['Decontat CNAS'] : [],
+      eyebrow: serviceTypes[item.data.type],
+      meta: [priceChip(item.data.price), item.data.cnas ? 'Decontat CNAS' : undefined].filter(
+        (value): value is string => Boolean(value),
+      ),
     }))}
+    cta={{ label: 'Vezi toate serviciile', href: '/servicii' }}
   />
 
   <PointsSection

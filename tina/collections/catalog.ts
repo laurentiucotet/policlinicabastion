@@ -2,12 +2,15 @@ import type { Collection, TinaField } from 'tinacms';
 import { draftField, orderField, seoField, slugify } from './shared';
 
 /* ---------------------------------------------------------------------------
- * Catalogul medical: afectiuni, interventii si servicii.
+ * Catalogul medical: afectiuni si servicii.
  *
- * Toate trei au aceeasi logica: fiecare document e o pagina cu structura fixa,
- * grupata in catalog dupa specializare. Relatiile (ce interventie trateaza ce
- * afectiune, ce serviciu se face prin ce interventie) se declara o singura
- * data, dar site-ul le citeste din ambele capete - vezi src/lib/content.ts.
+ * Ambele au aceeasi logica: fiecare document e o pagina cu structura fixa,
+ * grupata in catalog dupa specializare. Interventiile nu sunt o colectie
+ * separata - sunt servicii cu eticheta `interventie`, pentru ca sunt acelasi
+ * tip de lucru: ceva ce pacientul programeaza.
+ *
+ * Relatiile se declara o singura data, dar site-ul le citeste din ambele
+ * capete - vezi src/lib/content.ts.
  * ------------------------------------------------------------------------- */
 
 /** `reference` nu suporta `list: true`, deci lista de referinte = lista de obiecte. */
@@ -127,10 +130,10 @@ export const afectiuni: Collection = {
     namedListField('diagnosis', 'Cum se pune diagnosticul', 'Investigația + ce arată.'),
     namedListField('treatments', 'Cum se tratează', 'Opțiuni conservatoare și medicamentoase.'),
     referenceList(
-      'interventions',
-      'Intervenții care o tratează',
-      ['interventii'],
-      'Apar ca linkuri pe pagina afecțiunii. Nu e nevoie să le adaugi și pe intervenție.',
+      'services',
+      'Servicii și intervenții care o tratează',
+      ['servicii'],
+      'Apar ca linkuri pe pagina afecțiunii. Nu e nevoie să le adaugi și pe serviciu.',
     ),
     textListField('whenToSeeDoctor', 'Când mergi la medic'),
     textListField('prevention', 'Prevenție'),
@@ -143,13 +146,42 @@ export const afectiuni: Collection = {
   ],
 };
 
-export const interventii: Collection = {
-  name: 'interventii',
-  label: 'Intervenții',
-  path: 'src/content/interventii',
+const priceField: TinaField = {
+  type: 'object',
+  name: 'price',
+  label: 'Preț',
+  description: 'Lasă gol pentru „La cerere". Completează doar „De la" pentru un preț fix.',
+  fields: [
+    { type: 'number', name: 'from', label: 'De la (sau preț fix)' },
+    { type: 'number', name: 'to', label: 'Până la', description: 'Doar dacă prețul este un interval.' },
+    { type: 'string', name: 'currency', label: 'Monedă', description: 'Implicit: lei.' },
+    {
+      type: 'string',
+      name: 'note',
+      label: 'Observație',
+      description: 'Ex: „Prețul include consultația și examenul histopatologic."',
+      ui: { component: 'textarea' },
+    },
+  ],
+};
+
+/**
+ * Servicii — catalogul unificat.
+ *
+ * O consultație, o investigație și o intervenție sunt același tip de lucru:
+ * ceva ce pacientul programează. Diferă prin eticheta „Tip serviciu" și prin
+ * cât din protocol e completat. Câmpurile de protocol (anestezie, pași,
+ * recuperare, riscuri) rămân goale la o consultație — secțiunile lor pur și
+ * simplu nu apar pe pagină.
+ */
+export const servicii: Collection = {
+  name: 'servicii',
+  label: 'Servicii și intervenții',
+  path: 'src/content/servicii',
   format: 'mdx',
+  defaultItem: () => ({ type: 'consultatie', badge: 'Servicii' }),
   ui: {
-    router: ({ document }) => `/interventii/${document._sys.filename}`,
+    router: ({ document }) => `/servicii/${document._sys.filename}`,
     filename: { slugify: (values) => slugify(values) },
   },
   fields: [
@@ -160,21 +192,38 @@ export const interventii: Collection = {
       type: 'string',
       name: 'shortDescription',
       label: 'Descriere scurtă',
+      description: 'Un rând, afișat pe cardul din catalog și în rezultatele căutării.',
       required: true,
       ui: { component: 'textarea' },
+    },
+    {
+      type: 'string',
+      name: 'type',
+      label: 'Tip serviciu',
+      description: 'Eticheta din catalog. „Intervenție" e cea care primește protocolul complet.',
+      options: [
+        { value: 'consultatie', label: 'Consultație' },
+        { value: 'investigatie', label: 'Investigație' },
+        { value: 'analize', label: 'Analize' },
+        { value: 'procedura', label: 'Procedură' },
+        { value: 'interventie', label: 'Intervenție' },
+      ],
     },
     specialityField,
     keywordsField,
     { type: 'image', name: 'cover', label: 'Imagine' },
+    priceField,
+    { type: 'boolean', name: 'cnas', label: 'Decontat prin CNAS' },
     { type: 'string', name: 'duration', label: 'Durată', description: 'Ex: 20–30 de minute' },
-    { type: 'string', name: 'anesthesia', label: 'Anestezie', description: 'Ex: anestezie locală' },
+    { type: 'string', name: 'anesthesia', label: 'Anestezie', description: 'Doar la intervenții.' },
     { type: 'string', name: 'admission', label: 'Regim', description: 'Ex: ambulatoriu (fără internare)' },
     { type: 'string', name: 'recovery', label: 'Recuperare', description: 'Ex: 24–48 de ore' },
-    { type: 'boolean', name: 'cnas', label: 'Decontat prin CNAS' },
     quickFactsField,
-    { type: 'rich-text', name: 'body', label: 'Ce este intervenția', isBody: true },
-    textListField('indications', 'Când este recomandată'),
-    referenceList('treats', 'Afecțiuni tratate', ['afectiuni']),
+    referenceList('conditions', 'Afecțiuni tratate / pentru care e recomandat', ['afectiuni']),
+    referenceList('doctors', 'Medici', ['medici'], 'Gol = toți medicii specializării.'),
+    { type: 'rich-text', name: 'body', label: 'Despre serviciu', isBody: true },
+    namedListField('includes', 'Ce include'),
+    textListField('indications', 'Când este recomandat'),
     textListField('contraindications', 'Contraindicații'),
     textListField('preparation', 'Cum se pregătește pacientul'),
     {
@@ -194,8 +243,7 @@ export const interventii: Collection = {
     textListField('benefits', 'Beneficii'),
     textListField('risks', 'Riscuri și posibile complicații'),
     faqField,
-    referenceList('doctors', 'Medici care o efectuează', ['medici'], 'Gol = toți medicii specializării.'),
-    referenceList('alternatives', 'Alternative', ['interventii']),
+    referenceList('alternatives', 'Alternative', ['servicii']),
     referenceList('articles', 'Articole legate', ['articole']),
     orderField,
     draftField,
@@ -203,61 +251,4 @@ export const interventii: Collection = {
   ],
 };
 
-export const servicii: Collection = {
-  name: 'servicii',
-  label: 'Servicii',
-  path: 'src/content/servicii',
-  format: 'mdx',
-  ui: {
-    router: ({ document }) => `/servicii/${document._sys.filename}`,
-    filename: { slugify: (values) => slugify(values) },
-  },
-  fields: [
-    { type: 'string', name: 'title', label: 'Denumire serviciu', isTitle: true, required: true },
-    { type: 'string', name: 'subtitle', label: 'Subtitlu (sub titlul paginii)' },
-    { type: 'string', name: 'badge', label: 'Etichetă' },
-    {
-      type: 'string',
-      name: 'shortDescription',
-      label: 'Descriere scurtă',
-      required: true,
-      ui: { component: 'textarea' },
-    },
-    {
-      type: 'string',
-      name: 'type',
-      label: 'Tip serviciu',
-      options: [
-        { value: 'consultatie', label: 'Consultație' },
-        { value: 'investigatie', label: 'Investigație' },
-        { value: 'procedura', label: 'Procedură' },
-        { value: 'analize', label: 'Analize' },
-      ],
-    },
-    specialityField,
-    keywordsField,
-    { type: 'image', name: 'cover', label: 'Imagine' },
-    {
-      type: 'reference',
-      name: 'intervention',
-      label: 'Se efectuează ca intervenție',
-      description: 'Dacă serviciul are un protocol complet, leagă-l aici de pagina intervenției.',
-      collections: ['interventii'],
-    },
-    referenceList('conditions', 'Afecțiuni pentru care e recomandat', ['afectiuni']),
-    referenceList('doctors', 'Medici', ['medici'], 'Gol = toți medicii specializării.'),
-    { type: 'boolean', name: 'cnas', label: 'Decontat prin CNAS' },
-    { type: 'string', name: 'duration', label: 'Durată', description: 'Ex: 30 de minute' },
-    quickFactsField,
-    { type: 'rich-text', name: 'body', label: 'Despre serviciu', isBody: true },
-    namedListField('includes', 'Ce include'),
-    textListField('preparation', 'Cum te pregătești'),
-    faqField,
-    referenceList('articles', 'Articole legate', ['articole']),
-    orderField,
-    draftField,
-    seoField,
-  ],
-};
-
-export const catalogCollections = [afectiuni, interventii, servicii];
+export const catalogCollections = [afectiuni, servicii];

@@ -1,14 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
-import {
-  getAfectiuni,
-  getArticole,
-  getInterventii,
-  getMedici,
-  getProiecte,
-  getServicii,
-  getSpecializari,
-} from '../lib/content';
+import { getAfectiuni, getArticole, getMedici, getProiecte, getServicii, getSpecializari } from '../lib/content';
+import { serviceTypes } from '../lib/catalog';
 
 /**
  * Index de cautare generat la build. E consumat de doua locuri:
@@ -16,10 +9,9 @@ import {
  *   - pagina de rezultate /rezultate-cautare
  */
 export const GET: APIRoute = async () => {
-  const [specializari, afectiuni, interventii, servicii, medici, articole, proiecte, pagini] = await Promise.all([
+  const [specializari, afectiuni, servicii, medici, articole, proiecte, pagini] = await Promise.all([
     getSpecializari(),
     getAfectiuni(),
-    getInterventii(),
     getServicii(),
     getMedici(),
     getArticole(),
@@ -42,19 +34,14 @@ export const GET: APIRoute = async () => {
       url: `/afectiuni/${item.id}`,
       keywords: [...item.data.keywords, ...item.data.alsoKnownAs, ...item.data.symptoms],
     })),
-    ...interventii.map((item) => ({
-      type: 'Intervenție',
-      title: item.data.title,
-      description: item.data.shortDescription,
-      url: `/interventii/${item.id}`,
-      keywords: item.data.keywords,
-    })),
     ...servicii.map((item) => ({
-      type: 'Serviciu',
+      // Intervențiile sunt tot servicii; tipul de aici e eticheta lor, ca
+      // filtrarea din pagina de rezultate sa fie utila.
+      type: item.data.type === 'interventie' ? 'Intervenție' : 'Serviciu',
       title: item.data.title,
       description: item.data.shortDescription,
       url: `/servicii/${item.id}`,
-      keywords: item.data.keywords,
+      keywords: [...item.data.keywords, serviceTypes[item.data.type], ...item.data.indications],
     })),
     ...medici.map((item) => ({
       type: 'Medic',
@@ -75,7 +62,7 @@ export const GET: APIRoute = async () => {
       title: item.data.title,
       description: item.data.summary,
       url: `/proiecte-europene/${item.id}`,
-      keywords: [],
+      keywords: [item.data.smis, item.data.program].filter(Boolean) as string[],
     })),
     ...pagini.map((item) => ({
       type: 'Pagină',

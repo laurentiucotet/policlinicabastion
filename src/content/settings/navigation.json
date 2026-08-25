@@ -4,8 +4,14 @@
       "label": "Acasă",
       "href": "/",
       "children": [
-        { "label": "Despre noi", "href": "/despre-noi" },
-        { "label": "Echipa noastră", "href": "/medici" }
+        {
+          "label": "Despre noi",
+          "href": "/despre-noi"
+        },
+        {
+          "label": "Echipa noastră",
+          "href": "/medici"
+        }
       ]
     },
     {
@@ -24,24 +30,56 @@
       "children": []
     },
     {
-      "label": "Intervenții",
-      "href": "/interventii",
+      "label": "Noutăți",
+      "href": "/noutati",
       "children": []
     },
-    { "label": "Noutăți", "href": "/noutati", "children": [] },
-    { "label": "Proiecte Europene", "href": "/proiecte-europene", "children": [] },
-    { "label": "Contact", "href": "/contact", "children": [] }
+    {
+      "label": "Proiecte Europene",
+      "href": "/proiecte-europene",
+      "children": []
+    }
   ],
   "footer": [
-    { "label": "Servicii medicale", "href": "/servicii" },
-    { "label": "Afecțiuni tratate", "href": "/afectiuni" },
-    { "label": "Intervenții și proceduri", "href": "/interventii" },
-    { "label": "Drepturi și obligații asigurați", "href": "/drepturi-si-obligatii-asigurati" },
-    { "label": "Drepturile și obligațiile pacienților", "href": "/drepturile-pacientilor" },
-    { "label": "Servicii decontate prin C.N.A.S", "href": "/servicii-decontate-cnas" },
-    { "label": "Termeni și Condiții", "href": "/termeni-si-conditii" },
-    { "label": "Politica de Confidențialitate", "href": "/politica-de-confidentialitate" },
-    { "label": "Newsletter", "href": "/newsletter" },
-    { "label": "Feedback Pacienți", "href": "/feedback" }
+    {
+      "label": "Contact",
+      "href": "/contact"
+    },
+    {
+      "label": "Servicii și intervenții",
+      "href": "/servicii"
+    },
+    {
+      "label": "Afecțiuni tratate",
+      "href": "/afectiuni"
+    },
+    {
+      "label": "Drepturi și obligații asigurați",
+      "href": "/drepturi-si-obligatii-asigurati"
+    },
+    {
+      "label": "Drepturile și obligațiile pacienților",
+      "href": "/drepturile-pacientilor"
+    },
+    {
+      "label": "Servicii decontate prin C.N.A.S",
+      "href": "/servicii-decontate-cnas"
+    },
+    {
+      "label": "Termeni și Condiții",
+      "href": "/termeni-si-conditii"
+    },
+    {
+      "label": "Politica de Confidențialitate",
+      "href": "/politica-de-confidentialitate"
+    },
+    {
+      "label": "Newsletter",
+      "href": "/newsletter"
+    },
+    {
+      "label": "Feedback Pacienți",
+      "href": "/feedback"
+    }
   ]
 }

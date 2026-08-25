@@ -30,7 +30,7 @@ const json = (dir: string) => glob({ base: `./src/content/${dir}`, pattern: '**/
 const tinaId = (value: unknown) =>
   typeof value === 'string' ? value.split('/').pop()!.replace(/\.(md|mdx|json)$/, '') : value;
 
-type RefCollection = 'specializari' | 'medici' | 'categorii' | 'articole' | 'afectiuni' | 'interventii' | 'servicii';
+type RefCollection = 'specializari' | 'medici' | 'categorii' | 'articole' | 'afectiuni' | 'servicii' | 'proiecte';
 
 const refTo = <C extends RefCollection>(collection: C) => z.preprocess(tinaId, reference(collection));
 
@@ -81,6 +81,20 @@ const factList = z
     }),
   )
   .default([]);
+
+/**
+ * Pretul unui serviciu. Poate fi fix (`from`), interval (`from` + `to`) sau
+ * absent - caz in care pagina afiseaza "La cerere" si trimite la telefon.
+ * Vezi `formatPrice()` in src/lib/utils.ts.
+ */
+const price = z
+  .object({
+    from: z.number().optional(),
+    to: z.number().optional(),
+    currency: z.string().default('lei'),
+    note: z.string().optional(),
+  })
+  .optional();
 
 /** Specializari medicale: /specializari/[slug] */
 const specializari = defineCollection({
@@ -160,7 +174,9 @@ const articole = defineCollection({
       author: refTo('medici').optional(),
       /** Relatii explicite: articolul apare pe paginile acestor entitati */
       conditions: refListTo('afectiuni'),
-      interventions: refListTo('interventii'),
+      services: refListTo('servicii'),
+      /** Proiectele europene pe care le documenteaza articolul */
+      projects: refListTo('proiecte'),
       featured: z.boolean().default(false),
       draft: z.boolean().default(false),
       seo,
@@ -193,8 +209,8 @@ const afectiuni = defineCollection({
       diagnosis: namedList,
       /** Optiuni de tratament conservator / medicamentos */
       treatments: namedList,
-      /** Interventiile care trateaza afectiunea */
-      interventions: refListTo('interventii'),
+      /** Serviciile si interventiile prin care se trateaza afectiunea */
+      services: refListTo('servicii'),
       whenToSeeDoctor: textList,
       prevention: textList,
       faq: faqList,
@@ -208,36 +224,48 @@ const afectiuni = defineCollection({
     }),
 });
 
-/** Interventii si proceduri (catalog): /interventii/[slug] */
-const interventii = defineCollection({
-  loader: md('interventii'),
+/**
+ * Servicii (catalog unificat): /servicii/[slug]
+ *
+ * O consultatie, o investigatie si o interventie sunt acelasi tip de entitate -
+ * ceva ce pacientul programeaza. Difera doar prin eticheta (`type`) si prin cat
+ * de mult din protocol e completat: o consultatie nu are timeline si anestezie,
+ * o interventie are. Sectiunile fara continut nu se randeaza.
+ */
+const servicii = defineCollection({
+  loader: md('servicii'),
   schema: ({ image }) =>
     z.object({
       title: z.string(),
       subtitle: z.string().optional(),
-      badge: z.string().default('Intervenții'),
+      badge: z.string().default('Servicii'),
       shortDescription: z.string(),
-      /** Categoria din catalog = specializarea care efectueaza interventia */
+      /** Eticheta din catalog. `interventie` deblocheaza protocolul complet. */
+      type: z.enum(['consultatie', 'investigatie', 'procedura', 'interventie', 'analize']).default('consultatie'),
+      /** Categoria din catalog = specializarea care il asigura */
       speciality: refTo('specializari'),
       keywords: textList,
       cover: image().optional(),
-      /* Datele esentiale, afisate ca bara sub titlu ------------------------ */
+      price,
+      /** Decontat prin CNAS cu bilet de trimitere */
+      cnas: z.boolean().default(false),
+      /* Date esentiale ------------------------------------------------------ */
       duration: z.string().optional(),
       anesthesia: z.string().optional(),
       /** Regim: ambulatoriu / spitalizare de zi */
       admission: z.string().optional(),
       recovery: z.string().optional(),
-      /** Alte date esentiale, in afara celor patru de mai sus */
       quickFacts: factList,
-      cnas: z.boolean().default(false),
-      /** Afectiunile tratate prin aceasta interventie */
-      treats: refListTo('afectiuni'),
-      /** Medicii care o efectueaza. Gol => toti medicii specializarii. */
+      /** Afectiunile tratate / pentru care este recomandat */
+      conditions: refListTo('afectiuni'),
+      /** Medicii care il asigura. Gol => toti medicii specializarii. */
       doctors: refListTo('medici'),
+      /* Continutul paginii, in ordinea in care e randat ---------------------- */
+      includes: namedList,
       indications: textList,
       contraindications: textList,
       preparation: textList,
-      /** Timeline "Cum decurge intervenția", pas cu pas */
+      /** Timeline "Cum decurge", pas cu pas */
       timeline: z
         .array(
           z.object({
@@ -251,42 +279,8 @@ const interventii = defineCollection({
       benefits: textList,
       risks: textList,
       faq: faqList,
-      /** Alte interventii cu aceeasi indicatie */
-      alternatives: refListTo('interventii'),
-      articles: refListTo('articole'),
-      order: z.number().default(100),
-      draft: z.boolean().default(false),
-      seo,
-    }),
-});
-
-/** Servicii (oferta clinicii): /servicii/[slug] */
-const servicii = defineCollection({
-  loader: md('servicii'),
-  schema: ({ image }) =>
-    z.object({
-      title: z.string(),
-      subtitle: z.string().optional(),
-      badge: z.string().default('Servicii'),
-      shortDescription: z.string(),
-      /** Gruparea din pagina /servicii */
-      type: z.enum(['consultatie', 'investigatie', 'procedura', 'analize']).default('consultatie'),
-      speciality: refTo('specializari'),
-      keywords: textList,
-      cover: image().optional(),
-      /** Serviciul se efectueaza ca interventie => pagina cu protocol complet */
-      intervention: refTo('interventii').optional(),
-      /** Afectiunile pentru care se recomanda serviciul */
-      conditions: refListTo('afectiuni'),
-      doctors: refListTo('medici'),
-      /** Decontat prin CNAS cu bilet de trimitere */
-      cnas: z.boolean().default(false),
-      duration: z.string().optional(),
-      quickFacts: factList,
-      /** Ce include serviciul */
-      includes: namedList,
-      preparation: textList,
-      faq: faqList,
+      /** Alte servicii cu aceeasi indicatie */
+      alternatives: refListTo('servicii'),
       articles: refListTo('articole'),
       order: z.number().default(100),
       draft: z.boolean().default(false),
@@ -302,8 +296,20 @@ const proiecte = defineCollection({
       title: z.string(),
       subtitle: z.string().optional(),
       summary: z.string(),
+      /** Eticheta afisata pe card si in capul paginii */
+      status: z.enum(['in-derulare', 'incheiat']).default('in-derulare'),
       cover: image().optional(),
-      /** Datele de identificare ale proiectului (card-ul din design) */
+      /* Datele de identificare, obligatorii pentru vizibilitatea finantarii -- */
+      beneficiary: z.string().optional(),
+      program: z.string().optional(),
+      /** Cod SMIS / cod proiect */
+      smis: z.string().optional(),
+      contractNumber: z.string().optional(),
+      /** Perioada de implementare, ca text ("martie 2024 - august 2026") */
+      period: z.string().optional(),
+      totalValue: z.string().optional(),
+      grantValue: z.string().optional(),
+      /** Orice alt camp de identificare, in afara celor de mai sus */
       details: z
         .array(
           z.object({
@@ -312,7 +318,12 @@ const proiecte = defineCollection({
           }),
         )
         .default([]),
+      objectives: textList,
+      /** Rezultate concrete: echipamente achizitionate, servicii nou create */
+      results: namedList,
       gallery: z.array(image()).default([]),
+      /** Noutati legate explicit de proiect (peste cele gasite automat) */
+      articles: refListTo('articole'),
       order: z.number().default(100),
       draft: z.boolean().default(false),
       seo,
@@ -351,7 +362,6 @@ export const collections = {
   categorii,
   articole,
   afectiuni,
-  interventii,
   servicii,
   proiecte,
   testimoniale,

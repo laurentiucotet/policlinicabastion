@@ -48,11 +48,6 @@ export async function getAfectiuni(): Promise<CollectionEntry<'afectiuni'>[]> {
   return items.sort(byOrder);
 }
 
-export async function getInterventii(): Promise<CollectionEntry<'interventii'>[]> {
-  const items = await getCollection('interventii', notDraft);
-  return items.sort(byOrder);
-}
-
 export async function getServicii(): Promise<CollectionEntry<'servicii'>[]> {
   const items = await getCollection('servicii', notDraft);
   return items.sort(byOrder);
@@ -62,10 +57,10 @@ export async function getServicii(): Promise<CollectionEntry<'servicii'>[]> {
  * Relatii intre entitati.
  *
  * Regula: fiecare relatie e declarata o singura data in CMS, dar poate fi
- * citita din ambele capete. Ex. o interventie declara ce afectiuni trateaza
- * (`treats`), iar pagina afectiunii afiseaza interventiile care o trateaza -
- * fie pentru ca afectiunea le-a listat ea (`interventions`), fie pentru ca
- * interventia a listat afectiunea. Asa nu exista relatii "pe jumatate".
+ * citita din ambele capete. Ex. un serviciu declara ce afectiuni trateaza
+ * (`conditions`), iar pagina afectiunii il afiseaza - fie pentru ca afectiunea
+ * l-a listat ea (`services`), fie pentru ca serviciul a listat afectiunea.
+ * Asa nu exista relatii "pe jumatate".
  * ------------------------------------------------------------------------- */
 
 type WithId = { id: string };
@@ -76,7 +71,7 @@ const unique = <T extends WithId>(items: T[]): T[] => {
 };
 
 /** Rezolva o lista de referinte, ignorand intrarile de tip draft. */
-async function resolveMany<C extends 'afectiuni' | 'interventii' | 'articole' | 'medici' | 'servicii'>(
+async function resolveMany<C extends 'afectiuni' | 'articole' | 'medici' | 'servicii' | 'proiecte'>(
   refs: { collection: C; id: string }[],
 ): Promise<CollectionEntry<C>[]> {
   // `getEntry` are un tip conditional greu de propagat printr-un generic, asa
@@ -90,61 +85,35 @@ export async function getAfectiuniBySpecialitate(specialitateId: string) {
   return items.filter((item) => item.data.speciality.id === specialitateId);
 }
 
-export async function getInterventiiBySpecialitate(specialitateId: string) {
-  const items = await getInterventii();
-  return items.filter((item) => item.data.speciality.id === specialitateId);
-}
-
 export async function getServiciiBySpecialitate(specialitateId: string) {
   const items = await getServicii();
   return items.filter((item) => item.data.speciality.id === specialitateId);
 }
 
-/** Interventiile care trateaza o afectiune (din ambele capete ale relatiei). */
-export async function getInterventiiForAfectiune(afectiune: CollectionEntry<'afectiuni'>) {
-  const [declared, all] = await Promise.all([resolveMany(afectiune.data.interventions), getInterventii()]);
-  const reverse = all.filter((item) => item.data.treats.some((ref) => ref.id === afectiune.id));
-  return unique([...declared, ...reverse]).sort(byOrder);
-}
-
-/** Afectiunile tratate de o interventie (din ambele capete ale relatiei). */
-export async function getAfectiuniForInterventie(interventie: CollectionEntry<'interventii'>) {
-  const [declared, all] = await Promise.all([resolveMany(interventie.data.treats), getAfectiuni()]);
-  const reverse = all.filter((item) => item.data.interventions.some((ref) => ref.id === interventie.id));
-  return unique([...declared, ...reverse]).sort(byOrder);
-}
-
-/** Serviciile care se efectueaza prin aceasta interventie. */
-export async function getServiciiForInterventie(interventie: CollectionEntry<'interventii'>) {
-  const items = await getServicii();
-  return items.filter((item) => item.data.intervention?.id === interventie.id);
-}
-
-/** Serviciile recomandate pentru o afectiune (declarate pe serviciu). */
+/** Serviciile prin care se trateaza o afectiune (din ambele capete ale relatiei). */
 export async function getServiciiForAfectiune(afectiune: CollectionEntry<'afectiuni'>) {
-  const items = await getServicii();
-  return items.filter((item) => item.data.conditions.some((ref) => ref.id === afectiune.id));
+  const [declared, all] = await Promise.all([resolveMany(afectiune.data.services), getServicii()]);
+  const reverse = all.filter((item) => item.data.conditions.some((ref) => ref.id === afectiune.id));
+  return unique([...declared, ...reverse]).sort(byOrder);
 }
 
-/** Interventiile pe care le efectueaza un medic (declarate pe interventie). */
-export async function getInterventiiForMedic(medic: CollectionEntry<'medici'>) {
-  const items = await getInterventii();
+/** Afectiunile tratate printr-un serviciu (din ambele capete ale relatiei). */
+export async function getAfectiuniForServiciu(serviciu: CollectionEntry<'servicii'>) {
+  const [declared, all] = await Promise.all([resolveMany(serviciu.data.conditions), getAfectiuni()]);
+  const reverse = all.filter((item) => item.data.services.some((ref) => ref.id === serviciu.id));
+  return unique([...declared, ...reverse]).sort(byOrder);
+}
+
+/** Serviciile pe care le asigura un medic (declarate pe serviciu). */
+export async function getServiciiForMedic(medic: CollectionEntry<'medici'>) {
+  const items = await getServicii();
   return items.filter(
     (item) =>
       item.data.doctors.some((ref) => ref.id === medic.id) ||
-      // Fara medici declarati, interventia apartine intregii specializari.
+      // Fara medici declarati, serviciul apartine intregii specializari.
       (item.data.doctors.length === 0 &&
         medic.data.specialities.some((ref) => ref.id === item.data.speciality.id)),
   );
-}
-
-/** Medicii care efectueaza o interventie: cei declarati, altfel toata specializarea. */
-export async function getMediciForInterventie(interventie: CollectionEntry<'interventii'>) {
-  if (interventie.data.doctors.length) {
-    const declared = await resolveMany(interventie.data.doctors);
-    return declared.sort(byOrder);
-  }
-  return getMediciBySpecialitate(interventie.data.speciality.id);
 }
 
 /** Medicii care asigura un serviciu: cei declarati, altfel toata specializarea. */
@@ -164,9 +133,9 @@ type RelatableData = {
 };
 
 /**
- * Articolele relevante pentru o afectiune / interventie / serviciu, in ordine:
+ * Articolele relevante pentru o afectiune, un serviciu sau un proiect, in ordine:
  *   1. cele legate explicit de pe entitate (`articles`)
- *   2. cele care declara ele legatura (`conditions` / `interventions`)
+ *   2. cele care declara ele legatura (`conditions` / `services`)
  *   3. cele care contin titlul sau un cuvant-cheie in titlu/rezumat
  *
  * Pasul 3 face ca relatia sa functioneze din prima, inainte ca editorul sa
@@ -174,7 +143,7 @@ type RelatableData = {
  */
 export async function getArticoleForEntity(
   entry: { id: string; data: RelatableData },
-  kind: 'conditions' | 'interventions',
+  kind: 'conditions' | 'services',
   limit = 3,
 ): Promise<CollectionEntry<'articole'>[]> {
   const [declared, all] = await Promise.all([resolveMany(entry.data.articles), getArticole()]);
@@ -201,6 +170,16 @@ export async function getArticoleForEntity(
   });
 
   return unique([...declared, ...reverse, ...byKeyword]).slice(0, limit);
+}
+
+/** Noutatile despre un proiect european: legate explicit, din ambele capete. */
+export async function getArticoleForProiect(
+  proiect: CollectionEntry<'proiecte'>,
+  limit = 3,
+): Promise<CollectionEntry<'articole'>[]> {
+  const [declared, all] = await Promise.all([resolveMany(proiect.data.articles), getArticole()]);
+  const reverse = all.filter((article) => article.data.projects.some((ref) => ref.id === proiect.id));
+  return unique([...declared, ...reverse]).slice(0, limit);
 }
 
 /** Articole inrudite: aceeasi categorie, exceptand articolul curent. */

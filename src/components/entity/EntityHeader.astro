@@ -17,9 +17,14 @@ interface Props {
   alsoKnownAs?: string[];
   /** Chip-uri sub titlu (specializarea, "Decontat CNAS"...). */
   tags?: Array<{ label: string; href?: string }>;
+  /** Butoanele de programare. Ascunse pe paginile fara legatura cu programarea. */
+  showCta?: boolean;
 }
 
-const { badge, title, subtitle, breadcrumbs, alsoKnownAs = [], tags = [] } = Astro.props;
+const { badge, title, subtitle, breadcrumbs, alsoKnownAs = [], tags = [], showCta = true } = Astro.props;
+
+/** Slotul `tags` permite chip-uri proprii (ex. stadiul unui proiect european). */
+const hasTagSlot = Astro.slots.has('tags');
 ---
 
 <section class="bg-surface-alt border-stroke border-b">
@@ -64,8 +69,9 @@ const { badge, title, subtitle, breadcrumbs, alsoKnownAs = [], tags = [] } = Ast
         }
 
         {
-          tags.length > 0 && (
-            <ul class="mt-4 flex flex-wrap gap-2">
+          (tags.length > 0 || hasTagSlot) && (
+            <ul class="mt-4 flex flex-wrap items-center gap-2">
+              <slot name="tags" />
               {tags.map((tag) => (
                 <li>
                   {tag.href ? (
@@ -87,13 +93,17 @@ const { badge, title, subtitle, breadcrumbs, alsoKnownAs = [], tags = [] } = Ast
         }
       </div>
 
-      <div class="flex shrink-0 flex-wrap gap-2">
-        <Button href="/contact">Programează-te</Button>
-        <Button href={site.phones[0]?.href} variant="outline">
-          <Icon name="phone" size={16} />
-          Sună-ne
-        </Button>
-      </div>
+      {
+        showCta && (
+          <div class="flex shrink-0 flex-wrap gap-2">
+            <Button href="/contact">Programează-te</Button>
+            <Button href={site.phones[0]?.href} variant="outline">
+              <Icon name="phone" size={16} />
+              Sună-ne
+            </Button>
+          </div>
+        )
+      }
     </div>
   </div>
 </section>

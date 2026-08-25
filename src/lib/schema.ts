@@ -56,32 +56,31 @@ export function conditionSchema(entry: CollectionEntry<'afectiuni'>) {
   };
 }
 
-export function procedureSchema(entry: CollectionEntry<'interventii'>) {
-  const { title, shortDescription, preparation, timeline, indications } = entry.data;
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'MedicalProcedure',
-    name: title,
-    description: shortDescription,
-    preparation: preparation.join(' ') || undefined,
-    howPerformed: timeline.map((step) => `${step.title}: ${step.description}`).join(' ') || undefined,
-    indication: indications.map((name) => ({ '@type': 'MedicalIndication', name })),
-  };
-}
-
-const serviceTypes = {
+/**
+ * Serviciile poarta tipul schema.org potrivit etichetei lor. O interventie sau
+ * o consultatie sunt `MedicalProcedure`; o investigatie sau analizele sunt
+ * `MedicalTest`. Cand serviciul are protocol (pregatire, pasi, indicatii), il
+ * publicam si pe acela.
+ */
+const serviceSchemaTypes = {
   consultatie: 'MedicalProcedure',
   investigatie: 'MedicalTest',
   analize: 'MedicalTest',
   procedura: 'MedicalProcedure',
+  interventie: 'MedicalProcedure',
 } as const;
 
 export function serviceSchema(entry: CollectionEntry<'servicii'>, clinicName: string) {
+  const { title, shortDescription, type, preparation, timeline, indications } = entry.data;
+
   return {
     '@context': 'https://schema.org',
-    '@type': serviceTypes[entry.data.type],
-    name: entry.data.title,
-    description: entry.data.shortDescription,
+    '@type': serviceSchemaTypes[type],
+    name: title,
+    description: shortDescription,
     provider: { '@type': 'MedicalClinic', name: clinicName },
+    preparation: preparation.join(' ') || undefined,
+    howPerformed: timeline.map((step) => `${step.title}: ${step.description}`).join(' ') || undefined,
+    indication: indications.map((name) => ({ '@type': 'MedicalIndication', name })),
   };
 }

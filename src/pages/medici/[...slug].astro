@@ -9,12 +9,10 @@ import ServicesAccordion from '../../components/sections/ServicesAccordion.astro
 import RelatedCards from '../../components/entity/RelatedCards.astro';
 import TeamGrid from '../../components/sections/TeamGrid.astro';
 import CtaBand from '../../components/sections/CtaBand.astro';
-import {
-  getAfectiuniBySpecialitate,
-  getInterventiiForMedic,
-  getMedici,
-  getServiciiBySpecialitate,
-} from '../../lib/content';
+import { getAfectiuniBySpecialitate, getMedici, getServiciiForMedic } from '../../lib/content';
+import { serviceTypes } from '../../lib/catalog';
+import { formatPrice, hasPrice } from '../../lib/utils';
+import type { Price } from '../../lib/utils';
 import { home } from '../../lib/site';
 
 export const getStaticPaths = (async () => {
@@ -32,11 +30,12 @@ const primarySpeciality = specialities[0] ? await getEntry(specialities[0]) : un
 
 // Interventiile pe care le efectueaza si afectiunile din specializarile lui:
 // relatia e declarata o singura data, pe interventie / pe afectiune.
-const interventii = await getInterventiiForMedic(doctor);
+const servicii = await getServiciiForMedic(doctor);
+const interventii = servicii.filter((item) => item.data.type === 'interventie');
+const alteServicii = servicii.filter((item) => item.data.type !== 'interventie');
 const afectiuni = (
   await Promise.all(specialities.map((ref) => getAfectiuniBySpecialitate(ref.id)))
 ).flat();
-const servicii = primarySpeciality ? await getServiciiBySpecialitate(primarySpeciality.id) : [];
 
 const schema = {
   '@context': 'https://schema.org',
@@ -46,6 +45,9 @@ const schema = {
   jobTitle: role,
   worksFor: { '@type': 'MedicalClinic', name: 'Policlinica Bastion' },
 };
+
+/** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
+const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : undefined);
 ---
 
 <BaseLayout
@@ -76,13 +78,15 @@ const schema = {
     subtitle="Pentru fiecare intervenție găsești indicațiile, pregătirea, pașii și recuperarea."
     tone="alt"
     items={interventii.map((item) => ({
-      href: `/interventii/${item.id}`,
+      href: `/servicii/${item.id}`,
       title: item.data.title,
       description: item.data.shortDescription,
       eyebrow: 'Intervenție',
-      meta: [item.data.admission, item.data.anesthesia].filter((value): value is string => Boolean(value)),
+      meta: [priceChip(item.data.price), item.data.admission, item.data.anesthesia].filter(
+        (value): value is string => Boolean(value),
+      ),
     }))}
-    cta={{ label: 'Vezi toate intervențiile', href: '/interventii' }}
+    cta={{ label: 'Vezi toate intervențiile', href: '/servicii?tip=interventie' }}
   />
 
   <RelatedCards
@@ -101,12 +105,14 @@ const schema = {
   <RelatedCards
     badge="Servicii"
     title="Servicii pe care le poți programa"
-    items={servicii.map((item) => ({
+    items={alteServicii.map((item) => ({
       href: `/servicii/${item.id}`,
       title: item.data.title,
       description: item.data.shortDescription,
-      eyebrow: 'Serviciu',
-      meta: item.data.cnas ? ['Decontat CNAS'] : [],
+      eyebrow: serviceTypes[item.data.type],
+      meta: [priceChip(item.data.price), item.data.cnas ? 'Decontat CNAS' : undefined].filter(
+        (value): value is string => Boolean(value),
+      ),
     }))}
     tone="alt"
     cta={{ label: 'Vezi toate serviciile', href: '/servicii' }}

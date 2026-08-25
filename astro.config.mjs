@@ -22,6 +22,10 @@ export default defineConfig({
   // header, iar rezultatele au pagina lor. Pastram vechiul URL functional.
   redirects: {
     '/cautare': '/rezultate-cautare',
+    // Intervențiile au fost unificate cu serviciile: sunt acelasi tip de
+    // entitate, diferentiat printr-o eticheta. Slug-urile s-au pastrat.
+    '/interventii': '/servicii',
+    '/interventii/[...slug]': '/servicii/[...slug]',
   },
 
   integrations: [

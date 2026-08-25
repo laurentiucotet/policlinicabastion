@@ -86,11 +86,17 @@ const types = ['Specializare', 'Afecțiune', 'Intervenție', 'Serviciu', 'Medic'
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char,
     );
 
-  /** Potrivirile din titlu conteaza mai mult decat cele din cuvinte-cheie. */
+  /**
+   * Potrivirile din titlu conteaza mai mult decat cele din descriere sau din
+   * cuvinte-cheie. Comparam si o radacina de 6 litere, ca „biopsie" sa
+   * gaseasca „Biopsia de prostata" - flexiunea din romana ar rata altfel exact
+   * rezultatul cel mai relevant.
+   */
   const score = (entry: Entry, query: string) => {
     const title = normalize(entry.title);
-    if (title.startsWith(query)) return 3;
-    if (title.includes(query)) return 2;
+    const stem = query.length > 6 ? query.slice(0, 6) : query;
+    if (title.startsWith(query) || title.startsWith(stem)) return 3;
+    if (title.includes(query) || title.includes(stem)) return 2;
     if (normalize(entry.description).includes(query)) return 1;
     return 0;
   };

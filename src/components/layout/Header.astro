@@ -13,14 +13,13 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
 /* Submeniurile se completeaza automat din continut, ca sa nu fie nevoie sa fie
  * tinute manual in sincron din CMS:
  *   /specializari -> lista specializarilor
- *   /afectiuni, /interventii, /servicii -> catalogul filtrat pe specializare
+ *   /afectiuni, /servicii -> catalogul filtrat pe specializare
  * Daca in navigation.json exista deja copii scrisi de mana, ei au prioritate. */
 const specializari = await getSpecializari();
 
 const autoChildren: Record<string, { label: string; href: string }[]> = {
   '/specializari': specializari.map((s) => ({ label: s.data.title, href: `/specializari/${s.id}` })),
   '/afectiuni': specializari.map((s) => ({ label: s.data.title, href: `/afectiuni?categorie=${s.id}` })),
-  '/interventii': specializari.map((s) => ({ label: s.data.title, href: `/interventii?categorie=${s.id}` })),
   '/servicii': specializari.map((s) => ({ label: s.data.title, href: `/servicii?categorie=${s.id}` })),
 };
 

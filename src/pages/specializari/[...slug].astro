@@ -7,12 +7,10 @@ import ServicesAccordion from '../../components/sections/ServicesAccordion.astro
 import RelatedCards from '../../components/entity/RelatedCards.astro';
 import TeamGrid from '../../components/sections/TeamGrid.astro';
 import CtaBand from '../../components/sections/CtaBand.astro';
-import {
-  getAfectiuniBySpecialitate,
-  getInterventiiBySpecialitate,
-  getServiciiBySpecialitate,
-  getSpecializari,
-} from '../../lib/content';
+import { getAfectiuniBySpecialitate, getServiciiBySpecialitate, getSpecializari } from '../../lib/content';
+import { serviceTypes } from '../../lib/catalog';
+import { formatPrice, hasPrice } from '../../lib/utils';
+import type { Price } from '../../lib/utils';
 import { home } from '../../lib/site';
 
 export const getStaticPaths = (async () => {
@@ -27,13 +25,18 @@ const { speciality } = Astro.props;
 const { Content } = await render(speciality);
 const { title, subtitle, badge, services, seo } = speciality.data;
 
-const [afectiuni, interventii, servicii] = await Promise.all([
+const [afectiuni, servicii] = await Promise.all([
   getAfectiuniBySpecialitate(speciality.id),
-  getInterventiiBySpecialitate(speciality.id),
   getServiciiBySpecialitate(speciality.id),
 ]);
 
+const interventii = servicii.filter((item) => item.data.type === 'interventie');
+const alteServicii = servicii.filter((item) => item.data.type !== 'interventie');
+
 const lower = title.toLowerCase();
+
+/** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
+const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : undefined);
 ---
 
 <BaseLayout
@@ -58,14 +61,16 @@ const lower = title.toLowerCase();
     title={`Servicii de ${lower}`}
     subtitle="Ce poți programa la Policlinica Bastion în această specializare."
     tone="alt"
-    items={servicii.map((item) => ({
+    items={alteServicii.map((item) => ({
       href: `/servicii/${item.id}`,
       title: item.data.title,
       description: item.data.shortDescription,
-      eyebrow: 'Serviciu',
-      meta: item.data.cnas ? ['Decontat CNAS'] : [],
+      eyebrow: serviceTypes[item.data.type],
+      meta: [priceChip(item.data.price), item.data.cnas ? 'Decontat CNAS' : undefined].filter(
+        (value): value is string => Boolean(value),
+      ),
     }))}
-    cta={{ label: 'Vezi toate serviciile', href: '/servicii' }}
+    cta={{ label: `Vezi toate serviciile de ${lower}`, href: `/servicii?categorie=${speciality.id}` }}
   />
 
   <RelatedCards
@@ -89,13 +94,18 @@ const lower = title.toLowerCase();
     subtitle="Pentru fiecare intervenție găsești indicațiile, pregătirea, pașii și recuperarea."
     tone="alt"
     items={interventii.map((item) => ({
-      href: `/interventii/${item.id}`,
+      href: `/servicii/${item.id}`,
       title: item.data.title,
       description: item.data.shortDescription,
       eyebrow: 'Intervenție',
-      meta: [item.data.admission, item.data.anesthesia].filter((value): value is string => Boolean(value)),
+      meta: [priceChip(item.data.price), item.data.admission, item.data.anesthesia].filter(
+        (value): value is string => Boolean(value),
+      ),
     }))}
-    cta={{ label: `Vezi toate intervențiile de ${lower}`, href: `/interventii?categorie=${speciality.id}` }}
+    cta={{
+      label: `Vezi toate intervențiile de ${lower}`,
+      href: `/servicii?categorie=${speciality.id}&tip=interventie`,
+    }}
   />
 
   {

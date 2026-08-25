@@ -2,10 +2,12 @@
 /** Bara de date esențiale, imediat sub titlul paginii. */
 interface Props {
   facts: Array<{ label: string; value: string }>;
+  /** Observatie sub bara, ex. de ce pretul e un interval. */
+  note?: string;
   tone?: 'white' | 'alt';
 }
 
-const { facts, tone = 'white' } = Astro.props;
+const { facts, note, tone = 'white' } = Astro.props;
 const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
 ---
 
@@ -21,6 +23,7 @@ const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
             </div>
           ))}
         </dl>
+        {note && <p class="text-ink-subtle mt-3 text-xs">{note}</p>}
       </div>
     </section>
   )

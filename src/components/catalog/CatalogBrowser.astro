@@ -1,35 +1,35 @@
 ---
 /**
  * Catalog cu categorii in stanga (expandabile) si cautare dupa cuvinte-cheie.
- * Folosit identic de /afectiuni, /interventii si /servicii - difera doar
- * datele primite. Filtrarea se face in browser, fara request suplimentar:
- * toate intrarile sunt deja randate in HTML, scriptul doar le ascunde.
+ * Folosit identic de /afectiuni si /servicii - difera doar datele primite.
+ * Filtrarea se face in browser, fara request suplimentar: toate intrarile sunt
+ * deja randate in HTML, scriptul doar le ascunde.
  */
 import Icon from '../ui/Icon.astro';
 import EntityCard from '../cards/EntityCard.astro';
 import { normalizeText } from '../../lib/utils';
-import type { CatalogGroup, CatalogItem } from '../../lib/catalog';
+import type { CatalogGroup, CatalogItem, CatalogTag } from '../../lib/catalog';
 
 interface Props {
   items: CatalogItem[];
   groups: CatalogGroup[];
-  /** Eticheta pentru numarul de rezultate: "afecțiuni", "intervenții"... */
+  /** Randul de etichete de deasupra grilei. Gol = fara filtru pe eticheta. */
+  tags?: CatalogTag[];
+  /** Eticheta pentru numarul de rezultate: "afecțiuni", "servicii"... */
   noun: string;
   searchPlaceholder: string;
   allLabel?: string;
   emptyText?: string;
-  /** Categoria deschisa initial (vine si din ?categorie= in URL). */
-  activeGroup?: string;
 }
 
 const {
   items,
   groups,
+  tags = [],
   noun,
   searchPlaceholder,
   allLabel = 'Toate',
   emptyText = 'Niciun rezultat pentru căutarea ta.',
-  activeGroup,
 } = Astro.props;
 
 const usedGroups = groups
@@ -40,9 +40,13 @@ const usedGroups = groups
  * fel din ambele parti. In interiorul unei categorii, ordinea primita. */
 const orderedItems = usedGroups.flatMap((group) => group.items);
 
-/** Textul dupa care filtreaza cautarea: titlu + descriere + cuvinte-cheie. */
+const usedTags = tags.filter((tag) => items.some((item) => item.tagId === tag.id));
+
+/** Textul dupa care filtreaza cautarea. Include si continut care nu apare pe card. */
 const haystack = (item: CatalogItem) =>
-  normalizeText([item.title, item.description, ...(item.keywords ?? []), ...(item.meta ?? [])].join(' '));
+  normalizeText(
+    [item.title, item.description, item.searchText ?? '', ...(item.keywords ?? []), ...(item.meta ?? [])].join(' '),
+  );
 ---
 
 <div class="bg-surface py-12">
@@ -70,7 +74,7 @@ const haystack = (item: CatalogItem) =>
         <button
           type="button"
           class="border-stroke text-ink hover:border-brand/40 aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-white flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-sm font-semibold"
-          aria-pressed={activeGroup ? 'false' : 'true'}
+          aria-pressed="true"
           data-catalog-all
         >
           {allLabel}
@@ -81,7 +85,7 @@ const haystack = (item: CatalogItem) =>
           {
             usedGroups.map((group) => (
               <li>
-                <details class="group border-stroke overflow-hidden rounded-lg border" open={activeGroup === group.id} data-catalog-group={group.id}>
+                <details class="group border-stroke overflow-hidden rounded-lg border" data-catalog-group={group.id}>
                   <summary class="text-ink hover:bg-surface-alt flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-sm font-semibold">
                     {group.icon && <span aria-hidden="true">{group.icon}</span>}
                     <span class="flex-1">{group.label}</span>
@@ -119,6 +123,31 @@ const haystack = (item: CatalogItem) =>
     </aside>
 
     <div>
+      {
+        usedTags.length > 0 && (
+          <div class="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Tipuri de servicii">
+            <button
+              type="button"
+              class="bg-chip text-chip-ink hover:bg-brand-100 aria-pressed:bg-brand rounded-full px-3 py-1.5 text-xs font-semibold aria-pressed:text-white"
+              aria-pressed="true"
+              data-catalog-tag=""
+            >
+              Toate
+            </button>
+            {usedTags.map((tag) => (
+              <button
+                type="button"
+                class="bg-chip text-chip-ink hover:bg-brand-100 aria-pressed:bg-brand rounded-full px-3 py-1.5 text-xs font-semibold aria-pressed:text-white"
+                aria-pressed="false"
+                data-catalog-tag={tag.id}
+              >
+                {tag.label}
+              </button>
+            ))}
+          </div>
+        )
+      }
+
       <p class="text-ink-subtle mb-4 text-sm" aria-live="polite" data-catalog-status data-noun={noun}>
         {items.length} {noun}
       </p>
@@ -126,7 +155,12 @@ const haystack = (item: CatalogItem) =>
       <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {
           orderedItems.map((item) => (
-            <li data-catalog-item={item.id} data-group={item.groupId} data-haystack={haystack(item)}>
+            <li
+              data-catalog-item={item.id}
+              data-group={item.groupId}
+              data-tag={item.tagId ?? ''}
+              data-haystack={haystack(item)}
+            >
               <EntityCard
                 href={item.href}
                 title={item.title}
@@ -157,14 +191,14 @@ const haystack = (item: CatalogItem) =>
     const groups = Array.from(root.querySelectorAll<HTMLDetailsElement>('[data-catalog-group]'));
     const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-catalog-item]'));
     const links = Array.from(root.querySelectorAll<HTMLElement>('[data-catalog-link]'));
+    const tagButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-catalog-tag]'));
 
     const noun = status?.dataset.noun ?? '';
     const total = cards.length;
 
-    /** Categoria selectata; null = toate. */
-    let activeGroup: string | null = groups.find((group) => group.open)?.dataset.catalogGroup ?? null;
-    /** Blocheaza reactia la `toggle` cat timp deschidem/inchidem noi din cod. */
-    let syncing = false;
+    /** Categoria selectata (null = toate) si eticheta selectata ('' = toate). */
+    let activeGroup: string | null = null;
+    let activeTag = '';
 
     const normalize = (value: string) =>
       value
@@ -179,79 +213,101 @@ const haystack = (item: CatalogItem) =>
 
       for (const card of cards) {
         const matchesQuery = query.length < 2 || (card.dataset.haystack ?? '').includes(query);
+        const matchesTag = !activeTag || card.dataset.tag === activeTag;
         const group = card.dataset.group ?? '';
         const matchesGroup = !activeGroup || group === activeGroup;
-        const show = matchesQuery && matchesGroup;
+        const show = matchesQuery && matchesTag && matchesGroup;
 
         card.hidden = !show;
         if (show) visible += 1;
-        if (matchesQuery) perGroup.set(group, (perGroup.get(group) ?? 0) + 1);
+        if (matchesQuery && matchesTag) perGroup.set(group, (perGroup.get(group) ?? 0) + 1);
 
-        const id = card.dataset.catalogItem;
-        const link = links.find((item) => item.dataset.catalogLink === id);
-        if (link) link.hidden = !matchesQuery;
+        const link = links.find((item) => item.dataset.catalogLink === card.dataset.catalogItem);
+        if (link) link.hidden = !(matchesQuery && matchesTag);
       }
 
       for (const group of groups) {
         const id = group.dataset.catalogGroup ?? '';
         const count = perGroup.get(id) ?? 0;
         group.parentElement!.hidden = count === 0;
+        // Categoriile ramase se deschid in timpul cautarii, ca sa se vada ce s-a gasit.
+        group.open = activeGroup === id || (query.length >= 2 && count > 0);
 
         const counter = root.querySelector<HTMLElement>(`[data-catalog-count="${id}"]`);
         if (counter) counter.textContent = String(count);
       }
 
-      // La cautare deschidem categoriile ramase, ca rezultatele sa fie vizibile.
-      if (query.length >= 2 && !activeGroup) {
-        syncing = true;
-        for (const group of groups) group.open = !group.parentElement!.hidden;
-        syncing = false;
-      }
-
       if (status) {
-        const label = visible === total ? `${total} ${noun}` : `${visible} din ${total} ${noun}`;
-        status.textContent = label;
+        status.textContent = visible === total ? `${total} ${noun}` : `${visible} din ${total} ${noun}`;
       }
       if (empty) empty.classList.toggle('hidden', visible > 0);
       if (allButton) allButton.setAttribute('aria-pressed', String(!activeGroup));
+      for (const button of tagButtons) {
+        button.setAttribute('aria-pressed', String((button.dataset.catalogTag ?? '') === activeTag));
+      }
+    };
+
+    /** Pastreaza filtrele in URL, ca linkul sa poata fi trimis mai departe. */
+    const syncUrl = () => {
+      const url = new URL(location.href);
+      activeGroup ? url.searchParams.set('categorie', activeGroup) : url.searchParams.delete('categorie');
+      activeTag ? url.searchParams.set('tip', activeTag) : url.searchParams.delete('tip');
+      history.replaceState(null, '', url);
     };
 
     const selectGroup = (id: string | null) => {
       activeGroup = id;
-      syncing = true;
-      for (const group of groups) group.open = group.dataset.catalogGroup === id;
-      syncing = false;
-
-      const url = new URL(location.href);
-      if (id) url.searchParams.set('categorie', id);
-      else url.searchParams.delete('categorie');
-      history.replaceState(null, '', url);
-
+      syncUrl();
       apply();
     };
 
-    // Deschiderea unei categorii o si selecteaza; inchiderea revine la "toate".
+    /* Selectia categoriei se face pe click-ul din <summary>, nu pe evenimentul
+     * `toggle` al lui <details>: `toggle` se declanseaza asincron, deci si
+     * atunci cand deschidem noi categoriile din cod, in timpul cautarii - ceea
+     * ce ar filtra rezultatele fara ca utilizatorul sa fi cerut asta. */
     for (const group of groups) {
-      group.addEventListener('toggle', () => {
-        if (syncing) return;
-        selectGroup(group.open ? (group.dataset.catalogGroup ?? null) : null);
+      group.querySelector('summary')?.addEventListener('click', (event) => {
+        event.preventDefault();
+        const id = group.dataset.catalogGroup ?? null;
+        selectGroup(activeGroup === id ? null : id);
       });
     }
 
     allButton?.addEventListener('click', () => selectGroup(null));
-    search?.addEventListener('input', apply);
+
+    for (const button of tagButtons) {
+      button.addEventListener('click', () => {
+        activeTag = button.dataset.catalogTag ?? '';
+        syncUrl();
+        apply();
+      });
+    }
+
+    // O cautare noua cauta in tot catalogul: altfel o categorie deschisa mai
+    // devreme ar ascunde tacut rezultate din alte specializari.
+    search?.addEventListener('input', () => {
+      if ((search.value.trim().length >= 2) && activeGroup) {
+        activeGroup = null;
+        syncUrl();
+      }
+      apply();
+    });
+
     form?.addEventListener('submit', (event) => event.preventDefault());
 
-    // Permite /afectiuni?categorie=urologie&q=prostata
+    // Permite /servicii?categorie=urologie&tip=interventie&q=biopsie
     const params = new URLSearchParams(location.search);
     const initialQuery = params.get('q');
     if (initialQuery && search) search.value = initialQuery;
 
+    const initialTag = params.get('tip');
+    if (initialTag && tagButtons.some((button) => button.dataset.catalogTag === initialTag)) activeTag = initialTag;
+
     const initialGroup = params.get('categorie');
     if (initialGroup && groups.some((group) => group.dataset.catalogGroup === initialGroup)) {
-      selectGroup(initialGroup);
-    } else {
-      apply();
+      activeGroup = initialGroup;
     }
+
+    apply();
   }
 </script>
