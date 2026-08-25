@@ -30,7 +30,16 @@ const json = (dir: string) => glob({ base: `./src/content/${dir}`, pattern: '**/
 const tinaId = (value: unknown) =>
   typeof value === 'string' ? value.split('/').pop()!.replace(/\.(md|mdx|json)$/, '') : value;
 
-type RefCollection = 'specializari' | 'medici' | 'categorii' | 'articole' | 'afectiuni' | 'servicii' | 'proiecte';
+type RefCollection =
+  | 'specializari'
+  | 'medici'
+  | 'categorii'
+  | 'articole'
+  | 'afectiuni'
+  | 'servicii'
+  | 'proiecte'
+  | 'suport'
+  | 'posturi';
 
 const refTo = <C extends RefCollection>(collection: C) => z.preprocess(tinaId, reference(collection));
 
@@ -288,6 +297,62 @@ const servicii = defineCollection({
     }),
 });
 
+/**
+ * Centrul de suport: /suport si /suport/[slug]
+ *
+ * Intrebari administrative, nu medicale - asigurare, bilete de trimitere,
+ * medic de familie, documente. Sunt separate de intrebarile frecvente de pe
+ * paginile de serviciu tocmai pentru ca nu tin de o afectiune anume.
+ */
+const suport = defineCollection({
+  loader: md('suport'),
+  schema: z.object({
+    /** Intrebarea, exact cum ar formula-o pacientul. */
+    title: z.string(),
+    /** Raspunsul in doua propozitii, afisat in liste si in cautare. */
+    shortAnswer: z.string(),
+    topic: z.enum(['asigurare', 'programari', 'documente', 'clinica']).default('clinica'),
+    keywords: textList,
+    /** Pasii de urmat, cand raspunsul e o procedura. */
+    steps: namedList,
+    /** Linkuri utile (institutii, formulare). */
+    links: z
+      .array(
+        z.object({
+          label: z.string(),
+          href: z.string(),
+        }),
+      )
+      .default([]),
+    related: refListTo('suport'),
+    /** Legaturi catre catalog, cand intrebarea are un corespondent acolo. */
+    services: refListTo('servicii'),
+    order: z.number().default(100),
+    draft: z.boolean().default(false),
+    seo,
+  }),
+});
+
+/** Posturi deschise: /cariere */
+const posturi = defineCollection({
+  loader: md('posturi'),
+  schema: z.object({
+    title: z.string(),
+    /** Ex. "Urologie", "Recepție", "Asistență medicală" */
+    department: z.string().optional(),
+    /** Norma intreaga / partiala / colaborare */
+    type: z.string().default('Normă întreagă'),
+    location: z.string().default('Timișoara'),
+    summary: z.string(),
+    responsibilities: textList,
+    requirements: textList,
+    offer: textList,
+    order: z.number().default(100),
+    draft: z.boolean().default(false),
+    seo,
+  }),
+});
+
 /** Proiecte europene: /proiecte-europene/[slug] */
 const proiecte = defineCollection({
   loader: md('proiecte-europene'),
@@ -363,6 +428,8 @@ export const collections = {
   articole,
   afectiuni,
   servicii,
+  suport,
+  posturi,
   proiecte,
   testimoniale,
   pagini,

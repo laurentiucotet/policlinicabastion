@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
 import CatalogBrowser from '../../components/catalog/CatalogBrowser.astro';
-import type { CatalogGroup, CatalogItem, CatalogTag } from '../../lib/catalog';
+import type { CatalogFlag, CatalogGroup, CatalogItem, CatalogTag } from '../../lib/catalog';
 import { serviceTypeOrder, serviceTypes } from '../../lib/catalog';
 import CtaBand from '../../components/sections/CtaBand.astro';
 import { getServicii, getSpecializari } from '../../lib/content';
@@ -19,6 +19,7 @@ const groups: CatalogGroup[] = specializari.map((speciality) => ({
 }));
 
 const tags: CatalogTag[] = serviceTypeOrder.map((type) => ({ id: type, label: serviceTypes[type] }));
+const flags: CatalogFlag[] = [{ id: 'cnas', label: 'Decontat CNAS' }];
 
 const items: CatalogItem[] = servicii.map((item) => ({
   id: item.id,
@@ -27,6 +28,7 @@ const items: CatalogItem[] = servicii.map((item) => ({
   href: `/servicii/${item.id}`,
   groupId: item.data.speciality.id,
   tagId: item.data.type,
+  flags: item.data.cnas ? ['cnas'] : [],
   keywords: [...item.data.keywords, serviceTypes[item.data.type]],
   // Cautarea acopera si continut care nu incape pe card.
   searchText: [
@@ -58,6 +60,7 @@ const items: CatalogItem[] = servicii.map((item) => ({
     items={items}
     groups={groups}
     tags={tags}
+    flags={flags}
     noun="servicii"
     searchPlaceholder="Ex: biopsie fusion, ecografie, consultație..."
     allLabel="Toate serviciile"

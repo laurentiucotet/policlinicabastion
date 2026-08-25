@@ -52,6 +52,7 @@ const { items } = Astro.props;
     publishHeight();
     new ResizeObserver(publishHeight).observe(nav);
 
+    const list = nav.querySelector<HTMLElement>('ul');
     const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>('[data-anchor-link]'));
     const sections = links
       .map((link) => document.getElementById(link.dataset.anchorLink ?? ''))
@@ -72,9 +73,15 @@ const { items } = Astro.props;
 
       if (!changed) return;
 
+      /* Bara se defileaza pe orizontala prin `scrollLeft`, nu prin
+       * `scrollIntoView`: acela urca prin toti stramosii defilabili si tragea
+       * pagina inapoi cu cateva zeci de pixeli la fiecare schimbare de
+       * sectiune - exact senzatia de scroll "care se opune". */
       const active = links.find((link) => link.dataset.anchorLink === id);
-      // `block: 'nearest'` ca defilarea orizontala a barei sa nu miste pagina.
-      active?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+      if (!active || !list || list.scrollWidth <= list.clientWidth) return;
+
+      const target = active.offsetLeft - (list.clientWidth - active.offsetWidth) / 2;
+      list.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
     };
 
     /**

@@ -251,4 +251,102 @@ export const servicii: Collection = {
   ],
 };
 
-export const catalogCollections = [afectiuni, servicii];
+/**
+ * Centrul de suport — întrebări administrative (asigurare, bilete, documente).
+ * Sunt separate de întrebările frecvente de pe paginile de serviciu pentru că
+ * nu țin de o afecțiune anume.
+ */
+export const suport: Collection = {
+  name: 'suport',
+  label: 'Centru de suport',
+  path: 'src/content/suport',
+  format: 'mdx',
+  defaultItem: () => ({ topic: 'clinica' }),
+  ui: {
+    router: ({ document }) => `/suport/${document._sys.filename}`,
+    filename: { slugify: (values) => slugify(values) },
+  },
+  fields: [
+    {
+      type: 'string',
+      name: 'title',
+      label: 'Întrebarea',
+      description: 'Scrie-o exact cum ar formula-o pacientul.',
+      isTitle: true,
+      required: true,
+    },
+    {
+      type: 'string',
+      name: 'shortAnswer',
+      label: 'Răspunsul scurt',
+      description: 'Două propoziții. Apare în listă, în căutare și în Google.',
+      required: true,
+      ui: { component: 'textarea' },
+    },
+    {
+      type: 'string',
+      name: 'topic',
+      label: 'Temă',
+      options: [
+        { value: 'asigurare', label: 'Asigurare și CNAS' },
+        { value: 'programari', label: 'Programări și bilete' },
+        { value: 'documente', label: 'Documente și rezultate' },
+        { value: 'clinica', label: 'Despre clinică' },
+      ],
+    },
+    keywordsField,
+    { type: 'rich-text', name: 'body', label: 'Răspunsul complet', isBody: true },
+    namedListField('steps', 'Pas cu pas', 'Doar când răspunsul este o procedură.'),
+    {
+      type: 'object',
+      name: 'links',
+      label: 'Linkuri utile',
+      list: true,
+      ui: { itemProps: (item) => ({ label: item?.label ?? 'Link' }) },
+      fields: [
+        { type: 'string', name: 'label', label: 'Text', required: true },
+        { type: 'string', name: 'href', label: 'Link', required: true },
+      ],
+    },
+    referenceList('related', 'Întrebări înrudite', ['suport']),
+    referenceList('services', 'Servicii legate', ['servicii']),
+    orderField,
+    draftField,
+    seoField,
+  ],
+};
+
+/** Posturi deschise, afișate pe /cariere. */
+export const posturi: Collection = {
+  name: 'posturi',
+  label: 'Posturi (cariere)',
+  path: 'src/content/posturi',
+  format: 'mdx',
+  defaultItem: () => ({ type: 'Normă întreagă', location: 'Timișoara', draft: true }),
+  ui: {
+    router: () => '/cariere',
+    filename: { slugify: (values) => slugify(values) },
+  },
+  fields: [
+    { type: 'string', name: 'title', label: 'Titlul postului', isTitle: true, required: true },
+    { type: 'string', name: 'department', label: 'Departament', description: 'Ex: Urologie, Recepție.' },
+    { type: 'string', name: 'type', label: 'Tip', description: 'Ex: Normă întreagă, colaborare.' },
+    { type: 'string', name: 'location', label: 'Locație' },
+    {
+      type: 'string',
+      name: 'summary',
+      label: 'Rezumat',
+      required: true,
+      ui: { component: 'textarea' },
+    },
+    textListField('responsibilities', 'Ce va face'),
+    textListField('requirements', 'Ce cerem'),
+    textListField('offer', 'Ce oferim'),
+    { type: 'rich-text', name: 'body', label: 'Detalii (opțional)', isBody: true },
+    orderField,
+    draftField,
+    seoField,
+  ],
+};
+
+export const catalogCollections = [afectiuni, servicii, suport, posturi];

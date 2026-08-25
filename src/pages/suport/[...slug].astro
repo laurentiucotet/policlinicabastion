@@ -1,0 +1,113 @@
+---
+import { render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntityHeader from '../../components/entity/EntityHeader.astro';
+import NamedListSection from '../../components/entity/NamedListSection.astro';
+import RelatedCards from '../../components/entity/RelatedCards.astro';
+import SimpleHeading from '../../components/ui/SimpleHeading.astro';
+import Button from '../../components/ui/Button.astro';
+import Icon from '../../components/ui/Icon.astro';
+import { getSuport, getSuportInrudite } from '../../lib/content';
+import { supportTopics } from '../../lib/catalog';
+import { site } from '../../lib/site';
+
+export const getStaticPaths = (async () => {
+  const items = await getSuport();
+  return items.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}) satisfies GetStaticPaths;
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { title, shortAnswer, topic, steps, links, seo } = entry.data;
+
+const related = await getSuportInrudite(entry);
+const group = supportTopics[topic];
+
+/* Raspunsul scurt intra si in JSON-LD, ca sa poata aparea direct in Google. */
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'QAPage',
+  mainEntity: {
+    '@type': 'Question',
+    name: title,
+    acceptedAnswer: { '@type': 'Answer', text: shortAnswer },
+  },
+};
+---
+
+<BaseLayout title={seo?.title ?? title} description={seo?.description ?? shortAnswer} noindex={seo?.noindex} schema={schema}>
+  <EntityHeader
+    badge="Suport"
+    title={title}
+    breadcrumbs={[{ label: 'Suport', href: '/suport' }, { label: title }]}
+    tags={[{ label: group.label, href: '/suport' }]}
+    showCta={false}
+  />
+
+  <section class="bg-surface py-12">
+    <div class="container-page">
+      <p class="border-brand bg-brand-50 text-ink max-w-3xl rounded-r-2xl border-l-4 p-5 text-base leading-7 font-medium">
+        {shortAnswer}
+      </p>
+
+      <div class="prose-bastion mt-8 max-w-3xl">
+        <Content />
+      </div>
+
+      {
+        links.length > 0 && (
+          <ul class="mt-8 flex max-w-3xl flex-wrap gap-2">
+            {links.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  class="border-stroke text-brand hover:border-brand/40 hover:bg-brand-50 inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-semibold"
+                  rel={link.href.startsWith('http') ? 'noopener' : undefined}
+                  target={link.href.startsWith('http') ? '_blank' : undefined}
+                >
+                  {link.label}
+                  <Icon name="arrow-right" size={14} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </section>
+
+  <NamedListSection id="pasi" title="Pas cu pas" items={steps} tone="alt" />
+
+  <RelatedCards
+    badge="Suport"
+    title="Întrebări înrudite"
+    items={related.map((item) => ({
+      href: `/suport/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortAnswer,
+      eyebrow: supportTopics[item.data.topic].label,
+    }))}
+    cta={{ label: 'Toate întrebările', href: '/suport' }}
+  />
+
+  <section class="bg-surface-alt py-12">
+    <div class="container-page">
+      <div class="border-stroke bg-surface shadow-card flex flex-col gap-4 rounded-2xl border p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <SimpleHeading title="Mai ai întrebări?" tag="h2" />
+          <p class="text-ink-muted mt-3 text-sm leading-6">
+            Recepția răspunde în timpul programului, la telefon sau prin formularul de contact.
+          </p>
+        </div>
+        <div class="flex shrink-0 flex-wrap gap-2">
+          <Button href="/contact" variant="outline">Scrie-ne</Button>
+          <Button href={site.phones[0]?.href}>
+            <Icon name="phone" size={16} />
+            Sună la recepție
+          </Button>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -8,13 +8,15 @@
 import Icon from '../ui/Icon.astro';
 import EntityCard from '../cards/EntityCard.astro';
 import { normalizeText } from '../../lib/utils';
-import type { CatalogGroup, CatalogItem, CatalogTag } from '../../lib/catalog';
+import type { CatalogFlag, CatalogGroup, CatalogItem, CatalogTag } from '../../lib/catalog';
 
 interface Props {
   items: CatalogItem[];
   groups: CatalogGroup[];
   /** Randul de etichete de deasupra grilei. Gol = fara filtru pe eticheta. */
   tags?: CatalogTag[];
+  /** Comutatoare independente (ex. „Decontat CNAS”), care se adauga peste restul. */
+  flags?: CatalogFlag[];
   /** Eticheta pentru numarul de rezultate: "afecțiuni", "servicii"... */
   noun: string;
   searchPlaceholder: string;
@@ -26,6 +28,7 @@ const {
   items,
   groups,
   tags = [],
+  flags = [],
   noun,
   searchPlaceholder,
   allLabel = 'Toate',
@@ -41,6 +44,7 @@ const usedGroups = groups
 const orderedItems = usedGroups.flatMap((group) => group.items);
 
 const usedTags = tags.filter((tag) => items.some((item) => item.tagId === tag.id));
+const usedFlags = flags.filter((flag) => items.some((item) => item.flags?.includes(flag.id)));
 
 /** Textul dupa care filtreaza cautarea. Include si continut care nu apare pe card. */
 const haystack = (item: CatalogItem) =>
@@ -124,8 +128,8 @@ const haystack = (item: CatalogItem) =>
 
     <div>
       {
-        usedTags.length > 0 && (
-          <div class="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Tipuri de servicii">
+        (usedTags.length > 0 || usedFlags.length > 0) && (
+          <div class="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Filtre">
             <button
               type="button"
               class="bg-chip text-chip-ink hover:bg-brand-100 aria-pressed:bg-brand rounded-full px-3 py-1.5 text-xs font-semibold aria-pressed:text-white"
@@ -144,6 +148,20 @@ const haystack = (item: CatalogItem) =>
                 {tag.label}
               </button>
             ))}
+
+            {usedFlags.length > 0 && <span class="bg-stroke mx-1 h-5 w-px" aria-hidden="true" />}
+
+            {usedFlags.map((flag) => (
+              <button
+                type="button"
+                class="border-stroke text-ink-muted hover:border-brand/40 aria-pressed:border-brand aria-pressed:bg-brand-50 aria-pressed:text-brand inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold"
+                aria-pressed="false"
+                data-catalog-flag={flag.id}
+              >
+                <span class="border-current inline-block h-3 w-3 rounded-[4px] border" aria-hidden="true" />
+                {flag.label}
+              </button>
+            ))}
           </div>
         )
       }
@@ -159,6 +177,7 @@ const haystack = (item: CatalogItem) =>
               data-catalog-item={item.id}
               data-group={item.groupId}
               data-tag={item.tagId ?? ''}
+              data-flags={(item.flags ?? []).join(' ')}
               data-haystack={haystack(item)}
             >
               <EntityCard
@@ -192,6 +211,7 @@ const haystack = (item: CatalogItem) =>
     const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-catalog-item]'));
     const links = Array.from(root.querySelectorAll<HTMLElement>('[data-catalog-link]'));
     const tagButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-catalog-tag]'));
+    const flagButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-catalog-flag]'));
 
     const noun = status?.dataset.noun ?? '';
     const total = cards.length;
@@ -199,6 +219,8 @@ const haystack = (item: CatalogItem) =>
     /** Categoria selectata (null = toate) si eticheta selectata ('' = toate). */
     let activeGroup: string | null = null;
     let activeTag = '';
+    /** Comutatoarele active se aduna: un card trebuie sa le aiba pe toate. */
+    const activeFlags = new Set<string>();
 
     const normalize = (value: string) =>
       value
@@ -213,17 +235,20 @@ const haystack = (item: CatalogItem) =>
 
       for (const card of cards) {
         const matchesQuery = query.length < 2 || (card.dataset.haystack ?? '').includes(query);
+        const cardFlags = (card.dataset.flags ?? '').split(' ');
         const matchesTag = !activeTag || card.dataset.tag === activeTag;
+        const matchesFlags = [...activeFlags].every((flag) => cardFlags.includes(flag));
         const group = card.dataset.group ?? '';
         const matchesGroup = !activeGroup || group === activeGroup;
-        const show = matchesQuery && matchesTag && matchesGroup;
+        const show = matchesQuery && matchesTag && matchesFlags && matchesGroup;
 
         card.hidden = !show;
         if (show) visible += 1;
-        if (matchesQuery && matchesTag) perGroup.set(group, (perGroup.get(group) ?? 0) + 1);
+        const inFilters = matchesQuery && matchesTag && matchesFlags;
+        if (inFilters) perGroup.set(group, (perGroup.get(group) ?? 0) + 1);
 
         const link = links.find((item) => item.dataset.catalogLink === card.dataset.catalogItem);
-        if (link) link.hidden = !(matchesQuery && matchesTag);
+        if (link) link.hidden = !inFilters;
       }
 
       for (const group of groups) {
@@ -245,6 +270,9 @@ const haystack = (item: CatalogItem) =>
       for (const button of tagButtons) {
         button.setAttribute('aria-pressed', String((button.dataset.catalogTag ?? '') === activeTag));
       }
+      for (const button of flagButtons) {
+        button.setAttribute('aria-pressed', String(activeFlags.has(button.dataset.catalogFlag ?? '')));
+      }
     };
 
     /** Pastreaza filtrele in URL, ca linkul sa poata fi trimis mai departe. */
@@ -252,6 +280,7 @@ const haystack = (item: CatalogItem) =>
       const url = new URL(location.href);
       activeGroup ? url.searchParams.set('categorie', activeGroup) : url.searchParams.delete('categorie');
       activeTag ? url.searchParams.set('tip', activeTag) : url.searchParams.delete('tip');
+      activeFlags.size ? url.searchParams.set('doar', [...activeFlags].join(',')) : url.searchParams.delete('doar');
       history.replaceState(null, '', url);
     };
 
@@ -283,6 +312,15 @@ const haystack = (item: CatalogItem) =>
       });
     }
 
+    for (const button of flagButtons) {
+      button.addEventListener('click', () => {
+        const flag = button.dataset.catalogFlag ?? '';
+        activeFlags.has(flag) ? activeFlags.delete(flag) : activeFlags.add(flag);
+        syncUrl();
+        apply();
+      });
+    }
+
     // O cautare noua cauta in tot catalogul: altfel o categorie deschisa mai
     // devreme ar ascunde tacut rezultate din alte specializari.
     search?.addEventListener('input', () => {
@@ -302,6 +340,10 @@ const haystack = (item: CatalogItem) =>
 
     const initialTag = params.get('tip');
     if (initialTag && tagButtons.some((button) => button.dataset.catalogTag === initialTag)) activeTag = initialTag;
+
+    for (const flag of (params.get('doar') ?? '').split(',').filter(Boolean)) {
+      if (flagButtons.some((button) => button.dataset.catalogFlag === flag)) activeFlags.add(flag);
+    }
 
     const initialGroup = params.get('categorie');
     if (initialGroup && groups.some((group) => group.dataset.catalogGroup === initialGroup)) {

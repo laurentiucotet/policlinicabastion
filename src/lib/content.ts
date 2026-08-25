@@ -53,6 +53,16 @@ export async function getServicii(): Promise<CollectionEntry<'servicii'>[]> {
   return items.sort(byOrder);
 }
 
+export async function getSuport(): Promise<CollectionEntry<'suport'>[]> {
+  const items = await getCollection('suport', notDraft);
+  return items.sort(byOrder);
+}
+
+export async function getPosturi(): Promise<CollectionEntry<'posturi'>[]> {
+  const items = await getCollection('posturi', notDraft);
+  return items.sort(byOrder);
+}
+
 /* ---------------------------------------------------------------------------
  * Relatii intre entitati.
  *
@@ -71,7 +81,7 @@ const unique = <T extends WithId>(items: T[]): T[] => {
 };
 
 /** Rezolva o lista de referinte, ignorand intrarile de tip draft. */
-async function resolveMany<C extends 'afectiuni' | 'articole' | 'medici' | 'servicii' | 'proiecte'>(
+async function resolveMany<C extends 'afectiuni' | 'articole' | 'medici' | 'servicii' | 'proiecte' | 'suport'>(
   refs: { collection: C; id: string }[],
 ): Promise<CollectionEntry<C>[]> {
   // `getEntry` are un tip conditional greu de propagat printr-un generic, asa
@@ -170,6 +180,13 @@ export async function getArticoleForEntity(
   });
 
   return unique([...declared, ...reverse, ...byKeyword]).slice(0, limit);
+}
+
+/** Intrebarile inrudite de pe o pagina de suport, plus altele din acelasi grup. */
+export async function getSuportInrudite(current: CollectionEntry<'suport'>, limit = 3) {
+  const [declared, all] = await Promise.all([resolveMany(current.data.related), getSuport()]);
+  const sameTopic = all.filter((item) => item.id !== current.id && item.data.topic === current.data.topic);
+  return unique([...declared, ...sameTopic]).slice(0, limit);
 }
 
 /** Noutatile despre un proiect european: legate explicit, din ambele capete. */

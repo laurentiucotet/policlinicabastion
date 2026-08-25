@@ -40,31 +40,84 @@
       "children": []
     }
   ],
-  "footer": [
+  "footerGroups": [
     {
-      "label": "Contact",
-      "href": "/contact"
+      "title": "Clinica",
+      "links": [
+        {
+          "label": "Despre noi",
+          "href": "/despre-noi"
+        },
+        {
+          "label": "Echipa noastră",
+          "href": "/medici"
+        },
+        {
+          "label": "Cariere",
+          "href": "/cariere"
+        },
+        {
+          "label": "Proiecte Europene",
+          "href": "/proiecte-europene"
+        },
+        {
+          "label": "Noutăți",
+          "href": "/noutati"
+        }
+      ]
     },
     {
-      "label": "Servicii și intervenții",
-      "href": "/servicii"
+      "title": "Pentru pacienți",
+      "links": [
+        {
+          "label": "Servicii și intervenții",
+          "href": "/servicii"
+        },
+        {
+          "label": "Afecțiuni tratate",
+          "href": "/afectiuni"
+        },
+        {
+          "label": "Specializări",
+          "href": "/specializari"
+        },
+        {
+          "label": "Centrul de suport",
+          "href": "/suport"
+        },
+        {
+          "label": "Servicii decontate prin C.N.A.S",
+          "href": "/servicii-decontate-cnas"
+        }
+      ]
     },
     {
-      "label": "Afecțiuni tratate",
-      "href": "/afectiuni"
-    },
-    {
-      "label": "Drepturi și obligații asigurați",
-      "href": "/drepturi-si-obligatii-asigurati"
-    },
-    {
-      "label": "Drepturile și obligațiile pacienților",
-      "href": "/drepturile-pacientilor"
-    },
-    {
-      "label": "Servicii decontate prin C.N.A.S",
-      "href": "/servicii-decontate-cnas"
-    },
+      "title": "Informații utile",
+      "links": [
+        {
+          "label": "Drepturi și obligații asigurați",
+          "href": "/drepturi-si-obligatii-asigurati"
+        },
+        {
+          "label": "Drepturile și obligațiile pacienților",
+          "href": "/drepturile-pacientilor"
+        },
+        {
+          "label": "Feedback pacienți",
+          "href": "/feedback"
+        },
+        {
+          "label": "Newsletter",
+          "href": "/newsletter"
+        },
+        {
+          "label": "Contact",
+          "href": "/contact"
+        }
+      ]
+    }
+  ],
+  "footerLegal": [
     {
       "label": "Termeni și Condiții",
       "href": "/termeni-si-conditii"
@@ -72,14 +125,6 @@
     {
       "label": "Politica de Confidențialitate",
       "href": "/politica-de-confidentialitate"
-    },
-    {
-      "label": "Newsletter",
-      "href": "/newsletter"
-    },
-    {
-      "label": "Feedback Pacienți",
-      "href": "/feedback"
     }
   ]
 }

@@ -47,10 +47,9 @@ const href = `/specializari/${speciality.id}`;
         }
       </div>
 
-      <div class="flex shrink-0 flex-wrap gap-2">
-        <Button href={href} variant="outline">Vezi specializarea</Button>
-        <Button href="/contact">Programează-te</Button>
-      </div>
+      {/* O singura actiune: programarea are deja buton in capul paginii si in
+          banda CTA de mai jos. */}
+      <Button href={href} variant="outline" class="shrink-0">Vezi specializarea</Button>
     </div>
   </div>
 </section>

@@ -11,6 +11,8 @@ export interface CatalogItem {
   groupId: string;
   /** Eticheta (tip de serviciu), folosita de randul de filtre de deasupra grilei. */
   tagId?: string;
+  /** Proprietati care se pot comuta independent, ex. `cnas`. */
+  flags?: string[];
   /** Termeni suplimentari dupa care se poate cauta intrarea. */
   keywords?: string[];
   /** Text ascuns, adaugat la cautare: simptome, indicatii, intrebari frecvente. */
@@ -29,6 +31,12 @@ export interface CatalogGroup {
 }
 
 export interface CatalogTag {
+  id: string;
+  label: string;
+}
+
+/** Comutator independent din randul de filtre (ex. „Decontat CNAS”). */
+export interface CatalogFlag {
   id: string;
   label: string;
 }
@@ -56,3 +64,15 @@ export const serviceTypeOrder: ServiceType[] = [
   'procedura',
   'interventie',
 ];
+
+/** Grupele din centrul de suport. Ordinea de aici e ordinea din pagina. */
+export const supportTopics = {
+  asigurare: { label: 'Asigurare și CNAS', icon: '🪪', description: 'Calitatea de asigurat, decontare, medic de familie.' },
+  programari: { label: 'Programări și bilete', icon: '📅', description: 'Bilete de trimitere, programări, anulări.' },
+  documente: { label: 'Documente și rezultate', icon: '📄', description: 'Buletine de analiză, rezultate, adeverințe.' },
+  clinica: { label: 'Despre clinică', icon: '🏥', description: 'Adresă, program, cum ajungi.' },
+} as const;
+
+export type SupportTopic = keyof typeof supportTopics;
+
+export const supportTopicOrder: SupportTopic[] = ['asigurare', 'programari', 'documente', 'clinica'];

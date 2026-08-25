@@ -1,6 +1,14 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
-import { getAfectiuni, getArticole, getMedici, getProiecte, getServicii, getSpecializari } from '../lib/content';
+import {
+  getAfectiuni,
+  getArticole,
+  getMedici,
+  getProiecte,
+  getServicii,
+  getSpecializari,
+  getSuport,
+} from '../lib/content';
 import { serviceTypes } from '../lib/catalog';
 
 /**
@@ -9,10 +17,11 @@ import { serviceTypes } from '../lib/catalog';
  *   - pagina de rezultate /rezultate-cautare
  */
 export const GET: APIRoute = async () => {
-  const [specializari, afectiuni, servicii, medici, articole, proiecte, pagini] = await Promise.all([
+  const [specializari, afectiuni, servicii, suport, medici, articole, proiecte, pagini] = await Promise.all([
     getSpecializari(),
     getAfectiuni(),
     getServicii(),
+    getSuport(),
     getMedici(),
     getArticole(),
     getProiecte(),
@@ -42,6 +51,13 @@ export const GET: APIRoute = async () => {
       description: item.data.shortDescription,
       url: `/servicii/${item.id}`,
       keywords: [...item.data.keywords, serviceTypes[item.data.type], ...item.data.indications],
+    })),
+    ...suport.map((item) => ({
+      type: 'Suport',
+      title: item.data.title,
+      description: item.data.shortAnswer,
+      url: `/suport/${item.id}`,
+      keywords: item.data.keywords,
     })),
     ...medici.map((item) => ({
       type: 'Medic',

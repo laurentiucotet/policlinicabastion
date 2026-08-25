@@ -111,6 +111,8 @@ Derivat direct din paginile din Figma.
 | `medici` | `src/content/medici` | `.mdx` | `/medici/[slug]` |
 | `afectiuni` | `src/content/afectiuni` | `.mdx` | `/afectiuni/[slug]` |
 | `servicii` | `src/content/servicii` | `.mdx` | `/servicii/[slug]` |
+| `suport` | `src/content/suport` | `.mdx` | `/suport/[slug]` |
+| `posturi` | `src/content/posturi` | `.mdx` | — (listate pe `/cariere`) |
 | `articole` | `src/content/articole` | `.mdx` | `/noutati/[slug]` |
 | `categorii` | `src/content/categorii` | `.json` | `/noutati/categorie/[slug]` |
 | `proiecte` | `src/content/proiecte-europene` | `.mdx` | `/proiecte-europene/[slug]` |
@@ -234,8 +236,12 @@ servicii), căutare după cuvinte-cheie, carduri în dreapta.
 - **Căutarea acoperă și conținut care nu încape pe card**: `keywords`
   (sinonime populare — „pietre la rinichi", „nu pot dormi"), simptome,
   indicații și întrebările frecvente, puse într-un atribut `data-haystack`.
-- **Starea se reflectă în URL** (`/servicii?categorie=urologie&tip=interventie`),
-  deci meniul din header poate trimite direct în catalogul filtrat.
+- **Etichetele și comutatoarele sunt filtre diferite.** Eticheta (tipul de
+  serviciu) e exclusivă — alegi una. Comutatoarele (`flags`, momentan doar
+  „Decontat CNAS") se adaugă peste restul filtrelor și se pot combina.
+- **Starea se reflectă în URL**
+  (`/servicii?categorie=urologie&tip=interventie&doar=cnas`), deci meniul din
+  header poate trimite direct în catalogul filtrat.
 - **O căutare nouă anulează categoria selectată.** Altfel, o categorie deschisă
   mai devreme ar ascunde tăcut rezultate din alte specializări.
 
@@ -259,6 +265,12 @@ bară — calcul din poziții, nu din raportul de intersecție al unui
 `IntersectionObserver`: secțiunile au înălțimi foarte diferite, iar una scurtă
 („Beneficii") ar pierde mereu în fața uneia lungi („Cum decurge"). Pe ecrane
 înguste, elementul activ e adus în vizor prin defilarea orizontală a barei.
+
+⚠️ **A doua capcană, de reținut.** Bara se defilează prin `scrollLeft`, nu prin
+`scrollIntoView`. `scrollIntoView` urcă prin toți strămoșii defilabili, inclusiv
+documentul, și trăgea pagina înapoi cu câteva zeci de pixeli la fiecare
+schimbare de secțiune — senzația era de scroll „care se opune", nu de bug de
+navigație.
 
 | Afecțiune | Serviciu / intervenție |
 | --- | --- |
@@ -411,6 +423,56 @@ promovate — dacă e goală, ia primele din catalog.
   partajabil, indexabil și funcționează fără JavaScript. Fiecare filtru arată
   numărul de articole, iar cel activ e marcat cu `aria-current="page"`.
 - Aceleași filtre apar și pe pagina de categorie, cu starea mutată corespunzător.
+
+---
+
+## 4sexies. Suport, cariere și subsol
+
+### Centrul de suport (`/suport`)
+
+Întrebările administrative — calitatea de asigurat, valabilitatea biletului de
+trimitere, schimbarea medicului de familie — nu aparțin niciunei afecțiuni și
+nici unui serviciu, așa că nu aveau unde să stea. Au acum colecție proprie,
+grupată pe patru teme (`asigurare`, `programari`, `documente`, `clinica`,
+definite în `src/lib/catalog.ts`).
+
+Pagina de listă are o căutare care filtrează întrebările pe măsură ce scrii —
+același mecanism ca în catalog, peste titlu, răspunsul scurt și `keywords`.
+Fiecare întrebare are pagină proprie, cu răspunsul scurt evidențiat sus (și
+publicat ca `QAPage` în JSON-LD, ca să poată apărea direct în Google), răspunsul
+complet, pașii de urmat și întrebările înrudite.
+
+⚠️ **Conținutul administrativ trebuie verificat periodic.** Regulile CNAS
+(valabilitatea biletelor, condițiile de transfer între medici de familie) se
+schimbă. Fiecare răspuns se încheie cu o notă care trimite la recepție și la
+`cnas.ro`, dar textele trebuie revizuite la fiecare modificare legislativă.
+
+### `/cariere`
+
+Pagina există chiar și fără posturi deschise — starea „momentan nu avem posturi
+anunțate public, trimite-ne CV-ul" este o stare reală, nu un accident. Posturile
+sunt o colecție proprie (`posturi`), ca să poată fi publicate din CMS fără
+intervenție în cod. `posturi/post-nou-sablon` e o intrare-șablon marcată ciornă,
+cu structura completă a unui anunț.
+
+### Subsolul
+
+Subsolul este închis la culoare, ca să încheie vizual pagina și să nu se
+confunde cu benzile CTA albastre de deasupra lui. Coloanele de linkuri vin din
+`settings/navigation.json` (`footerGroups` + `footerLegal`), deci se editează din
+CMS fără să umble nimeni prin componentă.
+
+### Câte îndemnuri la acțiune încap pe o pagină
+
+Pe paginile de serviciu se adunaseră cinci: butonul din header, cele două din
+capul paginii, unul în cardul de specializare, banda CTA și banda albastră din
+subsol. Prea multe: când totul strigă „programează-te", niciunul nu mai are
+greutate.
+
+Regula acum: **o singură acțiune primară pe zonă de pagină** — butonul persistent
+din header, acțiunea din capul paginii, banda CTA de la final și una singură în
+subsol. Cardul de specializare a rămas cu „Vezi specializarea" (e navigație, nu
+conversie), iar banda albastră „PROGRAMAȚI-VĂ" din subsol a dispărut.
 
 ---
 
@@ -627,6 +689,11 @@ Lucruri conștient lăsate pentru pașii următori:
 - [ ] Verificarea fidelității față de Figma, secțiune cu secțiune, pe
       breakpoint-uri (structura și tokenii sunt puși, rafinarea vizuală urmează).
 - [ ] Google Tag Manager (câmpul există deja în `settings/site.json`).
+- [ ] **Revizuirea răspunsurilor din centrul de suport** la fiecare modificare a
+      regulilor CNAS (valabilitatea biletelor, transferul între medici de
+      familie) — vezi §4sexies.
+- [ ] Posturile reale pe `/cariere` — momentan există doar intrarea-șablon,
+      marcată ciornă.
 - [ ] **Validarea medicală a catalogului** (afecțiuni, servicii, intervenții) —
       vezi avertismentul din §8. Blocant pentru lansare.
 - [ ] **Prețurile serviciilor** — câmpul `price` există pe fiecare serviciu, dar

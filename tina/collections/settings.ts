@@ -142,8 +142,29 @@ export const meniu: Collection = {
     },
     {
       type: 'object',
-      name: 'footer',
-      label: 'Linkuri în subsol',
+      name: 'footerGroups',
+      label: 'Subsol — coloane de linkuri',
+      list: true,
+      ui: { itemProps: (item) => ({ label: item?.title ?? 'Coloană' }) },
+      fields: [
+        { type: 'string', name: 'title', label: 'Titlu coloană', required: true },
+        {
+          type: 'object',
+          name: 'links',
+          label: 'Linkuri',
+          list: true,
+          ui: { itemProps: (item) => ({ label: item?.label ?? 'Link' }) },
+          fields: [
+            { type: 'string', name: 'label', label: 'Text', required: true },
+            { type: 'string', name: 'href', label: 'Link', required: true },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'object',
+      name: 'footerLegal',
+      label: 'Subsol — rândul de jos (legal)',
       list: true,
       ui: { itemProps: (item) => ({ label: item?.label ?? 'Link' }) },
       fields: [

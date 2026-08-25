@@ -1,0 +1,155 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageTitleHeader from '../components/sections/PageTitleHeader.astro';
+import SimpleHeading from '../components/ui/SimpleHeading.astro';
+import Button from '../components/ui/Button.astro';
+import Icon from '../components/ui/Icon.astro';
+import WhyBand from '../components/sections/WhyBand.astro';
+import { getPosturi } from '../lib/content';
+import { site } from '../lib/site';
+
+const positions = await getPosturi();
+const applyHref = `mailto:${site.email}?subject=${encodeURIComponent('Aplicare — Policlinica Bastion')}`;
+
+const reasons = [
+  {
+    icon: '🔬',
+    title: 'Aparatură modernă',
+    text: 'Echipamente achiziționate prin proiecte europene: laser Holmium, fuziune RMN-ecografie, sterilizare la temperatură joasă.',
+  },
+  {
+    icon: '🤝',
+    title: 'Echipă multidisciplinară',
+    text: 'Nefrologie, urologie, diabet și psihiatrie lucrează împreună pe același pacient, nu în paralel.',
+  },
+  {
+    icon: '📈',
+    title: 'Cazuistică variată',
+    text: 'De la patologie curentă la intervenții de referință pentru care pacienții vin din toată regiunea de vest.',
+  },
+  {
+    icon: '🕗',
+    title: 'Program predictibil',
+    text: 'Ture stabilite din timp, într-o clinică ambulatorie, fără gărzi de noapte.',
+  },
+];
+---
+
+<BaseLayout
+  title="Cariere"
+  description="Posturile deschise la Policlinica Bastion Timișoara și cum poți trimite o candidatură spontană."
+>
+  <PageTitleHeader
+    breadcrumbs={[{ label: 'Cariere' }]}
+    badge="Cariere"
+    title="Lucrează cu noi"
+    subtitle="Căutăm oameni care vor să facă medicină bine făcută, într-o clinică unde aparatura și echipa nu sunt o promisiune de recrutare, ci condiții de lucru."
+  />
+
+  <WhyBand
+    badge="De ce Bastion"
+    title="Cum se lucrează la Policlinica Bastion"
+    subtitle="Patru lucruri pe care le poți verifica din prima zi."
+    items={reasons}
+  />
+
+  <section id="posturi" class="bg-surface py-12">
+    <div class="container-page">
+      <SimpleHeading title="Posturi deschise" />
+
+      {
+        positions.length > 0 ? (
+          <ul class="mt-8 flex flex-col gap-4">
+            {positions.map((position) => (
+              <li>
+                <article class="border-stroke bg-surface shadow-card rounded-2xl border p-6">
+                  <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                    <div>
+                      <h3 class="text-ink text-lg leading-7 font-semibold">{position.data.title}</h3>
+                      <p class="text-ink-muted mt-2 text-sm leading-6 text-pretty">{position.data.summary}</p>
+                    </div>
+
+                    <ul class="flex shrink-0 flex-wrap gap-2">
+                      {[position.data.department, position.data.type, position.data.location]
+                        .filter(Boolean)
+                        .map((chip) => (
+                          <li class="bg-surface-alt text-ink-muted rounded-full px-3 py-1.5 text-xs font-semibold">
+                            {chip}
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+
+                  <div class="mt-6 grid gap-6 md:grid-cols-3">
+                    {[
+                      { title: 'Ce vei face', items: position.data.responsibilities },
+                      { title: 'Ce îți cerem', items: position.data.requirements },
+                      { title: 'Ce oferim', items: position.data.offer },
+                    ]
+                      .filter((column) => column.items.length > 0)
+                      .map((column) => (
+                        <div>
+                          <h4 class="text-ink-subtle text-xs leading-4 font-semibold tracking-wide uppercase">
+                            {column.title}
+                          </h4>
+                          <ul class="mt-2 space-y-1.5">
+                            {column.items.map((item) => (
+                              <li class="text-ink-muted flex gap-2 text-sm leading-6">
+                                <span class="bg-brand mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full" aria-hidden="true" />
+                                <span>{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                  </div>
+
+                  <div class="mt-6">
+                    <Button href={applyHref}>
+                      Aplică pentru acest post
+                      <Icon name="arrow-right" size={16} />
+                    </Button>
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div class="border-stroke bg-surface-alt mt-8 rounded-2xl border border-dashed p-8 text-center">
+            <p class="text-ink text-base leading-7 font-semibold">
+              Momentan nu avem posturi deschise anunțate public.
+            </p>
+            <p class="text-ink-muted mx-auto mt-2 max-w-2xl text-sm leading-6 text-pretty">
+              Asta nu înseamnă că nu căutăm oameni. Trimite-ne CV-ul și specialitatea ta — păstrăm candidaturile și
+              revenim când apare o poziție potrivită.
+            </p>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="bg-surface-alt py-12">
+    <div class="container-page">
+      <div class="border-stroke bg-surface shadow-card flex flex-col gap-6 rounded-2xl border p-6 sm:flex-row sm:items-center sm:gap-8 lg:p-8">
+        <div class="flex-1">
+          <SimpleHeading title="Candidatură spontană" tag="h2" />
+          <p class="text-ink-muted mt-4 text-base leading-7 text-pretty">
+            Trimite-ne CV-ul, specialitatea și competențele tale. Dacă vrei, spune-ne pe scurt și ce cauți: tip de
+            cazuistică, program, echipă.
+          </p>
+        </div>
+        <div class="flex shrink-0 flex-wrap gap-2">
+          <Button href={applyHref}>
+            <Icon name="mail" size={16} />
+            Trimite CV-ul
+          </Button>
+          <Button href={site.phones[0]?.href} variant="outline">
+            <Icon name="phone" size={16} />
+            {site.phones[0]?.value}
+          </Button>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
