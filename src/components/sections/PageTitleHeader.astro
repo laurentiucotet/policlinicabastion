@@ -1,17 +1,22 @@
 ---
 import Badge from '../ui/Badge.astro';
+import Breadcrumbs from '../ui/Breadcrumbs.astro';
+import type { Crumb } from '../ui/Breadcrumbs.astro';
 
 interface Props {
   badge?: string;
   title: string;
   subtitle?: string;
+  /** Firul de navigare, fara "Acasă". Lipseste doar pe prima pagina. */
+  breadcrumbs?: Crumb[];
 }
 
-const { badge, title, subtitle } = Astro.props;
+const { badge, title, subtitle, breadcrumbs } = Astro.props;
 ---
 
 <section class="bg-surface-alt border-stroke border-b">
   <div class="container-page flex flex-col items-center gap-3 py-12 text-center">
+    {breadcrumbs && <Breadcrumbs items={breadcrumbs} class="mb-3 self-start text-left" />}
     {badge && <Badge>{badge}</Badge>}
     <h1 class="text-3xl leading-tight font-bold text-balance sm:text-4xl lg:text-5xl">{title}</h1>
     {subtitle && <p class="text-ink-muted max-w-3xl text-base leading-6 text-pretty">{subtitle}</p>}

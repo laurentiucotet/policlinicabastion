@@ -50,7 +50,18 @@ const schema = {
   noindex={seo?.noindex}
   schema={schema}
 >
-  <PageTitleHeader badge={categoryEntry?.data.name ?? 'Blog & Noutăți'} title={title} subtitle={excerpt} />
+  <PageTitleHeader
+    breadcrumbs={[
+      { label: 'Noutăți', href: '/noutati' },
+      ...(categoryEntry
+        ? [{ label: categoryEntry.data.name, href: `/noutati/categorie/${categoryEntry.id}` }]
+        : []),
+      { label: title },
+    ]}
+    badge={categoryEntry?.data.name ?? 'Blog & Noutăți'}
+    title={title}
+    subtitle={excerpt}
+  />
 
   <section class="bg-surface py-12">
     <div class="container-page grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">

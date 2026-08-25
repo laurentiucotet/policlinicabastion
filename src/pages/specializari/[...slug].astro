@@ -44,7 +44,12 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
   description={seo?.description ?? speciality.data.shortDescription}
   noindex={seo?.noindex}
 >
-  <PageTitleHeader badge={badge} title={title} subtitle={subtitle} />
+  <PageTitleHeader
+    breadcrumbs={[{ label: 'Specializări', href: '/specializari' }, { label: title }]}
+    badge={badge}
+    title={title}
+    subtitle={subtitle}
+  />
 
   <section class="bg-surface py-12">
     <div class="container-page">

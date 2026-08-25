@@ -18,7 +18,7 @@ import { getAfectiuni, getArticoleForEntity, getMediciBySpecialitate, getServici
 import { serviceTypes } from '../../lib/catalog';
 import { formatPrice, hasPrice } from '../../lib/utils';
 import type { Price } from '../../lib/utils';
-import { breadcrumbSchema, conditionSchema, faqSchema } from '../../lib/schema';
+import { conditionSchema, faqSchema } from '../../lib/schema';
 import { home } from '../../lib/site';
 
 export const getStaticPaths = (async () => {
@@ -85,19 +85,8 @@ const sections = [
 const tones = new Map(sections.map((section, index) => [section.id, index % 2 === 0 ? 'white' : 'alt'] as const));
 const toneOf = (id: string): 'white' | 'alt' => tones.get(id) ?? 'white';
 
-const origin = Astro.site?.toString() ?? Astro.url.origin;
-const schema = [
-  conditionSchema(afectiune),
-  breadcrumbSchema(
-    [
-      { name: 'Acasă', url: '/' },
-      { name: 'Afecțiuni', url: '/afectiuni' },
-      { name: title, url: `/afectiuni/${afectiune.id}` },
-    ],
-    origin,
-  ),
-  faqSchema(faq),
-].filter(Boolean) as Record<string, unknown>[];
+// `BreadcrumbList` e emis de componenta de fir de navigare, nu de aici.
+const schema = [conditionSchema(afectiune), faqSchema(faq)].filter(Boolean) as Record<string, unknown>[];
 
 /** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
 const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : undefined);
@@ -114,11 +103,7 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
     title={title}
     subtitle={subtitle ?? shortDescription}
     alsoKnownAs={alsoKnownAs}
-    breadcrumbs={[
-      { label: 'Acasă', href: '/' },
-      { label: 'Afecțiuni', href: '/afectiuni' },
-      { label: title },
-    ]}
+    breadcrumbs={[{ label: 'Afecțiuni', href: '/afectiuni' }, { label: title }]}
     tags={speciality
       ? [{ label: speciality.data.title, href: `/specializari/${speciality.id}` }]
       : []}

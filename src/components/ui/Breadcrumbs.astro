@@ -1,0 +1,65 @@
+---
+/**
+ * Firul de navigare, folosit pe toate paginile in afara de prima.
+ *
+ * Componenta emite si JSON-LD-ul `BreadcrumbList`, ca marcajul vizibil si cel
+ * pentru Google sa nu poata ajunge sa spuna lucruri diferite: sunt generate din
+ * aceeasi lista, o singura data.
+ *
+ * `items` NU include "Acasă" - il pune componenta. Ultimul element e pagina
+ * curenta si se randeaza fara link, chiar daca primeste unul.
+ */
+import Icon from './Icon.astro';
+import { breadcrumbSchema } from '../../lib/schema';
+
+export interface Crumb {
+  label: string;
+  href?: string;
+}
+
+interface Props {
+  items: Crumb[];
+  class?: string;
+}
+
+const { items, class: className = '' } = Astro.props;
+
+const trail: Crumb[] = [{ label: 'Acasă', href: '/' }, ...items];
+
+const origin = Astro.site?.toString() ?? Astro.url.origin;
+const schema = breadcrumbSchema(
+  trail.map((crumb) => ({ name: crumb.label, url: crumb.href ?? Astro.url.pathname })),
+  origin,
+);
+---
+
+<nav aria-label="Fir de navigare" class={className}>
+  <ol class="text-ink-subtle flex flex-wrap items-center gap-1 text-xs">
+    {
+      trail.map((crumb, index) => {
+        const isCurrent = index === trail.length - 1;
+
+        return (
+          <li class="flex items-center gap-1">
+            {index > 0 && (
+              <span class="text-ink-subtle/60" aria-hidden="true">
+                <Icon name="chevron-right" size={12} />
+              </span>
+            )}
+            {isCurrent || !crumb.href ? (
+              <span aria-current={isCurrent ? 'page' : undefined} class="text-ink-muted">
+                {crumb.label}
+              </span>
+            ) : (
+              <a href={crumb.href} class="hover:text-brand">
+                {crumb.label}
+              </a>
+            )}
+          </li>
+        );
+      })
+    }
+  </ol>
+</nav>
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />

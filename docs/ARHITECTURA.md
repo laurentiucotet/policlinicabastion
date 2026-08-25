@@ -278,6 +278,34 @@ Fiecare pagină emite și JSON-LD potrivit tipului (`MedicalCondition`,
 `MedicalProcedure` / `MedicalTest`, `FAQPage`, `BreadcrumbList`) — vezi
 `src/lib/schema.ts`.
 
+### Firul de navigare (breadcrumbs)
+
+Toate paginile în afară de prima au fir de navigare, printr-o singură
+componentă: `components/ui/Breadcrumbs.astro`.
+
+- **„Acasă" nu se scrie niciodată în pagini** — îl adaugă componenta. Paginile
+  transmit doar restul drumului: `[{ label: 'Servicii', href: '/servicii' }, { label: title }]`.
+- **Ultimul element se randează fără link**, cu `aria-current="page"`, chiar
+  dacă primește un `href`. Așa nu poate apărea un link către pagina curentă.
+- **Componenta emite și JSON-LD-ul `BreadcrumbList`**, din aceeași listă din
+  care randează marcajul vizibil. Alternativa — schema construită separat, în
+  fiecare pagină, și trimisă în `<head>` prin `BaseLayout` — a existat inițial
+  și e exact felul în care cele două ajung să spună lucruri diferite după
+  câteva editări. JSON-LD-ul stă în `<body>`, ceea ce este valid și acceptat de
+  Google.
+
+Firul intră în pagină prin componenta de titlu, nu direct:
+
+| Componentă | Folosită de |
+| --- | --- |
+| `sections/PageTitleHeader.astro` | listări, pagini statice, contact, articole, categorii |
+| `entity/EntityHeader.astro` | afecțiuni, servicii, proiecte europene |
+| `sections/DoctorHero.astro` | paginile de medic |
+
+Pe pagina unui articol, firul include și categoria
+(`Acasă › Noutăți › Urologie › <titlu>`), pentru că `/noutati/categorie/<slug>`
+este o pagină reală, nu o etichetă decorativă.
+
 ### Offsetul ancorelor
 
 Header-ul este lipicios, iar paginile de catalog mai adaugă o bară de

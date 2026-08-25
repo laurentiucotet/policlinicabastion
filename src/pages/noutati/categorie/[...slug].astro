@@ -25,7 +25,11 @@ const { category, categories, posts } = Astro.props;
   title={`Noutăți — ${category.data.name}`}
   description={`Articole din categoria ${category.data.name} de la Policlinica Bastion.`}
 >
-  <PageTitleHeader badge="Blog & Noutăți" title={category.data.name} />
+  <PageTitleHeader
+    breadcrumbs={[{ label: 'Noutăți', href: '/noutati' }, { label: category.data.name }]}
+    badge="Blog & Noutăți"
+    title={category.data.name}
+  />
 
   <section class="bg-surface py-12">
     <div class="container-page flex flex-col gap-8">

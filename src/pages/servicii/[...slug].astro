@@ -23,7 +23,7 @@ import {
   getServicii,
 } from '../../lib/content';
 import { serviceTypes } from '../../lib/catalog';
-import { breadcrumbSchema, faqSchema, serviceSchema } from '../../lib/schema';
+import { faqSchema, serviceSchema } from '../../lib/schema';
 import { formatPrice, hasPrice } from '../../lib/utils';
 import type { Price } from '../../lib/utils';
 import { home, site } from '../../lib/site';
@@ -107,19 +107,8 @@ const sections = [
 const tones = new Map(sections.map((section, index) => [section.id, index % 2 === 0 ? 'white' : 'alt'] as const));
 const toneOf = (id: string): 'white' | 'alt' => tones.get(id) ?? 'white';
 
-const origin = Astro.site?.toString() ?? Astro.url.origin;
-const schema = [
-  serviceSchema(serviciu, site.name),
-  breadcrumbSchema(
-    [
-      { name: 'Acasă', url: '/' },
-      { name: 'Servicii', url: '/servicii' },
-      { name: title, url: `/servicii/${serviciu.id}` },
-    ],
-    origin,
-  ),
-  faqSchema(faq),
-].filter(Boolean) as Record<string, unknown>[];
+// `BreadcrumbList` e emis de componenta de fir de navigare, nu de aici.
+const schema = [serviceSchema(serviciu, site.name), faqSchema(faq)].filter(Boolean) as Record<string, unknown>[];
 
 const tags: Array<{ label: string; href?: string }> = [{ label: serviceTypes[type] }];
 if (speciality) tags.unshift({ label: speciality.data.title, href: `/specializari/${speciality.id}` });
@@ -140,11 +129,7 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
     badge={badge}
     title={title}
     subtitle={subtitle ?? shortDescription}
-    breadcrumbs={[
-      { label: 'Acasă', href: '/' },
-      { label: 'Servicii', href: '/servicii' },
-      { label: title },
-    ]}
+    breadcrumbs={[{ label: 'Servicii', href: '/servicii' }, { label: title }]}
     tags={tags}
   />
 

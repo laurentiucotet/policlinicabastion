@@ -4,6 +4,8 @@
  * navigare, etichetă, titlu, denumiri alternative, butoane de acțiune.
  */
 import Badge from '../ui/Badge.astro';
+import Breadcrumbs from '../ui/Breadcrumbs.astro';
+import type { Crumb } from '../ui/Breadcrumbs.astro';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
 import { site } from '../../lib/site';
@@ -12,8 +14,8 @@ interface Props {
   badge?: string;
   title: string;
   subtitle?: string;
-  /** Fir de navigare: ultimul element e pagina curenta, fara link. */
-  breadcrumbs: Array<{ label: string; href?: string }>;
+  /** Firul de navigare, fara "Acasă": ultimul element e pagina curenta. */
+  breadcrumbs: Crumb[];
   alsoKnownAs?: string[];
   /** Chip-uri sub titlu (specializarea, "Decontat CNAS"...). */
   tags?: Array<{ label: string; href?: string }>;
@@ -29,30 +31,7 @@ const hasTagSlot = Astro.slots.has('tags');
 
 <section class="bg-surface-alt border-stroke border-b">
   <div class="container-page py-8 lg:py-12">
-    <nav aria-label="Fir de navigare">
-      <ol class="text-ink-subtle flex flex-wrap items-center gap-1 text-xs">
-        {
-          breadcrumbs.map((crumb, index) => (
-            <li class="flex items-center gap-1">
-              {index > 0 && (
-                <span class="text-ink-subtle/60" aria-hidden="true">
-                  <Icon name="chevron-right" size={12} />
-                </span>
-              )}
-              {crumb.href ? (
-                <a href={crumb.href} class="hover:text-brand">
-                  {crumb.label}
-                </a>
-              ) : (
-                <span aria-current="page" class="text-ink-muted">
-                  {crumb.label}
-                </span>
-              )}
-            </li>
-          ))
-        }
-      </ol>
-    </nav>
+    <Breadcrumbs items={breadcrumbs} />
 
     <div class="mt-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
       <div class="max-w-3xl">

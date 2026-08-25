@@ -19,7 +19,7 @@ const { title, subtitle, badge, seo } = page.data;
 ---
 
 <BaseLayout title={seo?.title ?? title} description={seo?.description ?? subtitle} noindex={seo?.noindex}>
-  <PageTitleHeader badge={badge} title={title} subtitle={subtitle} />
+  <PageTitleHeader breadcrumbs={[{ label: title }]} badge={badge} title={title} subtitle={subtitle} />
 
   <section class="bg-surface py-12">
     <div class="container-page">

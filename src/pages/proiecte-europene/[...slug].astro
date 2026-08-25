@@ -12,7 +12,6 @@ import ProjectStatus from '../../components/ui/ProjectStatus.astro';
 import SimpleHeading from '../../components/ui/SimpleHeading.astro';
 import Button from '../../components/ui/Button.astro';
 import { getArticoleForProiect, getProiecte } from '../../lib/content';
-import { breadcrumbSchema } from '../../lib/schema';
 
 export const getStaticPaths = (async () => {
   const projects = await getProiecte();
@@ -54,32 +53,18 @@ const facts = [
   ...details,
 ].filter((fact): fact is { label: string; value: string } => Boolean(fact));
 
-const origin = Astro.site?.toString() ?? Astro.url.origin;
-const schema = breadcrumbSchema(
-  [
-    { name: 'Acasă', url: '/' },
-    { name: 'Proiecte Europene', url: '/proiecte-europene' },
-    { name: title, url: `/proiecte-europene/${project.id}` },
-  ],
-  origin,
-);
 ---
 
 <BaseLayout
   title={seo?.title ?? title}
   description={seo?.description ?? summary}
   noindex={seo?.noindex}
-  schema={schema}
 >
   <EntityHeader
     badge="Proiecte Europene"
     title={title}
     subtitle={subtitle ?? summary}
-    breadcrumbs={[
-      { label: 'Acasă', href: '/' },
-      { label: 'Proiecte Europene', href: '/proiecte-europene' },
-      { label: title },
-    ]}
+    breadcrumbs={[{ label: 'Proiecte Europene', href: '/proiecte-europene' }, { label: title }]}
     showCta={false}
   >
     <ProjectStatus status={status} slot="tags" />
