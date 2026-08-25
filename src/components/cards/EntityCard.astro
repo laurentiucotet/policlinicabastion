@@ -1,0 +1,58 @@
+---
+/**
+ * Card generic de legatura catre o entitate (afectiune, interventie, serviciu,
+ * specializare, medic). Folosit in catalog si in sectiunile de "legaturi".
+ */
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  href: string;
+  title: string;
+  description?: string;
+  /** Text mic deasupra titlului: tipul entitatii sau specializarea. */
+  eyebrow?: string;
+  /** Emoji afisat in coltul cardului. */
+  icon?: string;
+  /** Chip-uri sub descriere (ex. "Decontat CNAS", "Ambulatoriu"). */
+  meta?: string[];
+  class?: string;
+}
+
+const { href, title, description, eyebrow, icon, meta = [], class: className = '' } = Astro.props;
+---
+
+<article
+  class:list={[
+    'border-stroke bg-surface shadow-card hover:border-brand/40 group relative flex h-full flex-col gap-2 rounded-2xl border p-5 transition hover:shadow-md',
+    className,
+  ]}
+>
+  <div class="flex items-start justify-between gap-3">
+    <div class="min-w-0">
+      {eyebrow && <p class="text-chip-ink text-xs leading-4 font-semibold">{eyebrow}</p>}
+      <h3 class="text-ink mt-1 text-base leading-6 font-semibold">
+        <a href={href} class="group-hover:text-brand after:absolute after:inset-0 after:content-['']">
+          {title}
+        </a>
+      </h3>
+    </div>
+    {icon && <span class="shrink-0 text-2xl leading-none" aria-hidden="true">{icon}</span>}
+  </div>
+
+  {description && <p class="text-ink-muted text-sm leading-5 text-pretty">{description}</p>}
+
+  {
+    meta.length > 0 && (
+      <ul class="flex flex-wrap gap-1.5 pt-1">
+        {meta.map((item) => (
+          <li class="bg-surface-alt text-ink-muted rounded-full px-2.5 py-1 text-xs leading-4">{item}</li>
+        ))}
+      </ul>
+    )
+  }
+
+  <span class="text-brand mt-auto inline-flex items-center gap-1 pt-1 text-sm font-semibold">
+    Detalii
+    <Icon name="arrow-right" size={16} />
+  </span>
+</article>

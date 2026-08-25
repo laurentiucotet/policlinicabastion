@@ -1,0 +1,257 @@
+---
+/**
+ * Catalog cu categorii in stanga (expandabile) si cautare dupa cuvinte-cheie.
+ * Folosit identic de /afectiuni, /interventii si /servicii - difera doar
+ * datele primite. Filtrarea se face in browser, fara request suplimentar:
+ * toate intrarile sunt deja randate in HTML, scriptul doar le ascunde.
+ */
+import Icon from '../ui/Icon.astro';
+import EntityCard from '../cards/EntityCard.astro';
+import { normalizeText } from '../../lib/utils';
+import type { CatalogGroup, CatalogItem } from '../../lib/catalog';
+
+interface Props {
+  items: CatalogItem[];
+  groups: CatalogGroup[];
+  /** Eticheta pentru numarul de rezultate: "afecțiuni", "intervenții"... */
+  noun: string;
+  searchPlaceholder: string;
+  allLabel?: string;
+  emptyText?: string;
+  /** Categoria deschisa initial (vine si din ?categorie= in URL). */
+  activeGroup?: string;
+}
+
+const {
+  items,
+  groups,
+  noun,
+  searchPlaceholder,
+  allLabel = 'Toate',
+  emptyText = 'Niciun rezultat pentru căutarea ta.',
+  activeGroup,
+} = Astro.props;
+
+const usedGroups = groups
+  .map((group) => ({ ...group, items: items.filter((item) => item.groupId === group.id) }))
+  .filter((group) => group.items.length > 0);
+
+/* Cardurile respecta ordinea categoriilor din stanga, ca lista sa fie citita la
+ * fel din ambele parti. In interiorul unei categorii, ordinea primita. */
+const orderedItems = usedGroups.flatMap((group) => group.items);
+
+/** Textul dupa care filtreaza cautarea: titlu + descriere + cuvinte-cheie. */
+const haystack = (item: CatalogItem) =>
+  normalizeText([item.title, item.description, ...(item.keywords ?? []), ...(item.meta ?? [])].join(' '));
+---
+
+<div class="bg-surface py-12">
+  <div class="container-page grid items-start gap-8 lg:grid-cols-[280px_minmax(0,1fr)]" data-catalog>
+    <aside class="lg:sticky lg:top-40">
+      <form class="mb-4" role="search" data-catalog-form>
+        <label class="sr-only" for="catalog-q">Caută în catalog</label>
+        <div class="relative">
+          <span class="text-ink-subtle pointer-events-none absolute top-1/2 left-3 -translate-y-1/2">
+            <Icon name="search" size={18} />
+          </span>
+          <input
+            id="catalog-q"
+            type="search"
+            name="q"
+            placeholder={searchPlaceholder}
+            autocomplete="off"
+            class="border-stroke text-ink placeholder:text-ink-subtle focus:border-brand w-full rounded-lg border py-2.5 pr-3 pl-10 text-sm focus:outline-none"
+            data-catalog-search
+          />
+        </div>
+      </form>
+
+      <nav aria-label="Categorii">
+        <button
+          type="button"
+          class="border-stroke text-ink hover:border-brand/40 aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-white flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-sm font-semibold"
+          aria-pressed={activeGroup ? 'false' : 'true'}
+          data-catalog-all
+        >
+          {allLabel}
+          <span class="text-xs font-normal opacity-70">{items.length}</span>
+        </button>
+
+        <ul class="mt-2 space-y-1">
+          {
+            usedGroups.map((group) => (
+              <li>
+                <details class="group border-stroke overflow-hidden rounded-lg border" open={activeGroup === group.id} data-catalog-group={group.id}>
+                  <summary class="text-ink hover:bg-surface-alt flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-sm font-semibold">
+                    {group.icon && <span aria-hidden="true">{group.icon}</span>}
+                    <span class="flex-1">{group.label}</span>
+                    <span class="text-ink-subtle text-xs font-normal" data-catalog-count={group.id}>
+                      {group.items.length}
+                    </span>
+                    <span class="text-ink-subtle transition-transform group-open:rotate-180">
+                      <Icon name="chevron-down" size={16} />
+                    </span>
+                  </summary>
+
+                  <ul class="border-stroke bg-surface-alt/60 border-t px-3 py-2">
+                    {group.items.map((item) => (
+                      <li data-catalog-link={item.id}>
+                        <a href={item.href} class="text-ink-muted hover:text-brand block py-1.5 text-sm leading-5">
+                          {item.title}
+                        </a>
+                      </li>
+                    ))}
+                    {group.href && (
+                      <li class="border-stroke mt-1 border-t pt-2">
+                        <a href={group.href} class="text-brand hover:text-brand-dark inline-flex items-center gap-1 text-xs font-semibold">
+                          Vezi specializarea
+                          <Icon name="arrow-right" size={14} />
+                        </a>
+                      </li>
+                    )}
+                  </ul>
+                </details>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </aside>
+
+    <div>
+      <p class="text-ink-subtle mb-4 text-sm" aria-live="polite" data-catalog-status data-noun={noun}>
+        {items.length} {noun}
+      </p>
+
+      <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {
+          orderedItems.map((item) => (
+            <li data-catalog-item={item.id} data-group={item.groupId} data-haystack={haystack(item)}>
+              <EntityCard
+                href={item.href}
+                title={item.title}
+                description={item.description}
+                eyebrow={usedGroups.find((group) => group.id === item.groupId)?.label}
+                icon={item.icon}
+                meta={item.meta}
+              />
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="text-ink-muted hidden py-12 text-center text-sm" data-catalog-empty>{emptyText}</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-catalog]');
+
+  if (root) {
+    const search = root.querySelector<HTMLInputElement>('[data-catalog-search]');
+    const form = root.querySelector<HTMLFormElement>('[data-catalog-form]');
+    const allButton = root.querySelector<HTMLButtonElement>('[data-catalog-all]');
+    const status = root.querySelector<HTMLElement>('[data-catalog-status]');
+    const empty = root.querySelector<HTMLElement>('[data-catalog-empty]');
+    const groups = Array.from(root.querySelectorAll<HTMLDetailsElement>('[data-catalog-group]'));
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-catalog-item]'));
+    const links = Array.from(root.querySelectorAll<HTMLElement>('[data-catalog-link]'));
+
+    const noun = status?.dataset.noun ?? '';
+    const total = cards.length;
+
+    /** Categoria selectata; null = toate. */
+    let activeGroup: string | null = groups.find((group) => group.open)?.dataset.catalogGroup ?? null;
+    /** Blocheaza reactia la `toggle` cat timp deschidem/inchidem noi din cod. */
+    let syncing = false;
+
+    const normalize = (value: string) =>
+      value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+    const apply = () => {
+      const query = normalize(search?.value.trim() ?? '');
+      let visible = 0;
+      const perGroup = new Map<string, number>();
+
+      for (const card of cards) {
+        const matchesQuery = query.length < 2 || (card.dataset.haystack ?? '').includes(query);
+        const group = card.dataset.group ?? '';
+        const matchesGroup = !activeGroup || group === activeGroup;
+        const show = matchesQuery && matchesGroup;
+
+        card.hidden = !show;
+        if (show) visible += 1;
+        if (matchesQuery) perGroup.set(group, (perGroup.get(group) ?? 0) + 1);
+
+        const id = card.dataset.catalogItem;
+        const link = links.find((item) => item.dataset.catalogLink === id);
+        if (link) link.hidden = !matchesQuery;
+      }
+
+      for (const group of groups) {
+        const id = group.dataset.catalogGroup ?? '';
+        const count = perGroup.get(id) ?? 0;
+        group.parentElement!.hidden = count === 0;
+
+        const counter = root.querySelector<HTMLElement>(`[data-catalog-count="${id}"]`);
+        if (counter) counter.textContent = String(count);
+      }
+
+      // La cautare deschidem categoriile ramase, ca rezultatele sa fie vizibile.
+      if (query.length >= 2 && !activeGroup) {
+        syncing = true;
+        for (const group of groups) group.open = !group.parentElement!.hidden;
+        syncing = false;
+      }
+
+      if (status) {
+        const label = visible === total ? `${total} ${noun}` : `${visible} din ${total} ${noun}`;
+        status.textContent = label;
+      }
+      if (empty) empty.classList.toggle('hidden', visible > 0);
+      if (allButton) allButton.setAttribute('aria-pressed', String(!activeGroup));
+    };
+
+    const selectGroup = (id: string | null) => {
+      activeGroup = id;
+      syncing = true;
+      for (const group of groups) group.open = group.dataset.catalogGroup === id;
+      syncing = false;
+
+      const url = new URL(location.href);
+      if (id) url.searchParams.set('categorie', id);
+      else url.searchParams.delete('categorie');
+      history.replaceState(null, '', url);
+
+      apply();
+    };
+
+    // Deschiderea unei categorii o si selecteaza; inchiderea revine la "toate".
+    for (const group of groups) {
+      group.addEventListener('toggle', () => {
+        if (syncing) return;
+        selectGroup(group.open ? (group.dataset.catalogGroup ?? null) : null);
+      });
+    }
+
+    allButton?.addEventListener('click', () => selectGroup(null));
+    search?.addEventListener('input', apply);
+    form?.addEventListener('submit', (event) => event.preventDefault());
+
+    // Permite /afectiuni?categorie=urologie&q=prostata
+    const params = new URLSearchParams(location.search);
+    const initialQuery = params.get('q');
+    if (initialQuery && search) search.value = initialQuery;
+
+    const initialGroup = params.get('categorie');
+    if (initialGroup && groups.some((group) => group.dataset.catalogGroup === initialGroup)) {
+      selectGroup(initialGroup);
+    } else {
+      apply();
+    }
+  }
+</script>

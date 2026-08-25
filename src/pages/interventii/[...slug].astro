@@ -1,0 +1,270 @@
+---
+import { render, getEntry } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntityHeader from '../../components/entity/EntityHeader.astro';
+import AnchorNav from '../../components/entity/AnchorNav.astro';
+import KeyFacts from '../../components/entity/KeyFacts.astro';
+import PointsSection from '../../components/entity/PointsSection.astro';
+import Timeline from '../../components/entity/Timeline.astro';
+import FaqSection from '../../components/entity/FaqSection.astro';
+import SpecialityCallout from '../../components/entity/SpecialityCallout.astro';
+import RelatedCards from '../../components/entity/RelatedCards.astro';
+import RelatedArticles from '../../components/entity/RelatedArticles.astro';
+import SimpleHeading from '../../components/ui/SimpleHeading.astro';
+import DoctorCard from '../../components/cards/DoctorCard.astro';
+import SectionHeading from '../../components/ui/SectionHeading.astro';
+import CtaBand from '../../components/sections/CtaBand.astro';
+import {
+  getAfectiuniForInterventie,
+  getArticoleForEntity,
+  getInterventii,
+  getMediciForInterventie,
+  getServiciiForInterventie,
+} from '../../lib/content';
+import { breadcrumbSchema, faqSchema, procedureSchema } from '../../lib/schema';
+import { home } from '../../lib/site';
+
+export const getStaticPaths = (async () => {
+  const items = await getInterventii();
+  return items.map((interventie) => ({ params: { slug: interventie.id }, props: { interventie } }));
+}) satisfies GetStaticPaths;
+
+const { interventie } = Astro.props;
+const { Content } = await render(interventie);
+const {
+  title,
+  subtitle,
+  badge,
+  shortDescription,
+  duration,
+  anesthesia,
+  admission,
+  recovery,
+  quickFacts,
+  cnas,
+  indications,
+  contraindications,
+  preparation,
+  timeline,
+  aftercare,
+  benefits,
+  risks,
+  faq,
+  alternatives,
+  seo,
+} = interventie.data;
+
+const speciality = await getEntry(interventie.data.speciality);
+const [afectiuni, servicii, doctors, articles] = await Promise.all([
+  getAfectiuniForInterventie(interventie),
+  getServiciiForInterventie(interventie),
+  getMediciForInterventie(interventie),
+  getArticoleForEntity(interventie, 'interventions'),
+]);
+
+const alternativeEntries = (
+  await Promise.all(alternatives.map((ref) => getEntry(ref)))
+).filter((item): item is NonNullable<typeof item> => Boolean(item) && (import.meta.env.DEV || !item!.data.draft));
+
+/** Datele esentiale: cele patru campuri dedicate, plus orice adauga editorul. */
+const facts = [
+  duration && { label: 'Durată', value: duration },
+  anesthesia && { label: 'Anestezie', value: anesthesia },
+  admission && { label: 'Regim', value: admission },
+  recovery && { label: 'Recuperare', value: recovery },
+  ...quickFacts,
+].filter((fact): fact is { label: string; value: string } => Boolean(fact));
+
+const sections = [
+  { id: 'despre', label: 'Ce este', present: true },
+  { id: 'indicatii', label: 'Când este recomandată', present: indications.length > 0 },
+  { id: 'afectiuni', label: 'Afecțiuni tratate', present: afectiuni.length > 0 },
+  { id: 'contraindicatii', label: 'Contraindicații', present: contraindications.length > 0 },
+  { id: 'pregatire', label: 'Pregătire', present: preparation.length > 0 },
+  { id: 'cum-decurge', label: 'Cum decurge', present: timeline.length > 0 },
+  { id: 'dupa-interventie', label: 'După intervenție', present: aftercare.length > 0 },
+  { id: 'beneficii', label: 'Beneficii', present: benefits.length > 0 },
+  { id: 'riscuri', label: 'Riscuri', present: risks.length > 0 },
+  { id: 'intrebari-frecvente', label: 'Întrebări frecvente', present: faq.length > 0 },
+  { id: 'medici', label: 'Medici', present: doctors.length > 0 },
+  { id: 'noutati', label: 'Noutăți', present: articles.length > 0 },
+].filter((section) => section.present);
+
+const tones = new Map(sections.map((section, index) => [section.id, index % 2 === 0 ? 'white' : 'alt'] as const));
+const toneOf = (id: string): 'white' | 'alt' => tones.get(id) ?? 'white';
+
+const origin = Astro.site?.toString() ?? Astro.url.origin;
+const schema = [
+  procedureSchema(interventie),
+  breadcrumbSchema(
+    [
+      { name: 'Acasă', url: '/' },
+      { name: 'Intervenții', url: '/interventii' },
+      { name: title, url: `/interventii/${interventie.id}` },
+    ],
+    origin,
+  ),
+  faqSchema(faq),
+].filter(Boolean) as Record<string, unknown>[];
+
+const tags = [
+  speciality && { label: speciality.data.title, href: `/specializari/${speciality.id}` },
+  cnas && { label: 'Decontat CNAS', href: '/servicii-decontate-cnas' },
+].filter((tag): tag is { label: string; href: string } => Boolean(tag));
+---
+
+<BaseLayout
+  title={seo?.title ?? title}
+  description={seo?.description ?? shortDescription}
+  noindex={seo?.noindex}
+  schema={schema}
+>
+  <EntityHeader
+    badge={badge}
+    title={title}
+    subtitle={subtitle ?? shortDescription}
+    breadcrumbs={[
+      { label: 'Acasă', href: '/' },
+      { label: 'Intervenții', href: '/interventii' },
+      { label: title },
+    ]}
+    tags={tags}
+  />
+
+  <AnchorNav items={sections.map(({ id, label }) => ({ id, label }))} />
+
+  <KeyFacts facts={facts} />
+
+  <section id="despre" class:list={[toneOf('despre') === 'alt' ? 'bg-surface-alt' : 'bg-surface', 'py-12']}>
+    <div class="container-page">
+      <SimpleHeading title={`Ce este ${title.toLowerCase()}`} />
+      <div class="prose-bastion mt-8 max-w-3xl">
+        <Content />
+      </div>
+    </div>
+  </section>
+
+  <PointsSection
+    id="indicatii"
+    title="Când este recomandată"
+    intro="Indicația se stabilește de medic, după consultație și investigații. Lista de mai jos este orientativă."
+    items={indications}
+    variant="check"
+    tone={toneOf('indicatii')}
+  />
+
+  <RelatedCards
+    id="afectiuni"
+    badge="Afecțiuni"
+    title="Afecțiuni tratate prin această intervenție"
+    tone={toneOf('afectiuni')}
+    items={afectiuni.map((item) => ({
+      href: `/afectiuni/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Afecțiune',
+    }))}
+    cta={{ label: 'Vezi toate afecțiunile', href: '/afectiuni' }}
+  />
+
+  <PointsSection
+    id="contraindicatii"
+    title="Contraindicații"
+    intro="Situații în care intervenția se amână sau se înlocuiește cu o alternativă. Discută întotdeauna cu medicul întreaga ta medicație și istoricul medical."
+    items={contraindications}
+    variant="alert"
+    tone={toneOf('contraindicatii')}
+  />
+
+  <PointsSection
+    id="pregatire"
+    title="Cum te pregătești"
+    items={preparation}
+    variant="info"
+    tone={toneOf('pregatire')}
+    columns={1}
+  />
+
+  <Timeline
+    id="cum-decurge"
+    title="Cum decurge intervenția"
+    intro="Pas cu pas, de la sosirea în clinică până la externare."
+    steps={timeline}
+    tone={toneOf('cum-decurge')}
+  />
+
+  <PointsSection
+    id="dupa-interventie"
+    title="După intervenție"
+    items={aftercare}
+    variant="info"
+    tone={toneOf('dupa-interventie')}
+    columns={1}
+  />
+
+  <PointsSection id="beneficii" title="Beneficii" items={benefits} variant="check" tone={toneOf('beneficii')} />
+
+  <PointsSection
+    id="riscuri"
+    title="Riscuri și posibile complicații"
+    intro="Orice intervenție are riscuri. Sunt rare, iar echipa le previne activ — dar trebuie să le cunoști înainte de a-ți da acordul."
+    items={risks}
+    variant="alert"
+    tone={toneOf('riscuri')}
+  />
+
+  <FaqSection items={faq} tone={toneOf('intrebari-frecvente')} />
+
+  {
+    doctors.length > 0 && (
+      <section id="medici" class:list={[toneOf('medici') === 'alt' ? 'bg-surface-alt' : 'bg-surface', 'py-12']}>
+        <div class="container-page flex flex-col items-center gap-8">
+          <SectionHeading
+            badge="Medici"
+            title="Medicii care efectuează această intervenție"
+            subtitle={speciality ? `Echipa de ${speciality.data.title.toLowerCase()} a Policlinicii Bastion.` : undefined}
+          />
+          <div class="grid w-full grid-cols-2 gap-4 lg:grid-cols-4">
+            {doctors.map((doctor) => (
+              <DoctorCard doctor={doctor} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <SpecialityCallout speciality={speciality!} doctorsCount={doctors.length} tone="alt" />
+
+  <RelatedArticles posts={articles} tone={toneOf('noutati')} />
+
+  <RelatedCards
+    badge="Servicii"
+    title="Serviciul din ofertă"
+    subtitle="Aceeași procedură, văzută dinspre programare: ce include, cât durează și cum se decontează."
+    tone="white"
+    items={servicii.map((item) => ({
+      href: `/servicii/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Serviciu',
+      meta: item.data.cnas ? ['Decontat CNAS'] : [],
+    }))}
+  />
+
+  <RelatedCards
+    title="Alternative"
+    subtitle="Alte intervenții cu aceeași indicație. Alegerea se face împreună cu medicul."
+    tone="alt"
+    items={alternativeEntries.map((item) => ({
+      href: `/interventii/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Intervenție',
+    }))}
+    cta={{ label: 'Vezi toate intervențiile', href: '/interventii' }}
+  />
+
+  <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} />
+</BaseLayout>

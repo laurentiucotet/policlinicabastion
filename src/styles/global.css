@@ -50,8 +50,10 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    /* compenseaza header-ul sticky la ancore */
-    scroll-padding-top: 7rem;
+    /* Compenseaza header-ul sticky (si, pe paginile de catalog, sub-navigatia)
+       la sarirea pe ancore. Ambele variabile sunt publicate din JS, la marimea
+       lor reala - vezi Header.astro si entity/AnchorNav.astro. */
+    scroll-padding-top: calc(var(--header-h, 7rem) + var(--subnav-h, 0px) + --spacing(2));
   }
 
   body {

@@ -1,0 +1,27 @@
+---
+/** Bara de date esențiale, imediat sub titlul paginii. */
+interface Props {
+  facts: Array<{ label: string; value: string }>;
+  tone?: 'white' | 'alt';
+}
+
+const { facts, tone = 'white' } = Astro.props;
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+---
+
+{
+  facts.length > 0 && (
+    <section class:list={[tones[tone], 'py-8']}>
+      <div class="container-page">
+        <dl class="border-stroke bg-surface shadow-card grid gap-px overflow-hidden rounded-2xl border sm:grid-cols-2 lg:grid-cols-4">
+          {facts.map((fact) => (
+            <div class="bg-surface px-5 py-4">
+              <dt class="text-ink-subtle text-xs leading-4 font-semibold tracking-wide uppercase">{fact.label}</dt>
+              <dd class="text-ink mt-1 text-base leading-6 font-semibold">{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  )
+}

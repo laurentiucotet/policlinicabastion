@@ -1,0 +1,250 @@
+---
+import { render, getEntry } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntityHeader from '../../components/entity/EntityHeader.astro';
+import AnchorNav from '../../components/entity/AnchorNav.astro';
+import KeyFacts from '../../components/entity/KeyFacts.astro';
+import PointsSection from '../../components/entity/PointsSection.astro';
+import NamedListSection from '../../components/entity/NamedListSection.astro';
+import FaqSection from '../../components/entity/FaqSection.astro';
+import SpecialityCallout from '../../components/entity/SpecialityCallout.astro';
+import RelatedCards from '../../components/entity/RelatedCards.astro';
+import RelatedArticles from '../../components/entity/RelatedArticles.astro';
+import SimpleHeading from '../../components/ui/SimpleHeading.astro';
+import TeamGrid from '../../components/sections/TeamGrid.astro';
+import CtaBand from '../../components/sections/CtaBand.astro';
+import {
+  getAfectiuni,
+  getArticoleForEntity,
+  getInterventiiForAfectiune,
+  getMediciBySpecialitate,
+  getServiciiForAfectiune,
+} from '../../lib/content';
+import { breadcrumbSchema, conditionSchema, faqSchema } from '../../lib/schema';
+import { home } from '../../lib/site';
+
+export const getStaticPaths = (async () => {
+  const items = await getAfectiuni();
+  return items.map((afectiune) => ({ params: { slug: afectiune.id }, props: { afectiune } }));
+}) satisfies GetStaticPaths;
+
+const { afectiune } = Astro.props;
+const { Content } = await render(afectiune);
+const {
+  title,
+  subtitle,
+  badge,
+  shortDescription,
+  alsoKnownAs,
+  quickFacts,
+  symptoms,
+  causes,
+  riskFactors,
+  diagnosis,
+  treatments,
+  whenToSeeDoctor,
+  prevention,
+  faq,
+  related,
+  seo,
+} = afectiune.data;
+
+const speciality = await getEntry(afectiune.data.speciality);
+const [interventii, servicii, doctors, articles] = await Promise.all([
+  getInterventiiForAfectiune(afectiune),
+  getServiciiForAfectiune(afectiune),
+  getMediciBySpecialitate(afectiune.data.speciality.id),
+  getArticoleForEntity(afectiune, 'conditions'),
+]);
+
+const relatedConditions = (
+  await Promise.all(related.map((ref) => getEntry(ref)))
+).filter((item): item is NonNullable<typeof item> => Boolean(item) && (import.meta.env.DEV || !item!.data.draft));
+
+/* Structura paginii: aceleasi sectiuni, in aceeasi ordine, pentru toate
+ * afectiunile. Cele fara continut sunt sarite, iar fundalul alterneaza
+ * automat intre cele ramase. */
+const sections = [
+  { id: 'despre', label: 'Despre', present: true },
+  { id: 'simptome', label: 'Simptome', present: symptoms.length > 0 },
+  { id: 'cauze', label: 'Cauze', present: causes.length > 0 },
+  { id: 'factori-de-risc', label: 'Factori de risc', present: riskFactors.length > 0 },
+  { id: 'diagnostic', label: 'Diagnostic', present: diagnosis.length > 0 },
+  { id: 'tratament', label: 'Cum se tratează', present: treatments.length > 0 },
+  { id: 'interventii', label: 'Intervenții', present: interventii.length > 0 },
+  { id: 'servicii', label: 'Servicii', present: servicii.length > 0 },
+  { id: 'cand-la-medic', label: 'Când mergi la medic', present: whenToSeeDoctor.length > 0 },
+  { id: 'preventie', label: 'Prevenție', present: prevention.length > 0 },
+  { id: 'intrebari-frecvente', label: 'Întrebări frecvente', present: faq.length > 0 },
+  { id: 'medici', label: 'Medici', present: doctors.length > 0 },
+  { id: 'noutati', label: 'Noutăți', present: articles.length > 0 },
+].filter((section) => section.present);
+
+const tones = new Map(sections.map((section, index) => [section.id, index % 2 === 0 ? 'white' : 'alt'] as const));
+const toneOf = (id: string): 'white' | 'alt' => tones.get(id) ?? 'white';
+
+const origin = Astro.site?.toString() ?? Astro.url.origin;
+const schema = [
+  conditionSchema(afectiune),
+  breadcrumbSchema(
+    [
+      { name: 'Acasă', url: '/' },
+      { name: 'Afecțiuni', url: '/afectiuni' },
+      { name: title, url: `/afectiuni/${afectiune.id}` },
+    ],
+    origin,
+  ),
+  faqSchema(faq),
+].filter(Boolean) as Record<string, unknown>[];
+---
+
+<BaseLayout
+  title={seo?.title ?? title}
+  description={seo?.description ?? shortDescription}
+  noindex={seo?.noindex}
+  schema={schema}
+>
+  <EntityHeader
+    badge={badge}
+    title={title}
+    subtitle={subtitle ?? shortDescription}
+    alsoKnownAs={alsoKnownAs}
+    breadcrumbs={[
+      { label: 'Acasă', href: '/' },
+      { label: 'Afecțiuni', href: '/afectiuni' },
+      { label: title },
+    ]}
+    tags={speciality
+      ? [{ label: speciality.data.title, href: `/specializari/${speciality.id}` }]
+      : []}
+  />
+
+  <AnchorNav items={sections.map(({ id, label }) => ({ id, label }))} />
+
+  <KeyFacts facts={quickFacts} />
+
+  <section id="despre" class:list={[toneOf('despre') === 'alt' ? 'bg-surface-alt' : 'bg-surface', 'py-12']}>
+    <div class="container-page">
+      <SimpleHeading title={`Despre ${title.toLowerCase()}`} />
+      <div class="prose-bastion mt-8 max-w-3xl">
+        <Content />
+      </div>
+    </div>
+  </section>
+
+  <PointsSection
+    id="simptome"
+    title="Simptome"
+    intro="Simptomele pot lipsi complet în stadiile incipiente. Prezența lor nu confirmă diagnosticul — îl stabilește medicul, după consultație și investigații."
+    items={symptoms}
+    variant="info"
+    tone={toneOf('simptome')}
+  />
+
+  <PointsSection id="cauze" title="Cauze" items={causes} tone={toneOf('cauze')} />
+
+  <PointsSection
+    id="factori-de-risc"
+    title="Factori de risc"
+    items={riskFactors}
+    variant="alert"
+    tone={toneOf('factori-de-risc')}
+  />
+
+  <NamedListSection
+    id="diagnostic"
+    title="Cum se pune diagnosticul"
+    intro="Investigațiile se stabilesc individual, în funcție de simptome, vârstă și istoric medical."
+    items={diagnosis}
+    tone={toneOf('diagnostic')}
+  />
+
+  <NamedListSection
+    id="tratament"
+    title="Cum se tratează"
+    intro="Tratamentul se alege în funcție de stadiu, de simptome și de starea generală. Mai jos, opțiunile principale."
+    items={treatments}
+    tone={toneOf('tratament')}
+  />
+
+  <RelatedCards
+    id="interventii"
+    badge="Intervenții"
+    title="Intervenții care tratează această afecțiune"
+    subtitle="Protocolul complet — indicații, pregătire, cum decurge pas cu pas și recuperare — este descris pe pagina fiecărei intervenții."
+    tone={toneOf('interventii')}
+    items={interventii.map((item) => ({
+      href: `/interventii/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Intervenție',
+      meta: [item.data.admission, item.data.anesthesia].filter((value): value is string => Boolean(value)),
+    }))}
+    cta={{ label: 'Vezi toate intervențiile', href: '/interventii' }}
+  />
+
+  <RelatedCards
+    id="servicii"
+    badge="Servicii"
+    title="Servicii recomandate"
+    tone={toneOf('servicii')}
+    items={servicii.map((item) => ({
+      href: `/servicii/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Serviciu',
+      meta: item.data.cnas ? ['Decontat CNAS'] : [],
+    }))}
+  />
+
+  <PointsSection
+    id="cand-la-medic"
+    title="Când mergi la medic"
+    items={whenToSeeDoctor}
+    variant="alert"
+    tone={toneOf('cand-la-medic')}
+    columns={1}
+  />
+
+  <PointsSection
+    id="preventie"
+    title="Prevenție"
+    items={prevention}
+    variant="check"
+    tone={toneOf('preventie')}
+  />
+
+  <FaqSection items={faq} tone={toneOf('intrebari-frecvente')} />
+
+  <SpecialityCallout speciality={speciality!} doctorsCount={doctors.length} tone="alt" />
+
+  <TeamGrid
+    id="medici"
+    badge="Medici"
+    title="Medicii care tratează această afecțiune"
+    subtitle={speciality
+      ? `Echipa de ${speciality.data.title.toLowerCase()} a Policlinicii Bastion.`
+      : undefined}
+    specialityId={afectiune.data.speciality.id}
+    tone={toneOf('medici')}
+    count={8}
+    cta={{ label: 'Vezi toți medicii', href: '/medici' }}
+  />
+
+  <RelatedArticles posts={articles} tone={toneOf('noutati')} />
+
+  <RelatedCards
+    title="Afecțiuni înrudite"
+    tone="white"
+    items={relatedConditions.map((item) => ({
+      href: `/afectiuni/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Afecțiune',
+    }))}
+    cta={{ label: 'Vezi toate afecțiunile', href: '/afectiuni' }}
+  />
+
+  <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} tone="alt" />
+</BaseLayout>

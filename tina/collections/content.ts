@@ -1,4 +1,5 @@
 import type { Collection } from 'tinacms';
+import { catalogCollections } from './catalog';
 import { ctaField, draftField, orderField, seoField, slugify } from './shared';
 
 /* ---------------------------------------------------------------------------
@@ -140,6 +141,33 @@ export const articole: Collection = {
     { type: 'string', name: 'coverAlt', label: 'Text alternativ imagine' },
     { type: 'reference', name: 'category', label: 'Categorie', collections: ['categorii'] },
     { type: 'reference', name: 'author', label: 'Autor (medic)', collections: ['medici'] },
+    {
+      // Relatii explicite: articolul apare pe paginile afectiunilor si ale
+      // interventiilor alese aici. Fara ele, legatura se face automat dupa
+      // cuvinte-cheie (vezi getArticoleForEntity in src/lib/content.ts).
+      type: 'object',
+      name: 'conditions',
+      label: 'Afecțiuni legate',
+      list: true,
+      ui: {
+        itemProps: (item) => ({
+          label: item?.ref?.split('/').pop()?.replace(/\.mdx?$/, '') ?? 'Afecțiune',
+        }),
+      },
+      fields: [{ type: 'reference', name: 'ref', label: 'Afecțiune', collections: ['afectiuni'], required: true }],
+    },
+    {
+      type: 'object',
+      name: 'interventions',
+      label: 'Intervenții legate',
+      list: true,
+      ui: {
+        itemProps: (item) => ({
+          label: item?.ref?.split('/').pop()?.replace(/\.mdx?$/, '') ?? 'Intervenție',
+        }),
+      },
+      fields: [{ type: 'reference', name: 'ref', label: 'Intervenție', collections: ['interventii'], required: true }],
+    },
     { type: 'boolean', name: 'featured', label: 'Articol promovat' },
     { type: 'rich-text', name: 'body', label: 'Conținut', isBody: true },
     draftField,
@@ -240,6 +268,7 @@ export const pagini: Collection = {
 export const contentCollections = [
   specializari,
   medici,
+  ...catalogCollections,
   categorii,
   articole,
   proiecte,

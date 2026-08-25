@@ -13,12 +13,29 @@
       "href": "/specializari",
       "children": []
     },
-    { "label": "Programări", "href": "/contact", "children": [] },
-    { "label": "Contact", "href": "/contact", "children": [] },
+    {
+      "label": "Servicii",
+      "href": "/servicii",
+      "children": []
+    },
+    {
+      "label": "Afecțiuni",
+      "href": "/afectiuni",
+      "children": []
+    },
+    {
+      "label": "Intervenții",
+      "href": "/interventii",
+      "children": []
+    },
     { "label": "Noutăți", "href": "/noutati", "children": [] },
-    { "label": "Proiecte Europene", "href": "/proiecte-europene", "children": [] }
+    { "label": "Proiecte Europene", "href": "/proiecte-europene", "children": [] },
+    { "label": "Contact", "href": "/contact", "children": [] }
   ],
   "footer": [
+    { "label": "Servicii medicale", "href": "/servicii" },
+    { "label": "Afecțiuni tratate", "href": "/afectiuni" },
+    { "label": "Intervenții și proceduri", "href": "/interventii" },
     { "label": "Drepturi și obligații asigurați", "href": "/drepturi-si-obligatii-asigurati" },
     { "label": "Drepturile și obligațiile pacienților", "href": "/drepturile-pacientilor" },
     { "label": "Servicii decontate prin C.N.A.S", "href": "/servicii-decontate-cnas" },

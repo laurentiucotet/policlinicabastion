@@ -109,6 +109,9 @@ Derivat direct din paginile din Figma.
 | --- | --- | --- | --- |
 | `specializari` | `src/content/specializari` | `.mdx` | `/specializari/[slug]` |
 | `medici` | `src/content/medici` | `.mdx` | `/medici/[slug]` |
+| `afectiuni` | `src/content/afectiuni` | `.mdx` | `/afectiuni/[slug]` |
+| `interventii` | `src/content/interventii` | `.mdx` | `/interventii/[slug]` |
+| `servicii` | `src/content/servicii` | `.mdx` | `/servicii/[slug]` |
 | `articole` | `src/content/articole` | `.mdx` | `/noutati/[slug]` |
 | `categorii` | `src/content/categorii` | `.json` | `/noutati/categorie/[slug]` |
 | `proiecte` | `src/content/proiecte-europene` | `.mdx` | `/proiecte-europene/[slug]` |
@@ -129,9 +132,48 @@ direct e mai simplu și mai rapid. Rămân perfect editabile din Tina.
 
 ### Relații între colecții
 
+Relațiile sunt coloana vertebrală a site-ului: fiecare pagină de afecțiune,
+intervenție sau serviciu duce mai departe, către specializare, medici,
+intervenții și noutăți.
+
+```
+specializare ─┬─ medici           (medicul își declară specializările)
+              ├─ afecțiuni        (afecțiunea își declară specializarea)
+              ├─ intervenții      (intervenția își declară specializarea)
+              └─ servicii         (serviciul își declară specializarea)
+
+afecțiune ◄──────► intervenție    (relație bidirecțională, vezi mai jos)
+serviciu  ───────► intervenție    (serviciul „se efectuează ca" intervenție)
+serviciu  ───────► afecțiuni      (pentru ce este recomandat)
+articol   ───────► afecțiuni / intervenții
+```
+
 - Un **medic** are una sau mai multe **specializări**.
   Pagina `/specializari/nefrologie` listează automat medicii care o au bifată.
 - Un **articol** are o **categorie** și, opțional, un **autor** (medic).
+- O **afecțiune** aparține unei singure specializări — care devine și categoria
+  ei în catalogul `/afecțiuni`.
+- O **intervenție** aparține unei specializări, tratează una sau mai multe
+  afecțiuni și poate declara explicit medicii care o efectuează. Dacă nu îi
+  declară, pagina afișează toți medicii specializării.
+- Un **serviciu** este oferta comercială: ce programează pacientul. Când are un
+  protocol complet (biopsia fusion, ESWL, cistoscopia), serviciul trimite către
+  pagina intervenției, unde stau pregătirea, pașii și recuperarea.
+
+**Regula relațiilor bidirecționale.** O relație se declară o singură dată în
+CMS, dar se citește din ambele capete. Dacă intervenția „Biopsia fusion" declară
+că tratează „Cancerul de prostată", pagina afecțiunii o afișează automat, chiar
+dacă afecțiunea nu a listat-o ea. Helperele care fac asta sunt în
+`src/lib/content.ts` (`getInterventiiForAfectiune`, `getAfectiuniForInterventie`,
+`getMediciForInterventie`, …). Așa nu există relații „pe jumătate", oricine ar
+edita din Tina.
+
+**Legătura cu articolele are și un mecanism automat.** Un articol poate declara
+explicit afecțiunile și intervențiile de care ține. Dacă nu o face,
+`getArticoleForEntity()` caută potriviri după titlu și cuvinte-cheie, reduse la
+rădăcini de 6 litere („prostata" → „prostat"), ca să treacă peste flexiunea din
+română. Rezultatul: relația funcționează din prima, fără ca editorul să fie
+nevoit să eticheteze retroactiv cele ~30 de articole existente.
 
 ⚠️ **Detaliu tehnic important.** Tina salvează referințele ca *path complet*
 (`src/content/specializari/nefrologie.mdx`), iar Astro așteaptă *id-ul*
@@ -142,6 +184,83 @@ scrise manual, și cele scrise de Tina.
 De asemenea, câmpurile `reference` nu suportă `list: true` în interfața Tina.
 Pentru specializările unui medic folosim o listă de obiecte cu câte o referință
 (`{ ref: '...' }`), iar `refListTo()` o aplatizează la citire.
+
+---
+
+## 4bis. Catalogul medical și structura fixă a paginilor
+
+### Catalogul (`/afecțiuni`, `/intervenții`, `/servicii`)
+
+Cele trei pagini folosesc aceeași componentă, `components/catalog/CatalogBrowser.astro`:
+categorii în stânga (expandabile), căutare după cuvinte-cheie, carduri în dreapta.
+
+- **Categoriile sunt specializările.** Nu am introdus o colecție separată de
+  categorii: gruparea după specializare este și taxonomie, și relație. Un
+  filtru în plus ar fi însemnat încă o listă de întreținut în CMS, care s-ar
+  fi desincronizat de specializări.
+- **Filtrarea se face în browser**, fără request suplimentar: toate intrările
+  sunt deja în HTML, scriptul doar ascunde ce nu se potrivește. La ~50 de
+  intrări, un index de căutare separat ar fi fost complexitate fără câștig.
+- **Deschiderea unei categorii o și selectează**, iar starea se reflectă în URL
+  (`/afectiuni?categorie=urologie`) — de aceea meniul din header poate trimite
+  direct în catalogul filtrat pe o specializare.
+- **Căutarea acoperă și `keywords`**, câmpul cu sinonime și termeni populari
+  („pietre la rinichi", „nu pot dormi") care nu apar pe pagină, dar sunt exact
+  ce scrie pacientul.
+
+### Structura paginilor
+
+Paginile de afecțiune și de intervenție au **aceleași secțiuni, în aceeași
+ordine**, oricare ar fi subiectul. Secțiunile fără conținut sunt sărite, iar
+fundalul alternează automat între cele rămase (`toneOf()` în fiecare pagină).
+Din aceeași listă se generează și sub-navigația lipicioasă din capul paginii.
+
+| Afecțiune | Intervenție |
+| --- | --- |
+| Despre | Ce este |
+| Simptome | Când este recomandată |
+| Cauze | Afecțiuni tratate |
+| Factori de risc | Contraindicații |
+| Cum se pune diagnosticul | Cum te pregătești |
+| Cum se tratează | **Cum decurge** (timeline numerotat) |
+| Intervenții care o tratează | După intervenție |
+| Servicii recomandate | Beneficii |
+| Când mergi la medic | Riscuri |
+| Prevenție | Întrebări frecvente |
+| Întrebări frecvente | Medici care o efectuează |
+| Medici · Specializare · Noutăți · Afecțiuni înrudite | Specializare · Noutăți · Serviciu · Alternative |
+
+Blocurile sunt componente reutilizabile în `components/entity/`: `PointsSection`,
+`NamedListSection`, `Timeline`, `FaqSection`, `KeyFacts`, `AnchorNav`,
+`SpecialityCallout`, `RelatedCards`, `RelatedArticles`. Adăugarea unei secțiuni
+noi înseamnă un câmp în ambele scheme și o linie în lista de secțiuni.
+
+Fiecare pagină emite și JSON-LD potrivit tipului (`MedicalCondition`,
+`MedicalProcedure`, `FAQPage`, `BreadcrumbList`) — vezi `src/lib/schema.ts`.
+
+### Offsetul ancorelor
+
+Header-ul este lipicios, iar paginile de catalog mai adaugă o bară de
+sub-navigație tot lipicioasă. Ca ancorele să nu ajungă sub ele, ambele își
+publică înălțimea reală în `--header-h` / `--subnav-h` (`ResizeObserver`), iar
+`scroll-padding-top` din `global.css` le adună. Fără valori magice care se strică
+la prima schimbare de font sau de breakpoint.
+
+---
+
+## 4ter. Căutarea
+
+Căutarea **nu este o pagină**, ci o funcție disponibilă în header, pe orice
+pagină (`components/layout/SearchBox.astro`): butonul deschide un panou cu
+sugestii live. Enter duce la `/rezultate-cautare`, singurul loc unde căutarea are
+pagină proprie — cu filtre pe tip de rezultat.
+
+Ambele consumă `/cautare-index.json`, generat la build din toate colecțiile
+(specializări, afecțiuni, intervenții, servicii, medici, articole, proiecte,
+pagini), cu `keywords` incluse. Rezultatele sunt ordonate după relevanță:
+potrivirile din titlu înaintea celor din descriere sau din cuvinte-cheie.
+
+Vechiul URL `/cautare` redirecționează către `/rezultate-cautare` (`astro.config.mjs`).
 
 ---
 
@@ -281,6 +400,28 @@ căutare directă.
   distincte, care trebuie oricum completate cu recenzii reale copiate din
   Google Business Profile înainte de lansare.
 
+### ⚠️ Conținutul medical din catalog trebuie validat înainte de lansare
+
+Cele 16 afecțiuni, 7 intervenții și 11 servicii din `src/content/afectiuni`,
+`src/content/interventii` și `src/content/servicii` au fost **redactate în acest
+repo**, nu preluate din site-ul vechi. Sunt scrise pornind de la articolele
+existente și de la serviciile declarate pe fiecare specializare, cu formulări
+prudente și fără promisiuni de rezultat.
+
+Rămân, însă, texte medicale publicate în numele unei clinici reale. Înainte de
+lansare, **fiecare pagină trebuie citită și asumată de medicul specialității
+respective**, cu atenție specială la:
+
+- lista de intervenții — trebuie să conțină exact ce se efectuează în clinică,
+  nu ce se efectuează în general în specialitate;
+- datele esențiale (durată, anestezie, regim, recuperare) și pașii din timeline,
+  care trebuie să reflecte protocolul real al clinicii;
+- decontarea CNAS (`cnas: true/false`) pentru fiecare serviciu;
+- medicii asociați fiecărei intervenții (`doctors`) — lăsat gol, câmpul atribuie
+  intervenția tuturor medicilor specializării.
+
+Corecturile se pot face integral din `/admin`, fără intervenție în cod.
+
 ### Mapare slug vechi → slug nou (pentru redirect-uri 301)
 
 Site-ul vechi (WordPress) folosește slug-uri plate la rădăcină
@@ -330,3 +471,10 @@ Lucruri conștient lăsate pentru pașii următori:
 - [ ] Verificarea fidelității față de Figma, secțiune cu secțiune, pe
       breakpoint-uri (structura și tokenii sunt puși, rafinarea vizuală urmează).
 - [ ] Google Tag Manager (câmpul există deja în `settings/site.json`).
+- [ ] **Validarea medicală a catalogului** (afecțiuni, intervenții, servicii) —
+      vezi avertismentul din §8. Blocant pentru lansare.
+- [ ] Redirect-uri 301 și pentru paginile de catalog, dacă site-ul vechi are
+      URL-uri echivalente pentru servicii.
+- [ ] Fotografii pentru paginile de intervenții (câmpul `cover` există deja).
+- [ ] Etichetarea articolelor existente cu afecțiunile și intervențiile de care
+      țin — momentan legătura se face automat, după cuvinte-cheie (§4).

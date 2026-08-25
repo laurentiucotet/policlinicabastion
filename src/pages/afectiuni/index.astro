@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
+import CatalogBrowser from '../../components/catalog/CatalogBrowser.astro';
+import type { CatalogGroup, CatalogItem } from '../../lib/catalog';
+import CtaBand from '../../components/sections/CtaBand.astro';
+import { getAfectiuni, getSpecializari } from '../../lib/content';
+import { home } from '../../lib/site';
+
+const [afectiuni, specializari] = await Promise.all([getAfectiuni(), getSpecializari()]);
+
+const groups: CatalogGroup[] = specializari.map((speciality) => ({
+  id: speciality.id,
+  label: speciality.data.title,
+  icon: speciality.data.icon,
+  href: `/specializari/${speciality.id}`,
+}));
+
+const items: CatalogItem[] = afectiuni.map((item) => ({
+  id: item.id,
+  title: item.data.title,
+  description: item.data.shortDescription,
+  href: `/afectiuni/${item.id}`,
+  groupId: item.data.speciality.id,
+  keywords: [...item.data.keywords, ...item.data.alsoKnownAs],
+  meta: item.data.alsoKnownAs.slice(0, 2),
+}));
+---
+
+<BaseLayout
+  title="Afecțiuni"
+  description="Catalogul afecțiunilor tratate la Policlinica Bastion Timișoara: simptome, cauze, diagnostic, opțiuni de tratament și intervențiile care le rezolvă."
+>
+  <PageTitleHeader
+    badge="Afecțiuni"
+    title="Afecțiuni tratate"
+    subtitle="Caută afecțiunea care te interesează sau explorează categoriile din stânga. Pentru fiecare afecțiune găsești simptome, cauze, cum se pune diagnosticul, cum se tratează și medicii care se ocupă de ea."
+  />
+
+  <CatalogBrowser
+    items={items}
+    groups={groups}
+    noun="afecțiuni"
+    searchPlaceholder="Ex: prostată, calculi, rinichi..."
+    allLabel="Toate afecțiunile"
+    emptyText="Nicio afecțiune nu corespunde căutării. Încearcă alt termen sau sună-ne la recepție."
+  />
+
+  <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} tone="alt" />
+</BaseLayout>

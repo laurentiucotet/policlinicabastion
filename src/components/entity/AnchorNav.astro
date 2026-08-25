@@ -1,0 +1,52 @@
+---
+/**
+ * Navigatie interna, lipita sub header. Face structura paginii vizibila dintr-o
+ * privire: aceleasi sectiuni, in aceeasi ordine, pe toate afectiunile /
+ * interventiile.
+ */
+interface Props {
+  items: Array<{ id: string; label: string }>;
+}
+
+const { items } = Astro.props;
+---
+
+{
+  items.length > 1 && (
+    <nav
+      class="border-stroke bg-surface/95 sticky z-30 border-b backdrop-blur"
+      style="top: var(--header-h, 112px)"
+      aria-label="Secțiunile paginii"
+      data-anchor-nav
+    >
+      <div class="container-page">
+        <ul class="flex gap-1 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {items.map((item) => (
+            <li>
+              <a
+                href={`#${item.id}`}
+                class="text-ink-muted hover:bg-surface-alt hover:text-brand block rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+  )
+}
+
+<script>
+  /* Ancorele trebuie sa se opreasca sub header + sub-navigatie. Publicam
+   * inaltimea sub-navigatiei; `scroll-padding-top` din global.css o foloseste. */
+  const nav = document.querySelector<HTMLElement>('[data-anchor-nav]');
+
+  if (nav) {
+    const publishHeight = () =>
+      document.documentElement.style.setProperty('--subnav-h', `${nav.offsetHeight}px`);
+
+    publishHeight();
+    new ResizeObserver(publishHeight).observe(nav);
+  }
+</script>

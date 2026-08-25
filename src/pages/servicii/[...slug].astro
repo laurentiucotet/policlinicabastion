@@ -1,0 +1,172 @@
+---
+import { render, getEntry } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EntityHeader from '../../components/entity/EntityHeader.astro';
+import KeyFacts from '../../components/entity/KeyFacts.astro';
+import NamedListSection from '../../components/entity/NamedListSection.astro';
+import PointsSection from '../../components/entity/PointsSection.astro';
+import FaqSection from '../../components/entity/FaqSection.astro';
+import SpecialityCallout from '../../components/entity/SpecialityCallout.astro';
+import RelatedCards from '../../components/entity/RelatedCards.astro';
+import RelatedArticles from '../../components/entity/RelatedArticles.astro';
+import SimpleHeading from '../../components/ui/SimpleHeading.astro';
+import SectionHeading from '../../components/ui/SectionHeading.astro';
+import DoctorCard from '../../components/cards/DoctorCard.astro';
+import CtaBand from '../../components/sections/CtaBand.astro';
+import Button from '../../components/ui/Button.astro';
+import Icon from '../../components/ui/Icon.astro';
+import {
+  getArticoleForEntity,
+  getMediciForServiciu,
+  getServicii,
+} from '../../lib/content';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../lib/schema';
+import { home, site } from '../../lib/site';
+
+export const getStaticPaths = (async () => {
+  const items = await getServicii();
+  return items.map((serviciu) => ({ params: { slug: serviciu.id }, props: { serviciu } }));
+}) satisfies GetStaticPaths;
+
+const { serviciu } = Astro.props;
+const { Content } = await render(serviciu);
+const { title, subtitle, badge, shortDescription, type, cnas, duration, quickFacts, includes, preparation, faq, seo } =
+  serviciu.data;
+
+const typeLabels = {
+  consultatie: 'Consultație',
+  investigatie: 'Investigație',
+  procedura: 'Procedură',
+  analize: 'Analize',
+} as const;
+
+const speciality = await getEntry(serviciu.data.speciality);
+const intervention = serviciu.data.intervention ? await getEntry(serviciu.data.intervention) : undefined;
+
+const [doctors, articles] = await Promise.all([
+  getMediciForServiciu(serviciu),
+  getArticoleForEntity(serviciu, 'interventions'),
+]);
+
+const conditions = (
+  await Promise.all(serviciu.data.conditions.map((ref) => getEntry(ref)))
+).filter((item): item is NonNullable<typeof item> => Boolean(item) && (import.meta.env.DEV || !item!.data.draft));
+
+const facts = [
+  { label: 'Tip serviciu', value: typeLabels[type] },
+  duration && { label: 'Durată', value: duration },
+  { label: 'Decontare CNAS', value: cnas ? 'Da, cu bilet de trimitere' : 'Nu, serviciu cu plată' },
+  ...quickFacts,
+].filter((fact): fact is { label: string; value: string } => Boolean(fact));
+
+const origin = Astro.site?.toString() ?? Astro.url.origin;
+const schema = [
+  serviceSchema(serviciu, site.name),
+  breadcrumbSchema(
+    [
+      { name: 'Acasă', url: '/' },
+      { name: 'Servicii', url: '/servicii' },
+      { name: title, url: `/servicii/${serviciu.id}` },
+    ],
+    origin,
+  ),
+  faqSchema(faq),
+].filter(Boolean) as Record<string, unknown>[];
+
+const tags: Array<{ label: string; href?: string }> = [{ label: typeLabels[type] }];
+if (speciality) tags.unshift({ label: speciality.data.title, href: `/specializari/${speciality.id}` });
+if (cnas) tags.push({ label: 'Decontat CNAS', href: '/servicii-decontate-cnas' });
+---
+
+<BaseLayout
+  title={seo?.title ?? title}
+  description={seo?.description ?? shortDescription}
+  noindex={seo?.noindex}
+  schema={schema}
+>
+  <EntityHeader
+    badge={badge}
+    title={title}
+    subtitle={subtitle ?? shortDescription}
+    breadcrumbs={[
+      { label: 'Acasă', href: '/' },
+      { label: 'Servicii', href: '/servicii' },
+      { label: title },
+    ]}
+    tags={tags}
+  />
+
+  <KeyFacts facts={facts} />
+
+  <section class="bg-surface py-12">
+    <div class="container-page">
+      <SimpleHeading title="Despre serviciu" />
+      <div class="prose-bastion mt-8 max-w-3xl">
+        <Content />
+      </div>
+    </div>
+  </section>
+
+  {
+    intervention && (
+      <section class="bg-surface-alt py-12">
+        <div class="container-page">
+          <div class="border-brand/30 bg-brand-50 flex flex-col gap-4 rounded-2xl border p-6 sm:flex-row sm:items-center">
+            <div class="flex-1">
+              <p class="text-chip-ink text-xs leading-4 font-semibold">Serviciul se efectuează ca intervenție</p>
+              <h2 class="text-ink mt-1 text-xl leading-7 font-bold">{intervention.data.title}</h2>
+              <p class="text-ink-muted mt-1 text-sm leading-6 text-pretty">
+                Protocolul complet — indicații, pregătire, cum decurge pas cu pas, recuperare și întrebări frecvente —
+                este descris pe pagina intervenției.
+              </p>
+            </div>
+            <Button href={`/interventii/${intervention.id}`} class="shrink-0">
+              Vezi protocolul
+              <Icon name="arrow-right" size={16} />
+            </Button>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <NamedListSection id="ce-include" title="Ce include" items={includes} />
+
+  <PointsSection id="pregatire" title="Cum te pregătești" items={preparation} variant="info" tone="alt" columns={1} />
+
+  <RelatedCards
+    badge="Afecțiuni"
+    title="Când este recomandat"
+    subtitle="Afecțiunile pentru care acest serviciu este indicat."
+    items={conditions.map((item) => ({
+      href: `/afectiuni/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Afecțiune',
+    }))}
+  />
+
+  <FaqSection items={faq} tone="alt" />
+
+  {
+    doctors.length > 0 && (
+      <section class="bg-surface py-12">
+        <div class="container-page flex flex-col items-center gap-8">
+          <SectionHeading badge="Medici" title="Cine asigură acest serviciu" />
+          <div class="grid w-full grid-cols-2 gap-4 lg:grid-cols-4">
+            {doctors.map((doctor) => (
+              <DoctorCard doctor={doctor} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <SpecialityCallout speciality={speciality!} doctorsCount={doctors.length} tone="alt" />
+
+  <RelatedArticles posts={articles} tone="white" />
+
+  <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} tone="alt" />
+</BaseLayout>

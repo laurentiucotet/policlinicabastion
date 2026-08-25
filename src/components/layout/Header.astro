@@ -1,6 +1,7 @@
 ---
 import Logo from './Logo.astro';
 import TopBar from './TopBar.astro';
+import SearchBox from './SearchBox.astro';
 import Icon from '../ui/Icon.astro';
 import Button from '../ui/Button.astro';
 import { navigation, site } from '../../lib/site';
@@ -9,22 +10,29 @@ import { getSpecializari } from '../../lib/content';
 const pathname = Astro.url.pathname;
 const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
-// Meniul "Specializari" se completeaza automat din colectia de specializari,
-// ca sa nu fie nevoie sa fie tinut manual in sincron din CMS.
+/* Submeniurile se completeaza automat din continut, ca sa nu fie nevoie sa fie
+ * tinute manual in sincron din CMS:
+ *   /specializari -> lista specializarilor
+ *   /afectiuni, /interventii, /servicii -> catalogul filtrat pe specializare
+ * Daca in navigation.json exista deja copii scrisi de mana, ei au prioritate. */
 const specializari = await getSpecializari();
-const items = navigation.main.map((item) => {
-  if (item.href !== '/specializari') return item;
-  return {
-    ...item,
-    children: specializari.map((s) => ({ label: s.data.title, href: `/specializari/${s.id}` })),
-  };
-});
+
+const autoChildren: Record<string, { label: string; href: string }[]> = {
+  '/specializari': specializari.map((s) => ({ label: s.data.title, href: `/specializari/${s.id}` })),
+  '/afectiuni': specializari.map((s) => ({ label: s.data.title, href: `/afectiuni?categorie=${s.id}` })),
+  '/interventii': specializari.map((s) => ({ label: s.data.title, href: `/interventii?categorie=${s.id}` })),
+  '/servicii': specializari.map((s) => ({ label: s.data.title, href: `/servicii?categorie=${s.id}` })),
+};
+
+const items = navigation.main.map((item) =>
+  item.children.length ? item : { ...item, children: autoChildren[item.href] ?? [] },
+);
 ---
 
 <header class="sticky top-0 z-50">
   <TopBar />
 
-  <div class="border-stroke bg-surface/95 border-b backdrop-blur">
+  <div class="border-stroke bg-surface/95 relative border-b backdrop-blur">
     <div class="container-page flex h-[84px] items-center justify-between gap-6">
       <Logo />
 
@@ -72,14 +80,15 @@ const items = navigation.main.map((item) => {
             ),
           )
         }
-        <a href="/cautare" class="text-ink hover:text-brand flex items-center gap-1 text-sm font-semibold whitespace-nowrap 2xl:text-base">
-          Căutare
-          <Icon name="search" size={16} />
-        </a>
       </nav>
 
       <div class="flex items-center gap-2">
-        <Button href={site.booking.href} class="hidden whitespace-nowrap sm:inline-flex">{site.booking.label}</Button>
+        <SearchBox />
+        {/* Wrapper-ul ascunde butonul pe ecrane mici: `hidden` pus direct pe
+            Button ar pierde in fata lui `inline-flex` din stilul de baza. */}
+        <span class="hidden sm:block">
+          <Button href={site.booking.href} class="whitespace-nowrap">{site.booking.label}</Button>
+        </span>
         <button
           type="button"
           class="text-ink hover:bg-surface-alt rounded-lg p-2 xl:hidden"
@@ -131,6 +140,20 @@ const items = navigation.main.map((item) => {
 </header>
 
 <script>
+  /* Header-ul e sticky si isi schimba inaltimea in functie de latimea ecranului
+   * (bara de sus se desface pe doua randuri pe mobil). Publicam inaltimea reala
+   * ca variabila CSS, ca ancorele si sub-navigatia paginilor de catalog sa se
+   * alinieze sub el, fara valori magice. */
+  const header = document.querySelector('header');
+
+  if (header) {
+    const publishHeight = () =>
+      document.documentElement.style.setProperty('--header-h', `${header.offsetHeight}px`);
+
+    publishHeight();
+    new ResizeObserver(publishHeight).observe(header);
+  }
+
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   const menu = document.getElementById('mobile-menu');
 

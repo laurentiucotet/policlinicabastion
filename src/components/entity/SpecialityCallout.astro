@@ -1,0 +1,56 @@
+---
+/**
+ * Cardul catre specializarea de care apartine afectiunea / interventia /
+ * serviciul. Este puntea principala intre catalog si restul site-ului.
+ */
+import type { CollectionEntry } from 'astro:content';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  speciality: CollectionEntry<'specializari'>;
+  doctorsCount?: number;
+  /** Textul de deasupra titlului. */
+  eyebrow?: string;
+  tone?: 'white' | 'alt';
+}
+
+const { speciality, doctorsCount = 0, eyebrow = 'Specializarea de care aparține', tone = 'white' } = Astro.props;
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+const href = `/specializari/${speciality.id}`;
+---
+
+<section class:list={[tones[tone], 'py-12']}>
+  <div class="container-page">
+    <div class="border-stroke bg-surface shadow-card flex flex-col gap-5 rounded-2xl border p-6 sm:flex-row sm:items-center sm:gap-6">
+      <span
+        class="bg-brand-50 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-3xl"
+        aria-hidden="true"
+      >
+        {speciality.data.icon}
+      </span>
+
+      <div class="flex-1">
+        <p class="text-chip-ink text-xs leading-4 font-semibold">{eyebrow}</p>
+        <h2 class="text-ink mt-1 text-xl leading-7 font-bold">
+          <a href={href} class="hover:text-brand">{speciality.data.title}</a>
+        </h2>
+        <p class="text-ink-muted mt-1 text-sm leading-6 text-pretty">{speciality.data.shortDescription}</p>
+
+        {
+          doctorsCount > 0 && (
+            <p class="text-ink-subtle mt-2 flex items-center gap-1.5 text-xs">
+              <Icon name="users" size={14} />
+              {doctorsCount === 1 ? '1 medic în această specializare' : `${doctorsCount} medici în această specializare`}
+            </p>
+          )
+        }
+      </div>
+
+      <div class="flex shrink-0 flex-wrap gap-2">
+        <Button href={href} variant="outline">Vezi specializarea</Button>
+        <Button href="/contact">Programează-te</Button>
+      </div>
+    </div>
+  </div>
+</section>

@@ -6,9 +6,15 @@ import DoctorHero from '../../components/sections/DoctorHero.astro';
 import SimpleHeading from '../../components/ui/SimpleHeading.astro';
 import ListColumns from '../../components/sections/ListColumns.astro';
 import ServicesAccordion from '../../components/sections/ServicesAccordion.astro';
+import RelatedCards from '../../components/entity/RelatedCards.astro';
 import TeamGrid from '../../components/sections/TeamGrid.astro';
 import CtaBand from '../../components/sections/CtaBand.astro';
-import { getMedici } from '../../lib/content';
+import {
+  getAfectiuniBySpecialitate,
+  getInterventiiForMedic,
+  getMedici,
+  getServiciiBySpecialitate,
+} from '../../lib/content';
 import { home } from '../../lib/site';
 
 export const getStaticPaths = (async () => {
@@ -23,6 +29,14 @@ const { name, role, procedures, pathologies, education, memberships, specialitie
 // Serviciile afisate pe pagina de medic vin din prima lui specializare,
 // ca sa nu fie nevoie sa fie duplicate in CMS.
 const primarySpeciality = specialities[0] ? await getEntry(specialities[0]) : undefined;
+
+// Interventiile pe care le efectueaza si afectiunile din specializarile lui:
+// relatia e declarata o singura data, pe interventie / pe afectiune.
+const interventii = await getInterventiiForMedic(doctor);
+const afectiuni = (
+  await Promise.all(specialities.map((ref) => getAfectiuniBySpecialitate(ref.id)))
+).flat();
+const servicii = primarySpeciality ? await getServiciiBySpecialitate(primarySpeciality.id) : [];
 
 const schema = {
   '@context': 'https://schema.org',
@@ -56,8 +70,52 @@ const schema = {
   <ListColumns title="Formare profesională" items={education} tone="alt" />
   <ListColumns title="Afilieri profesionale" items={memberships} />
 
+  <RelatedCards
+    badge="Intervenții"
+    title="Intervenții efectuate"
+    subtitle="Pentru fiecare intervenție găsești indicațiile, pregătirea, pașii și recuperarea."
+    tone="alt"
+    items={interventii.map((item) => ({
+      href: `/interventii/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Intervenție',
+      meta: [item.data.admission, item.data.anesthesia].filter((value): value is string => Boolean(value)),
+    }))}
+    cta={{ label: 'Vezi toate intervențiile', href: '/interventii' }}
+  />
+
+  <RelatedCards
+    badge="Afecțiuni"
+    title="Afecțiuni din specializările sale"
+    subtitle="Fiecare afecțiune are pagina ei: simptome, cauze, diagnostic și cum se tratează."
+    items={afectiuni.map((item) => ({
+      href: `/afectiuni/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Afecțiune',
+    }))}
+    cta={{ label: 'Vezi toate afecțiunile', href: '/afectiuni' }}
+  />
+
+  <RelatedCards
+    badge="Servicii"
+    title="Servicii pe care le poți programa"
+    items={servicii.map((item) => ({
+      href: `/servicii/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Serviciu',
+      meta: item.data.cnas ? ['Decontat CNAS'] : [],
+    }))}
+    tone="alt"
+    cta={{ label: 'Vezi toate serviciile', href: '/servicii' }}
+  />
+
   {
-    primarySpeciality && (
+    /* Fara pagini de serviciu pentru specializare, ramane acordeonul din
+       descrierea specializarii. */
+    servicii.length === 0 && primarySpeciality && (
       <ServicesAccordion
         title={`Servicii ${primarySpeciality.data.title.toLowerCase()}`}
         services={primarySpeciality.data.services}
@@ -65,7 +123,7 @@ const schema = {
     )
   }
 
-  <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} tone="alt" />
+  <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} />
 
   <TeamGrid
     badge="Medici"

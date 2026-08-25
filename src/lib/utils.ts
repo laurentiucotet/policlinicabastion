@@ -22,12 +22,17 @@ export function byOrder<T extends { data: { order?: number } }>(a: T, b: T): num
   return (a.data.order ?? 100) - (b.data.order ?? 100);
 }
 
-/** Genereaza id-uri de ancora din titluri (pentru cuprinsul articolelor). */
-export function slugify(value: string): string {
+/** Text fara diacritice si litere mici - baza pentru cautare si potriviri. */
+export function normalizeText(value: string): string {
   return value
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+/** Genereaza id-uri de ancora din titluri (pentru cuprinsul articolelor). */
+export function slugify(value: string): string {
+  return normalizeText(value)
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 }

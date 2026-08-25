@@ -18,6 +18,12 @@ export default defineConfig({
     webAnalytics: { enabled: false },
   }),
 
+  // /cautare nu mai e o pagina de sine statatoare: cautarea e o functie in
+  // header, iar rezultatele au pagina lor. Pastram vechiul URL functional.
+  redirects: {
+    '/cautare': '/rezultate-cautare',
+  },
+
   integrations: [
     mdx(),
     sitemap({
