@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
+import Icon from '../ui/Icon.astro';
 
 interface Props {
   doctor: CollectionEntry<'medici'>;
@@ -11,7 +12,7 @@ const href = `/medici/${doctor.id}`;
 ---
 
 <article
-  class="border-stroke bg-surface shadow-card group flex h-full flex-col overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
+  class="border-stroke bg-surface shadow-card card-surface hover:border-brand/40 group flex h-full flex-col overflow-hidden rounded-2xl border transition hover:shadow-md"
 >
   <div class="bg-surface-alt aspect-[4/5] overflow-hidden">
     {
@@ -31,8 +32,13 @@ const href = `/medici/${doctor.id}`;
 
   <div class="flex flex-1 flex-col gap-1 p-4 text-center">
     <h3 class="text-sm leading-5 font-semibold">
-      <a href={href} class="hover:text-brand">{doctor.data.name}</a>
+      <a href={href} class="group-hover:text-brand card-link">{doctor.data.name}</a>
     </h3>
     <p class="text-ink-muted text-sm leading-5">{doctor.data.role}</p>
+
+    <span class="text-brand mt-auto inline-flex items-center justify-center gap-1 pt-2 text-xs font-semibold">
+      Vezi profilul
+      <Icon name="arrow-right" size={14} />
+    </span>
   </div>
 </article>

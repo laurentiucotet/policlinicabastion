@@ -1,29 +1,65 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Hero from '../components/sections/Hero.astro';
+import ExploreBand from '../components/sections/ExploreBand.astro';
 import LatestNews from '../components/sections/LatestNews.astro';
 import SpecialitiesGrid from '../components/sections/SpecialitiesGrid.astro';
+import HighlightServices from '../components/sections/HighlightServices.astro';
+import WhyBand from '../components/sections/WhyBand.astro';
+import StepsBand from '../components/sections/StepsBand.astro';
 import CtaBand from '../components/sections/CtaBand.astro';
 import TestimonialsGrid from '../components/sections/TestimonialsGrid.astro';
 import TeamGrid from '../components/sections/TeamGrid.astro';
+import FaqSection from '../components/entity/FaqSection.astro';
 import { home } from '../lib/site';
 ---
 
 <BaseLayout title={home.seo.title} description={home.seo.description} appendSiteName={false}>
   <Hero />
 
-  <LatestNews
-    badge={home.news.badge}
-    title={home.news.title}
-    subtitle={home.news.subtitle}
-    cta={home.news.cta}
-    count={home.news.count}
-  />
+  <ExploreBand title={home.explore.title} subtitle={home.explore.subtitle} />
 
   <SpecialitiesGrid
     badge={home.services.badge}
     title={home.services.title}
     subtitle={home.services.subtitle}
+    tone="white"
+    onlyHomepage
+  />
+
+  <HighlightServices
+    badge={home.highlights.badge}
+    title={home.highlights.title}
+    subtitle={home.highlights.subtitle}
+    cta={home.highlights.cta}
+    items={home.highlights.items}
+    count={home.highlights.count}
+    tone="alt"
+  />
+
+  <WhyBand
+    badge={home.why.badge}
+    title={home.why.title}
+    subtitle={home.why.subtitle}
+    items={home.why.items}
+  />
+
+  <StepsBand
+    badge={home.steps.badge}
+    title={home.steps.title}
+    subtitle={home.steps.subtitle}
+    items={home.steps.items}
+    cta={home.ctaPrimary.cta}
+    tone="white"
+  />
+
+  <TeamGrid
+    badge={home.team.badge}
+    title={home.team.title}
+    subtitle={home.team.subtitle}
+    cta={home.team.cta}
+    count={home.team.count}
+    tone="alt"
     onlyHomepage
   />
 
@@ -36,14 +72,22 @@ import { home } from '../lib/site';
     count={home.testimonials.count}
   />
 
-  <TeamGrid
-    badge={home.team.badge}
-    title={home.team.title}
-    subtitle={home.team.subtitle}
-    cta={home.team.cta}
-    count={home.team.count}
-    onlyHomepage
+  <LatestNews
+    badge={home.news.badge}
+    title={home.news.title}
+    subtitle={home.news.subtitle}
+    cta={home.news.cta}
+    count={home.news.count}
+    tone="white"
   />
 
-  <CtaBand title={home.ctaSecondary.title} text={home.ctaSecondary.text} cta={home.ctaSecondary.cta} tone="alt" />
+  <FaqSection
+    id="intrebari-frecvente"
+    title={home.faq.title}
+    intro={home.faq.subtitle}
+    items={home.faq.items}
+    tone="alt"
+  />
+
+  <CtaBand title={home.ctaSecondary.title} text={home.ctaSecondary.text} cta={home.ctaSecondary.cta} />
 </BaseLayout>

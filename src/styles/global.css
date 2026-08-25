@@ -83,6 +83,30 @@
   padding-inline: --spacing(6);
 }
 
+/* ---------------------------------------------------------------------------
+   Carduri in care e clicabila toata suprafata
+
+   `card-surface` merge pe container, `card-link` pe linkul principal. Cele doua
+   se folosesc *impreuna*: `card-link` intinde un overlay peste containerul
+   pozitionat, iar fara `card-surface` overlay-ul se raporteaza la pagina si
+   acopera tot ecranul, furand clickurile din header, breadcrumb si filtre.
+   Exact asta s-a intamplat pe /noutati - de aceea perechea are nume propriu.
+
+   Orice alt link din interiorul cardului trebuie sa primeasca `relative z-10`,
+   altfel ramane sub overlay.
+   --------------------------------------------------------------------------- */
+@utility card-surface {
+  position: relative;
+}
+
+@utility card-link {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+}
+
 /* Continut generat din Markdown (articole, descrieri specializari, pagini) */
 @utility prose-bastion {
   & > * + * {

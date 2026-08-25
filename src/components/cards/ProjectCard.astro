@@ -20,7 +20,7 @@ const facts = [
 ---
 
 <article
-  class="border-stroke bg-surface shadow-card group flex h-full flex-col overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
+  class="border-stroke bg-surface shadow-card card-surface hover:border-brand/40 group flex h-full flex-col overflow-hidden rounded-2xl border transition hover:shadow-md"
 >
   <a href={href} class="bg-surface-alt relative block aspect-[16/9] overflow-hidden" tabindex="-1" aria-hidden="true">
     {
@@ -45,7 +45,7 @@ const facts = [
 
   <div class="flex flex-1 flex-col gap-3 p-5">
     <h3 class="text-base leading-6 font-semibold">
-      <a href={href} class="hover:text-brand">{title}</a>
+      <a href={href} class="group-hover:text-brand card-link">{title}</a>
     </h3>
     <p class="text-ink-muted line-clamp-3 text-sm leading-5">{summary}</p>
 
@@ -62,9 +62,9 @@ const facts = [
       )
     }
 
-    <a href={href} class="text-brand hover:text-brand-dark inline-flex items-center gap-1 text-sm font-semibold">
+    <span class="text-brand inline-flex items-center gap-1 text-sm font-semibold">
       Detalii proiect
       <Icon name="arrow-right" size={16} />
-    </a>
+    </span>
   </div>
 </article>

@@ -252,7 +252,13 @@ ultima categorie deschisă automat.
 Paginile de afecțiune și de serviciu au **aceleași secțiuni, în aceeași
 ordine**, oricare ar fi subiectul. Secțiunile fără conținut sunt sărite, iar
 fundalul alternează automat între cele rămase (`toneOf()` în fiecare pagină).
-Din aceeași listă se generează și sub-navigația lipicioasă din capul paginii.
+Din aceeași listă se generează și sub-navigația lipicioasă din capul paginii,
+care marchează secțiunea în care te afli (`aria-current="true"`) pe măsură ce
+derulezi. Secțiunea curentă e ultima al cărei început a trecut de linia de sub
+bară — calcul din poziții, nu din raportul de intersecție al unui
+`IntersectionObserver`: secțiunile au înălțimi foarte diferite, iar una scurtă
+(„Beneficii") ar pierde mereu în fața uneia lungi („Cum decurge"). Pe ecrane
+înguste, elementul activ e adus în vizor prin defilarea orizontală a barei.
 
 | Afecțiune | Serviciu / intervenție |
 | --- | --- |
@@ -277,6 +283,27 @@ construiesc și paginile de proiect european (§4quater).
 Fiecare pagină emite și JSON-LD potrivit tipului (`MedicalCondition`,
 `MedicalProcedure` / `MedicalTest`, `FAQPage`, `BreadcrumbList`) — vezi
 `src/lib/schema.ts`.
+
+### Carduri clicabile pe toată suprafața
+
+Toate cardurile din site (medici, articole, catalog, proiecte, intervenții
+promovate) sunt clicabile integral, nu doar pe titlu. Mecanismul e o pereche de
+utilitare din `global.css`:
+
+- `card-surface` pe container — doar `position: relative`;
+- `card-link` pe linkul principal — un `::after` întins peste tot containerul.
+
+**Se folosesc împreună, întotdeauna.** Fără `card-surface`, overlay-ul se
+raportează la pagină și acoperă tot ecranul: linkul cardului fură clickurile din
+header, din firul de navigare și din filtre. Exact asta s-a întâmplat pe
+`/noutati`, unde `BlogCard` avea `card-link` fără container poziționat — filtrele
+de categorie și breadcrumb-ul păreau „stricate", deși erau linkuri normale.
+De aceea perechea are nume proprii, în loc de `relative` + `after:inset-0`
+scrise de mână la fiecare card.
+
+Orice alt link din interiorul unui card trebuie să primească `relative z-10`,
+altfel rămâne sub overlay. Unde nu e nevoie de un al doilea link (ex. „Detalii
+proiect"), textul rămâne `<span>`: cardul e deja linkul.
 
 ### Firul de navigare (breadcrumbs)
 
@@ -352,6 +379,38 @@ descriere, obiective, rezultate, galerie și **noutăți**.
 - Nota obligatorie („Conținutul acestui material nu reprezintă în mod
   obligatoriu poziția oficială a Uniunii Europene…") apare și în listă, și pe
   fiecare pagină de proiect.
+
+---
+
+## 4quinquies. Prima pagină și pagina de noutăți
+
+### Ritmul vizual al paginilor lungi
+
+Prima pagină era un șir de secțiuni albe și gri, fiecare cu o grilă de carduri —
+corect, dar monoton. Blocurile de mai jos există ca să rupă acel ritm; fiecare
+are altă formă, nu doar alt conținut:
+
+| Bloc | Formă | Suprafață |
+| --- | --- | --- |
+| `ExploreBand` | trei drumuri către catalog | `brand-50` — a treia suprafață, între alb și gri |
+| `HighlightServices` | carduri late, cu datele esențiale în coloană | gri |
+| `WhyBand` | iconiță + text, fără carduri | **albastru închis** |
+| `StepsBand` | pași numerotați, pe orizontală | alb |
+| `FaqSection` | acordeon (refolosit din catalog) | gri |
+
+Toate textele lor stau în `settings/home.json` și sunt editabile din Tina, ca
+restul primei pagini. `HighlightServices` primește și lista intervențiilor
+promovate — dacă e goală, ia primele din catalog.
+
+### `/noutati`
+
+- **Articolul promovat** (`featured: true`, cel mai recent) deschide pagina ca
+  un card lat, cu imagine. Următoarele promovate rămân în „Recomandate".
+- **Filtrele sunt linkuri**, nu butoane care ascund carduri: fiecare categorie
+  are deja pagină proprie (`/noutati/categorie/<slug>`), deci filtrul rămâne
+  partajabil, indexabil și funcționează fără JavaScript. Fiecare filtru arată
+  numărul de articole, iar cel activ e marcat cu `aria-current="page"`.
+- Aceleași filtre apar și pe pagina de categorie, cu starea mutată corespunzător.
 
 ---
 

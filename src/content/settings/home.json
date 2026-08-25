@@ -8,20 +8,42 @@
     "titleHighlight": "Prioritatea",
     "titleAfter": "noastră",
     "subtitle": "Policlinica medicală privată din Timișoara cu servicii medicale de calitate superioară. Echipa noastră de specialiști dedicați este aici pentru tine.",
-    "primaryCta": { "label": "Programează-te", "href": "/contact" },
-    "secondaryCta": { "label": "Ultimele noutăți", "href": "/noutati" },
+    "primaryCta": {
+      "label": "Programează-te",
+      "href": "/contact"
+    },
+    "secondaryCta": {
+      "label": "Ultimele noutăți",
+      "href": "/noutati"
+    },
     "stats": [
-      { "value": "20,000+", "label": "Pacienti" },
-      { "value": "30+", "label": "Experiență medicală*" },
-      { "value": "€5,000,000+", "label": "Investiții în domeniul medical" }
+      {
+        "value": "20,000+",
+        "label": "Pacienti"
+      },
+      {
+        "value": "30+",
+        "label": "Experiență medicală*"
+      },
+      {
+        "value": "€5,000,000+",
+        "label": "Investiții în domeniul medical"
+      }
     ],
     "statsNote": "*Experiența profesională a medicilor din clinica noastră"
+  },
+  "explore": {
+    "title": "Caută după ce te interesează",
+    "subtitle": "Aceleași informații, organizate în trei feluri — alege drumul care ți se potrivește."
   },
   "news": {
     "badge": "Blog & Noutăți",
     "title": "Ultimele noutăți",
     "subtitle": "Informații noi despre Policlinica Bastion",
-    "cta": { "label": "Vezi toate noutățile", "href": "/noutati" },
+    "cta": {
+      "label": "Vezi toate noutățile",
+      "href": "/noutati"
+    },
     "count": 3
   },
   "services": {
@@ -29,10 +51,74 @@
     "title": "Servicii medicale complete",
     "subtitle": "Oferim consultații de specialitate în multiple domenii medicale, majoritatea decontate prin Casa Națională de Asigurări de Sănătate (CNAS)."
   },
+  "highlights": {
+    "badge": "Intervenții",
+    "title": "Intervenții de referință",
+    "subtitle": "Proceduri pentru care pacienții vin la Policlinica Bastion din toată regiunea de vest.",
+    "cta": {
+      "label": "Vezi toate intervențiile",
+      "href": "/servicii?tip=interventie"
+    },
+    "count": 3,
+    "items": [
+      "biopsie-de-prostata-fusion",
+      "litotritie-extracorporeala-eswl",
+      "cistoscopie"
+    ]
+  },
+  "why": {
+    "badge": "De ce Bastion",
+    "title": "Ce găsești la Policlinica Bastion",
+    "subtitle": "Patru motive pentru care pacienții aleg clinica noastră — și revin.",
+    "items": [
+      {
+        "icon": "🎓",
+        "title": "Echipă universitară",
+        "text": "Profesori universitari, conferențiari și medici primari, cu experiență clinică și de cercetare."
+      },
+      {
+        "icon": "🔬",
+        "title": "Aparatură de ultimă generație",
+        "text": "Investiții europene în echipamente moderne: laser Holmium, fuziune RMN-ecografie, sterilizare la temperatură joasă."
+      },
+      {
+        "icon": "🩹",
+        "title": "Intervenții minim invazive",
+        "text": "Proceduri în regim ambulatoriu, fără internare, cu recuperare rapidă."
+      },
+      {
+        "icon": "🕗",
+        "title": "Program extins",
+        "text": "Consultații până seara târziu, ca să nu îți iei liber de la muncă."
+      }
+    ]
+  },
   "ctaPrimary": {
     "title": "Servicii decontate prin CNAS",
     "text": "Consultațiile în Nefrologie, Urologie, Neurologie, Psihiatrie, Medicină de Familie și Diabet pot fi decontate prin CNAS cu bilet de trimitere.",
-    "cta": { "label": "Programează-te", "href": "/contact" }
+    "cta": {
+      "label": "Programează-te",
+      "href": "/contact"
+    }
+  },
+  "steps": {
+    "badge": "Programare",
+    "title": "Cum te programezi, în trei pași",
+    "subtitle": "Fără drumuri inutile și fără așteptare la telefon.",
+    "items": [
+      {
+        "title": "Alege serviciul sau specializarea",
+        "text": "Caută afecțiunea care te interesează sau serviciul de care ai nevoie. Pe fiecare pagină scrie exact ce presupune."
+      },
+      {
+        "title": "Sună-ne sau completează formularul",
+        "text": "Recepția confirmă intervalul disponibil și îți spune ce trebuie să aduci cu tine."
+      },
+      {
+        "title": "Vino la consultație",
+        "text": "Adu biletul de trimitere, dacă vrei decontare CNAS, analizele anterioare și lista medicamentelor pe care le iei."
+      }
+    ]
   },
   "testimonials": {
     "badge": "Testimoniale",
@@ -44,12 +130,45 @@
     "badge": "Medici",
     "title": "Echipa noastră",
     "subtitle": "Informații noi despre echipa Policlinica Bastion",
-    "cta": { "label": "Vezi toți medicii", "href": "/medici" },
+    "cta": {
+      "label": "Vezi toți medicii",
+      "href": "/medici"
+    },
     "count": 8
+  },
+  "faq": {
+    "badge": "Întrebări frecvente",
+    "title": "Ce ne întreabă cel mai des pacienții",
+    "subtitle": "Dacă nu găsești răspunsul aici, sună-ne la recepție.",
+    "items": [
+      {
+        "question": "Am nevoie de bilet de trimitere?",
+        "answer": "Pentru consultațiile decontate prin CNAS, da — biletul se obține de la medicul de familie sau de la un alt medic specialist. Fără bilet, consultația se poate efectua contra cost."
+      },
+      {
+        "question": "Cât costă o consultație?",
+        "answer": "Consultațiile decontate prin CNAS sunt gratuite pentru pacienții asigurați, cu bilet de trimitere. Pentru serviciile cu plată, prețul este afișat pe pagina fiecărui serviciu sau se comunică la programare."
+      },
+      {
+        "question": "Ce trebuie să aduc la prima consultație?",
+        "answer": "Cardul de sănătate, biletul de trimitere (dacă vrei decontare CNAS), analizele și investigațiile anterioare, plus lista medicamentelor pe care le iei în mod curent."
+      },
+      {
+        "question": "Care este programul clinicii?",
+        "answer": "Luni, miercuri și vineri între 08:00 și 22:00, marți și joi între 08:00 și 23:30. Sâmbăta și duminica, clinica este închisă."
+      },
+      {
+        "question": "Pot programa o intervenție direct, fără consultație?",
+        "answer": "Nu. Orice intervenție se stabilește după o consultație de specialitate, în care medicul confirmă indicația și verifică investigațiile necesare."
+      }
+    ]
   },
   "ctaSecondary": {
     "title": "Ai nevoie de o programare?",
     "text": "Sună-ne sau completează formularul de contact — revenim cu confirmarea programării în cel mai scurt timp.",
-    "cta": { "label": "Contactează-ne", "href": "/contact" }
+    "cta": {
+      "label": "Contactează-ne",
+      "href": "/contact"
+    }
   }
 }

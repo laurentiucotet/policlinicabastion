@@ -1,0 +1,55 @@
+---
+/**
+ * Filtrele de pe /noutati. Sunt linkuri catre paginile de categorie, nu butoane
+ * care ascund carduri: fiecare categorie are pagina proprie, deci filtrul
+ * ramane partajabil, indexabil si functioneaza si fara JavaScript.
+ */
+interface Props {
+  categories: Array<{ id: string; name: string; count: number }>;
+  /** Numarul total de articole, pentru optiunea "Toate". */
+  total: number;
+  /** Categoria curenta; gol = "Toate". */
+  activeId?: string;
+}
+
+const { categories, total, activeId } = Astro.props;
+
+const base =
+  'inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors';
+const idle = 'border-stroke bg-surface text-ink-muted hover:border-brand/40 hover:text-brand';
+const active = 'border-brand bg-brand text-white';
+---
+
+<nav aria-labelledby="filtre-articole">
+  <h2 id="filtre-articole" class="sr-only">Filtrează articolele după categorie</h2>
+
+  <ul class="flex flex-wrap gap-2">
+    <li>
+      <a href="/noutati" class:list={[base, activeId ? idle : active]} aria-current={activeId ? undefined : 'page'}>
+        Toate
+        <span class:list={['text-xs font-normal', activeId ? 'text-ink-subtle' : 'text-white/80']}>{total}</span>
+      </a>
+    </li>
+
+    {
+      categories.map((category) => {
+        const isActive = category.id === activeId;
+
+        return (
+          <li>
+            <a
+              href={`/noutati/categorie/${category.id}`}
+              class:list={[base, isActive ? active : idle]}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              {category.name}
+              <span class:list={['text-xs font-normal', isActive ? 'text-white/80' : 'text-ink-subtle']}>
+                {category.count}
+              </span>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>

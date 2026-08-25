@@ -1,0 +1,72 @@
+---
+/**
+ * Banda de legatura catre catalog. Foloseste o a treia suprafata (albastru
+ * foarte deschis), diferita de alb si de gri, ca sa rupa monotonia paginilor
+ * lungi fara sa concureze cu benzile CTA, care sunt inchise la culoare.
+ */
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  title?: string;
+  subtitle?: string;
+}
+
+const {
+  title = 'Caută după ce te interesează',
+  subtitle = 'Aceleași informații, organizate în trei feluri — alege drumul care ți se potrivește.',
+} = Astro.props;
+
+const paths = [
+  {
+    href: '/afectiuni',
+    icon: '🩺',
+    title: 'Afecțiuni',
+    text: 'Simptome, cauze, cum se pune diagnosticul și cum se tratează.',
+  },
+  {
+    href: '/servicii',
+    icon: '📋',
+    title: 'Servicii și intervenții',
+    text: 'Ce poți programa: consultații, investigații și intervenții, cu tot ce presupun.',
+  },
+  {
+    href: '/medici',
+    icon: '👩‍⚕️',
+    title: 'Medici',
+    text: 'Echipa clinicii, cu specializările și intervențiile fiecăruia.',
+  },
+];
+---
+
+<section class="bg-brand-50 py-12">
+  <div class="container-page">
+    <div class="flex flex-col items-center gap-3 text-center">
+      <h2 class="font-heading text-ink text-2xl leading-8 font-bold text-balance sm:text-3xl">{title}</h2>
+      <p class="text-ink-muted max-w-2xl text-base leading-7 text-pretty">{subtitle}</p>
+    </div>
+
+    <ul class="mt-8 grid gap-4 sm:grid-cols-3">
+      {
+        paths.map((path) => (
+          <li>
+            <article class="bg-surface shadow-card card-surface hover:shadow-md group flex h-full flex-col gap-2 rounded-2xl p-6 transition">
+              <span class="text-3xl leading-none" aria-hidden="true">
+                {path.icon}
+              </span>
+              <h3 class="text-ink mt-1 text-base leading-6 font-semibold">
+                <a href={path.href} class="group-hover:text-brand card-link">
+                  {path.title}
+                </a>
+              </h3>
+              <p class="text-ink-muted text-sm leading-5 text-pretty">{path.text}</p>
+              <span class="text-brand mt-auto inline-flex items-center gap-1 pt-2 text-sm font-semibold">
+                Explorează
+                <Icon name="arrow-right" size={16} />
+              </span>
+            </article>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

@@ -200,11 +200,39 @@ export const homepage: Collection = {
         { type: 'string', name: 'statsNote', label: 'Notă sub cifre' },
       ],
     },
+    sectionHeader('explore', 'Secțiunea „Caută după ce te interesează”'),
     sectionHeader('news', 'Secțiunea „Ultimele noutăți”', [
       ctaField('cta', 'Buton'),
       { type: 'number', name: 'count', label: 'Câte articole afișăm' },
     ]),
     sectionHeader('services', 'Secțiunea „Servicii medicale”'),
+    sectionHeader('highlights', 'Secțiunea „Intervenții de referință”', [
+      {
+        type: 'object',
+        name: 'items',
+        label: 'Intervenții promovate',
+        description: 'Lasă gol pentru primele din catalog, în ordinea lor.',
+        list: true,
+        ui: { itemProps: (item) => ({ label: item?.ref?.split('/').pop()?.replace(/\.mdx?$/, '') ?? 'Intervenție' }) },
+        fields: [{ type: 'reference', name: 'ref', label: 'Intervenție', collections: ['servicii'], required: true }],
+      },
+      ctaField('cta', 'Buton'),
+      { type: 'number', name: 'count', label: 'Câte intervenții afișăm' },
+    ]),
+    sectionHeader('why', 'Banda „De ce Bastion” (fundal albastru)', [
+      {
+        type: 'object',
+        name: 'items',
+        label: 'Motive',
+        list: true,
+        ui: { itemProps: (item) => ({ label: item?.title ?? 'Motiv' }) },
+        fields: [
+          { type: 'string', name: 'icon', label: 'Iconiță (emoji)' },
+          { type: 'string', name: 'title', label: 'Titlu', required: true },
+          { type: 'string', name: 'text', label: 'Text', ui: { component: 'textarea' }, required: true },
+        ],
+      },
+    ]),
     {
       type: 'object',
       name: 'ctaPrimary',
@@ -215,12 +243,39 @@ export const homepage: Collection = {
         ctaField('cta', 'Buton'),
       ],
     },
+    sectionHeader('steps', 'Secțiunea „Cum te programezi”', [
+      {
+        type: 'object',
+        name: 'items',
+        label: 'Pași',
+        description: 'Se numerotează automat, în ordinea de aici.',
+        list: true,
+        ui: { itemProps: (item) => ({ label: item?.title ?? 'Pas' }) },
+        fields: [
+          { type: 'string', name: 'title', label: 'Titlu pas', required: true },
+          { type: 'string', name: 'text', label: 'Text', ui: { component: 'textarea' }, required: true },
+        ],
+      },
+    ]),
     sectionHeader('testimonials', 'Secțiunea „Testimoniale”', [
       { type: 'number', name: 'count', label: 'Câte recenzii afișăm' },
     ]),
     sectionHeader('team', 'Secțiunea „Echipa noastră”', [
       ctaField('cta', 'Buton'),
       { type: 'number', name: 'count', label: 'Câți medici afișăm' },
+    ]),
+    sectionHeader('faq', 'Secțiunea „Întrebări frecvente”', [
+      {
+        type: 'object',
+        name: 'items',
+        label: 'Întrebări',
+        list: true,
+        ui: { itemProps: (item) => ({ label: item?.question ?? 'Întrebare' }) },
+        fields: [
+          { type: 'string', name: 'question', label: 'Întrebare', required: true },
+          { type: 'string', name: 'answer', label: 'Răspuns', ui: { component: 'textarea' }, required: true },
+        ],
+      },
     ]),
     {
       type: 'object',

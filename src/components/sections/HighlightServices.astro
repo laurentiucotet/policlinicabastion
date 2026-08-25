@@ -1,0 +1,99 @@
+---
+/**
+ * Intervențiile de referință, pe prima pagină. Carduri late, cu datele
+ * esențiale la vedere — alt format decât grila de trei carduri mici, ca pagina
+ * să nu arate ca o listă continuă.
+ */
+import SectionHeading from '../ui/SectionHeading.astro';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+import { getServicii } from '../../lib/content';
+import { formatPrice, hasPrice } from '../../lib/utils';
+
+interface Props {
+  badge?: string;
+  title: string;
+  subtitle?: string;
+  cta?: { label: string; href: string };
+  /**
+   * Intervențiile promovate. Gol = primele din catalog, în ordinea lor.
+   * Acceptă atât slug-uri scrise de mână, cât și forma în care le salvează
+   * Tina (`{ ref: 'src/content/servicii/....mdx' }`).
+   */
+  items?: Array<string | { ref?: string }>;
+  count?: number;
+  tone?: 'white' | 'alt';
+}
+
+const { badge, title, subtitle, cta, items: picked = [], count = 3, tone = 'white' } = Astro.props;
+
+const toSlug = (entry: string | { ref?: string }) =>
+  (typeof entry === 'string' ? entry : (entry.ref ?? '')).split('/').pop()?.replace(/\.(mdx?|json)$/, '') ?? '';
+
+const interventii = (await getServicii()).filter((item) => item.data.type === 'interventie');
+const items = (
+  picked.length
+    ? picked.map((entry) => interventii.find((item) => item.id === toSlug(entry))).filter(Boolean)
+    : interventii
+).slice(0, count) as typeof interventii;
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+---
+
+{
+  items.length > 0 && (
+    <section class:list={[tones[tone], 'py-12']}>
+      <div class="container-page flex flex-col items-center gap-8">
+        <SectionHeading badge={badge} title={title} subtitle={subtitle} />
+
+        <ul class="flex w-full flex-col gap-4">
+          {items.map((item) => {
+            const facts = [
+              item.data.duration && { label: 'Durată', value: item.data.duration },
+              item.data.anesthesia && { label: 'Anestezie', value: item.data.anesthesia },
+              item.data.admission && { label: 'Regim', value: item.data.admission },
+              hasPrice(item.data.price) && { label: 'Preț', value: formatPrice(item.data.price) },
+            ].filter((fact): fact is { label: string; value: string } => Boolean(fact));
+
+            return (
+              <li>
+                <article class="border-stroke bg-surface shadow-card card-surface hover:border-brand/40 group flex flex-col gap-4 rounded-2xl border p-6 transition hover:shadow-md lg:flex-row lg:items-center lg:gap-8">
+                  <div class="flex-1">
+                    <h3 class="text-ink text-lg leading-7 font-semibold">
+                      <a href={`/servicii/${item.id}`} class="group-hover:text-brand card-link">
+                        {item.data.title}
+                      </a>
+                    </h3>
+                    <p class="text-ink-muted mt-2 text-sm leading-6 text-pretty">{item.data.shortDescription}</p>
+                  </div>
+
+                  {facts.length > 0 && (
+                    <dl class="border-stroke grid shrink-0 grid-cols-2 gap-x-6 gap-y-2 border-t pt-4 lg:w-[420px] lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
+                      {facts.map((fact) => (
+                        <div>
+                          <dt class="text-ink-subtle text-xs leading-4 font-semibold tracking-wide uppercase">
+                            {fact.label}
+                          </dt>
+                          <dd class="text-ink mt-0.5 text-sm leading-5 font-semibold">{fact.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+
+                  <span class="text-brand hidden shrink-0 lg:block" aria-hidden="true">
+                    <Icon name="arrow-right" size={20} />
+                  </span>
+                </article>
+              </li>
+            );
+          })}
+        </ul>
+
+        {cta && (
+          <Button href={cta.href} variant="outline">
+            {cta.label}
+          </Button>
+        )}
+      </div>
+    </section>
+  )
+}
