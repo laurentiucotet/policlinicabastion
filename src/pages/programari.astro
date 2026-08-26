@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageTitleHeader from '../components/sections/PageTitleHeader.astro';
+import BookingWizard from '../components/booking/BookingWizard.astro';
+import SimpleHeading from '../components/ui/SimpleHeading.astro';
+import Icon from '../components/ui/Icon.astro';
+import { site } from '../lib/site';
+
+const alternatives = [
+  {
+    icon: 'phone' as const,
+    title: 'La telefon',
+    text: 'Recepția răspunde în timpul programului și îți găsește primul interval liber.',
+    action: { label: site.phones[0]?.value ?? 'Sună-ne', href: site.phones[0]?.href ?? '#' },
+  },
+  {
+    icon: 'mail' as const,
+    title: 'Prin formular',
+    text: 'Scrie-ne ce ai nevoie și te sunăm noi pentru confirmarea intervalului.',
+    action: { label: 'Formularul de contact', href: '/contact' },
+  },
+  {
+    icon: 'info' as const,
+    title: 'Ai întrebări înainte?',
+    text: 'Bilet de trimitere, decontare CNAS, ce aduci la prima consultație — răspunsuri scurte.',
+    action: { label: 'Centrul de suport', href: '/suport' },
+  },
+];
+---
+
+<BaseLayout
+  title="Programări online"
+  description="Programează-te online la Policlinica Bastion: alege specializarea, medicul și serviciul, apoi un interval liber din calendar."
+>
+  <PageTitleHeader
+    breadcrumbs={[{ label: 'Programări' }]}
+    badge="Programări"
+    title="Programează-te online"
+    subtitle="Trei pași: alegi serviciul și medicul, apoi un interval liber din calendar, apoi îți lași datele de contact. Confirmarea vine prin SMS."
+  />
+
+  <BookingWizard />
+
+  <section class="bg-surface py-12">
+    <div class="container-page">
+      <SimpleHeading title="Preferi altfel?" />
+
+      <ul class="mt-8 grid gap-4 sm:grid-cols-3">
+        {
+          alternatives.map((item) => (
+            <li>
+              <article class="border-stroke bg-surface shadow-card card-surface hover:border-brand/40 group flex h-full flex-col gap-2 rounded-2xl border p-5 transition hover:shadow-md">
+                <span class="bg-brand-50 text-brand flex h-10 w-10 items-center justify-center rounded-xl">
+                  <Icon name={item.icon} size={18} />
+                </span>
+                <h3 class="text-ink mt-2 text-base leading-6 font-semibold">
+                  <a href={item.action.href} class="group-hover:text-brand card-link">
+                    {item.title}
+                  </a>
+                </h3>
+                <p class="text-ink-muted text-sm leading-5 text-pretty">{item.text}</p>
+                <span class="text-brand mt-auto inline-flex items-center gap-1 pt-2 text-sm font-semibold">
+                  {item.action.label}
+                  <Icon name="arrow-right" size={16} />
+                </span>
+              </article>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</BaseLayout>

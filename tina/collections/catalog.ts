@@ -214,7 +214,18 @@ export const servicii: Collection = {
     { type: 'image', name: 'cover', label: 'Imagine' },
     priceField,
     { type: 'boolean', name: 'cnas', label: 'Decontat prin CNAS' },
-    { type: 'string', name: 'duration', label: 'Durată', description: 'Ex: 20–30 de minute' },
+    {
+      type: 'string',
+      name: 'duration',
+      label: 'Durată (text afișat)',
+      description: 'Ex: 20–30 de minute. Poate fi un interval.',
+    },
+    {
+      type: 'number',
+      name: 'durationMinutes',
+      label: 'Durată pentru calendar (minute)',
+      description: 'Cât ocupă serviciul într-un slot de programare. Un singur număr, ex. 30.',
+    },
     { type: 'string', name: 'anesthesia', label: 'Anestezie', description: 'Doar la intervenții.' },
     { type: 'string', name: 'admission', label: 'Regim', description: 'Ex: ambulatoriu (fără internare)' },
     { type: 'string', name: 'recovery', label: 'Recuperare', description: 'Ex: 24–48 de ore' },
@@ -349,4 +360,78 @@ export const posturi: Collection = {
   ],
 };
 
-export const catalogCollections = [afectiuni, servicii, suport, posturi];
+/**
+ * Programul medicilor — sursa sloturilor din /programari.
+ *
+ * Nu se completează sloturi individuale, ci intervale pe zile ale săptămânii.
+ * Sloturile concrete se calculează automat, ținând cont de durata serviciului
+ * ales de pacient.
+ */
+export const program: Collection = {
+  name: 'program',
+  label: 'Program medici (calendar)',
+  path: 'src/content/program',
+  format: 'json',
+  ui: { filename: { slugify: (values) => slugify(values, 'doctor') } },
+  fields: [
+    {
+      type: 'reference',
+      name: 'doctor',
+      label: 'Medic',
+      collections: ['medici'],
+      required: true,
+    },
+    {
+      type: 'number',
+      name: 'slotMinutes',
+      label: 'Pasul grilei (minute)',
+      description: 'La câte minute începe un slot nou. Ex: 30.',
+    },
+    {
+      type: 'number',
+      name: 'bookingWindowDays',
+      label: 'Cu câte zile înainte se poate programa',
+    },
+    {
+      type: 'object',
+      name: 'intervals',
+      label: 'Intervale de lucru',
+      description: 'Câte o linie pentru fiecare interval, pe fiecare zi.',
+      list: true,
+      ui: {
+        itemProps: (item) => ({
+          label: `${['', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă', 'Duminică'][item?.day ?? 0] ?? 'Zi'} ${item?.from ?? ''}–${item?.to ?? ''}`,
+        }),
+      },
+      fields: [
+        {
+          type: 'number',
+          name: 'day',
+          label: 'Ziua (1 = luni ... 7 = duminică)',
+          required: true,
+        },
+        { type: 'string', name: 'from', label: 'De la (HH:MM)', required: true },
+        { type: 'string', name: 'to', label: 'Până la (HH:MM)', required: true },
+        { type: 'string', name: 'room', label: 'Cabinet / sală' },
+      ],
+    },
+    {
+      type: 'object',
+      name: 'exceptions',
+      label: 'Excepții (concediu, program modificat)',
+      description: 'Fără ore = zi liberă. Cu ore = program diferit în ziua aceea.',
+      list: true,
+      ui: { itemProps: (item) => ({ label: item?.date ?? 'Excepție' }) },
+      fields: [
+        { type: 'string', name: 'date', label: 'Data (AAAA-LL-ZZ)', required: true },
+        { type: 'string', name: 'reason', label: 'Motiv' },
+        { type: 'string', name: 'from', label: 'De la (HH:MM)' },
+        { type: 'string', name: 'to', label: 'Până la (HH:MM)' },
+      ],
+    },
+    referenceList('services', 'Servicii programabile', ['servicii'], 'Gol = toate serviciile specializării.'),
+    draftField,
+  ],
+};
+
+export const catalogCollections = [afectiuni, servicii, suport, posturi, program];

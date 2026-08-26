@@ -1,0 +1,40 @@
+{
+  "doctor": "dr-voichescu-otilia",
+  "slotMinutes": 20,
+  "bookingWindowDays": 21,
+  "intervals": [
+    {
+      "day": 1,
+      "from": "08:00",
+      "to": "13:00",
+      "room": "Cabinet MF"
+    },
+    {
+      "day": 2,
+      "from": "13:00",
+      "to": "18:00",
+      "room": "Cabinet MF"
+    },
+    {
+      "day": 3,
+      "from": "08:00",
+      "to": "13:00",
+      "room": "Cabinet MF"
+    },
+    {
+      "day": 4,
+      "from": "13:00",
+      "to": "18:00",
+      "room": "Cabinet MF"
+    },
+    {
+      "day": 5,
+      "from": "08:00",
+      "to": "12:00",
+      "room": "Cabinet MF"
+    }
+  ],
+  "exceptions": [],
+  "services": [],
+  "draft": false
+}

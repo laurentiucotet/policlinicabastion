@@ -113,6 +113,7 @@ Derivat direct din paginile din Figma.
 | `servicii` | `src/content/servicii` | `.mdx` | `/servicii/[slug]` |
 | `suport` | `src/content/suport` | `.mdx` | `/suport/[slug]` |
 | `posturi` | `src/content/posturi` | `.mdx` | — (listate pe `/cariere`) |
+| `program` | `src/content/program` | `.json` | — (sursa sloturilor din `/programari`) |
 | `articole` | `src/content/articole` | `.mdx` | `/noutati/[slug]` |
 | `categorii` | `src/content/categorii` | `.json` | `/noutati/categorie/[slug]` |
 | `proiecte` | `src/content/proiecte-europene` | `.mdx` | `/proiecte-europene/[slug]` |
@@ -476,6 +477,78 @@ conversie), iar banda albastră „PROGRAMAȚI-VĂ" din subsol a dispărut.
 
 ---
 
+## 4septies. Programările online
+
+`/programari` este singura parte a site-ului cu logică de aplicație. Merită
+citită înainte de orice modificare, pentru că are trei decizii care se explică
+greu din cod.
+
+### Sloturile nu se stochează — se calculează
+
+Prima variantă evidentă ar fi ca fiecare interval liber să fie un document în
+CMS. Ar fi de neîntreținut: un medic cu 5 zile de program înseamnă ~40 de
+documente pe săptămână.
+
+În schimb, CMS-ul ține **reguli**: colecția `program` are, pentru fiecare medic,
+intervalele de lucru pe zile ale săptămânii (`day` 1–7, `from`, `to`, `room`),
+pasul grilei (`slotMinutes`), fereastra de programare (`bookingWindowDays`) și
+excepțiile (concediu = zi fără ore; program modificat = zi cu alte ore).
+
+### Calculul se face în browser, nu la build
+
+Un site static nu poate ține sloturi „proaspete" în HTML: un build de luni ar
+arăta vineri o săptămână care a trecut deja. Pagina primește un singur pachet
+JSON (`src/lib/booking.ts` → `getBookingData()`), iar sloturile pentru
+săptămâna vizibilă se generează la afișare, relativ la „acum".
+
+Filtrele aplicate la generare: intervalul de așteptare minim
+(`site.booking.leadTimeHours`, implicit 24 de ore), fereastra de programare a
+medicului și excepțiile.
+
+### Durata serviciului intră în aritmetică
+
+Aici e miezul: **un slot e valid doar dacă serviciul încape integral înainte de
+finalul intervalului de lucru.** O consultație de 30 de minute și o biopsie de
+45 de minute, pe același program de 4 ore, produc numere diferite de sloturi și
+ore de start diferite.
+
+De aceea serviciile au două câmpuri de durată, care nu sunt un duplicat:
+
+| Câmp | Rol |
+| --- | --- |
+| `duration` | text afișat pacientului, poate fi interval („30–45 de minute") |
+| `durationMinutes` | un singur număr, folosit la aritmetica sloturilor |
+
+Prețul vine din același loc ca peste tot (`price` → `formatPrice()`), deci
+rezumatul programării și pagina serviciului nu pot ajunge să spună altceva.
+
+### Ce medic poate face ce serviciu
+
+Regula e cea de pe paginile de serviciu, refolosită: serviciul declară medicii
+(`doctors`), iar dacă lista e goală aparține tuturor medicilor specializării.
+În plus, un program poate restrânge lista prin `services`. Se oferă spre
+programare doar specializările care au cel puțin un medic cu program definit —
+altfel pacientul ar alege o specializare și ar ajunge într-un calendar gol.
+
+### Modul demonstrativ
+
+`site.booking.demo` (bifat în CMS) face două lucruri: pune un banner vizibil în
+capul modulului și marchează ~35% dintre sloturi drept ocupate, printr-un hash
+stabil al perechii medic + oră (stabil ca să nu „clipească" la fiecare
+redesenare). Codul OTP de pe ecranul de final este generat local și afișat pe
+pagină, nu trimis nicăieri.
+
+**Cât timp nu există un backend de programări, steagul trebuie să rămână
+bifat.** Fără el, pacienții ar crede că programarea a fost înregistrată. Când
+apare sistemul real: se debifează, dispar sloturile ocupate simulate și
+formularul trebuie conectat la un endpoint (`/api/programari`, pe modelul
+`/api/contact`).
+
+⚠️ **Programele din `src/content/program/` sunt demonstrative.** Orele reale ale
+fiecărui medic se completează din `/admin` înainte de lansare.
+
+---
+
 ## 5. Imagini
 
 Fișierele urcate din CMS ajung în **`src/assets/uploads/`**, nu în `public/`.
@@ -694,6 +767,10 @@ Lucruri conștient lăsate pentru pașii următori:
       familie) — vezi §4sexies.
 - [ ] Posturile reale pe `/cariere` — momentan există doar intrarea-șablon,
       marcată ciornă.
+- [ ] **Programele reale ale medicilor** în colecția `program` și un backend de
+      programări (`/api/programari`), apoi debifarea modului demonstrativ din
+      `settings/site.json` — vezi §4septies. Blocant pentru lansare, dacă se
+      dorește programare online reală.
 - [ ] **Validarea medicală a catalogului** (afecțiuni, servicii, intervenții) —
       vezi avertismentul din §8. Blocant pentru lansare.
 - [ ] **Prețurile serviciilor** — câmpul `price` există pe fiecare serviciu, dar

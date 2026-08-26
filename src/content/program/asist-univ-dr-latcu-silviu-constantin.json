@@ -1,0 +1,28 @@
+{
+  "doctor": "asist-univ-dr-latcu-silviu-constantin",
+  "slotMinutes": 30,
+  "bookingWindowDays": 45,
+  "intervals": [
+    {
+      "day": 1,
+      "from": "09:00",
+      "to": "14:00",
+      "room": "Cabinet 2"
+    },
+    {
+      "day": 3,
+      "from": "14:00",
+      "to": "20:00",
+      "room": "Cabinet 2"
+    },
+    {
+      "day": 5,
+      "from": "09:00",
+      "to": "13:00",
+      "room": "Sala de intervenții"
+    }
+  ],
+  "exceptions": [],
+  "services": [],
+  "draft": false
+}

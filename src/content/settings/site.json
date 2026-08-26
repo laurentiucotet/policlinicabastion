@@ -53,7 +53,9 @@
   },
   "booking": {
     "label": "Programează-te",
-    "href": "/contact"
+    "href": "/programari",
+    "leadTimeHours": 24,
+    "demo": true
   },
   "social": {
     "facebook": "https://www.facebook.com/policlinicabastion/",

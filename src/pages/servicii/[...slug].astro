@@ -131,6 +131,7 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
     subtitle={subtitle ?? shortDescription}
     breadcrumbs={[{ label: 'Servicii', href: '/servicii' }, { label: title }]}
     tags={tags}
+    bookingHref={`/programari?serviciu=${serviciu.id}`}
   />
 
   <AnchorNav items={sections.map(({ id, label }) => ({ id, label }))} />

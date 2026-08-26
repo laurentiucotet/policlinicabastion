@@ -20,6 +20,11 @@
       "children": []
     },
     {
+      "label": "Programări",
+      "href": "/programari",
+      "children": []
+    },
+    {
       "label": "Servicii",
       "href": "/servicii",
       "children": []
@@ -69,6 +74,10 @@
     {
       "title": "Pentru pacienți",
       "links": [
+        {
+          "label": "Programări online",
+          "href": "/programari"
+        },
         {
           "label": "Servicii și intervenții",
           "href": "/servicii"

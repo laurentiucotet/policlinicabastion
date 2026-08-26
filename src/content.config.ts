@@ -259,7 +259,14 @@ const servicii = defineCollection({
       /** Decontat prin CNAS cu bilet de trimitere */
       cnas: z.boolean().default(false),
       /* Date esentiale ------------------------------------------------------ */
+      /** Durata afisata pacientului. Poate fi un interval: "30–45 de minute". */
       duration: z.string().optional(),
+      /**
+       * Durata folosita la calculul sloturilor din calendarul de programari.
+       * E separata de `duration` pentru ca aceea e text de afisat (poate fi un
+       * interval), iar aici e nevoie de un singur numar cu care se face aritmetica.
+       */
+      durationMinutes: z.number().default(30),
       anesthesia: z.string().optional(),
       /** Regim: ambulatoriu / spitalizare de zi */
       admission: z.string().optional(),
@@ -353,6 +360,52 @@ const posturi = defineCollection({
   }),
 });
 
+/**
+ * Programul medicilor: sursa sloturilor din /programari.
+ *
+ * Nu stocam sloturi individuale, ci *reguli* - intervale pe zile ale
+ * saptamanii, plus exceptii. Sloturile concrete se genereaza in browser, la
+ * afisare, pentru saptamana pe care o vede pacientul: un site static nu poate
+ * tine sloturi „proaspete" in HTML, iar un build de luni ar arata vineri
+ * aceleasi zile trecute.
+ */
+const program = defineCollection({
+  loader: json('program'),
+  schema: z.object({
+    doctor: refTo('medici'),
+    /** Pasul grilei de programare, in minute (ex. 15 sau 30). */
+    slotMinutes: z.number().default(30),
+    /** Cu cate zile inainte se poate programa un pacient. */
+    bookingWindowDays: z.number().default(30),
+    /** Intervalele de lucru, pe zile ale saptamanii (1 = luni ... 7 = duminica). */
+    intervals: z
+      .array(
+        z.object({
+          day: z.number().min(1).max(7),
+          from: z.string(),
+          to: z.string(),
+          /** Cabinet / sala, afisat pe slot. */
+          room: z.string().optional(),
+        }),
+      )
+      .default([]),
+    /** Zile in care medicul nu lucreaza sau are alt program. */
+    exceptions: z
+      .array(
+        z.object({
+          date: z.string(),
+          reason: z.string().optional(),
+          from: z.string().optional(),
+          to: z.string().optional(),
+        }),
+      )
+      .default([]),
+    /** Serviciile pe care le programeaza acest medic. Gol = toate ale lui. */
+    services: refListTo('servicii'),
+    draft: z.boolean().default(false),
+  }),
+});
+
 /** Proiecte europene: /proiecte-europene/[slug] */
 const proiecte = defineCollection({
   loader: md('proiecte-europene'),
@@ -430,6 +483,7 @@ export const collections = {
   servicii,
   suport,
   posturi,
+  program,
   proiecte,
   testimoniale,
   pagini,

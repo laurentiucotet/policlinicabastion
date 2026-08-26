@@ -21,9 +21,20 @@ interface Props {
   tags?: Array<{ label: string; href?: string }>;
   /** Butoanele de programare. Ascunse pe paginile fara legatura cu programarea. */
   showCta?: boolean;
+  /** Link propriu pentru butonul de programare (ex. cu serviciul preselectat). */
+  bookingHref?: string;
 }
 
-const { badge, title, subtitle, breadcrumbs, alsoKnownAs = [], tags = [], showCta = true } = Astro.props;
+const {
+  badge,
+  title,
+  subtitle,
+  breadcrumbs,
+  alsoKnownAs = [],
+  tags = [],
+  showCta = true,
+  bookingHref = site.booking.href,
+} = Astro.props;
 
 /** Slotul `tags` permite chip-uri proprii (ex. stadiul unui proiect european). */
 const hasTagSlot = Astro.slots.has('tags');
@@ -75,7 +86,7 @@ const hasTagSlot = Astro.slots.has('tags');
       {
         showCta && (
           <div class="flex shrink-0 flex-wrap gap-2">
-            <Button href="/contact">Programează-te</Button>
+            <Button href={bookingHref}>{site.booking.label}</Button>
             <Button href={site.phones[0]?.href} variant="outline">
               <Icon name="phone" size={16} />
               Sună-ne

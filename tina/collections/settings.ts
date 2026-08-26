@@ -54,6 +54,28 @@ export const setari: Collection = {
     { type: 'string', name: 'email', label: 'Email' },
     {
       type: 'object',
+      name: 'booking',
+      label: 'Programări',
+      fields: [
+        { type: 'string', name: 'label', label: 'Text buton' },
+        { type: 'string', name: 'href', label: 'Link buton' },
+        {
+          type: 'number',
+          name: 'leadTimeHours',
+          label: 'Cel mai devreme peste (ore)',
+          description: 'Cu cât timp înainte se poate face o programare. Ex: 24.',
+        },
+        {
+          type: 'boolean',
+          name: 'demo',
+          label: 'Modul demonstrativ',
+          description:
+            'Bifat: calendarul arată disponibilitate simulată, iar programarea nu se înregistrează nicăieri. Se debifează când există un sistem real de programări.',
+        },
+      ],
+    },
+    {
+      type: 'object',
       name: 'address',
       label: 'Adresă',
       fields: [
@@ -90,7 +112,6 @@ export const setari: Collection = {
         { type: 'string', name: 'message', label: 'Mesaj precompletat', ui: { component: 'textarea' } },
       ],
     },
-    ctaField('booking', 'Buton principal (Programează-te)'),
     {
       type: 'object',
       name: 'social',
