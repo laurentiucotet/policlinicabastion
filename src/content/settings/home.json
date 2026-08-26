@@ -36,16 +36,6 @@
     "title": "Caută după ce te interesează",
     "subtitle": "Aceleași informații, organizate în mai multe feluri — alege drumul care ți se potrivește."
   },
-  "news": {
-    "badge": "Blog & Noutăți",
-    "title": "Ultimele noutăți",
-    "subtitle": "Informații noi despre Policlinica Bastion",
-    "cta": {
-      "label": "Vezi toate noutățile",
-      "href": "/noutati"
-    },
-    "count": 3
-  },
   "services": {
     "badge": "Specializările noastre",
     "title": "Servicii medicale complete",
@@ -120,12 +110,6 @@
       }
     ]
   },
-  "testimonials": {
-    "badge": "Testimoniale",
-    "title": "Ce spun pacienții noștri",
-    "subtitle": "Peste 15.000 de pacienți mulțumiți ne-au acordat încrederea lor. Citește experiențele lor!",
-    "count": 6
-  },
   "team": {
     "badge": "Medici",
     "title": "Echipa noastră",
@@ -135,6 +119,22 @@
       "href": "/medici"
     },
     "count": 8
+  },
+  "testimonials": {
+    "badge": "Testimoniale",
+    "title": "Ce spun pacienții noștri",
+    "subtitle": "Peste 15.000 de pacienți mulțumiți ne-au acordat încrederea lor. Citește experiențele lor!",
+    "count": 6
+  },
+  "news": {
+    "badge": "Blog & Noutăți",
+    "title": "Ultimele noutăți",
+    "subtitle": "Informații noi despre Policlinica Bastion",
+    "cta": {
+      "label": "Vezi toate noutățile",
+      "href": "/noutati"
+    },
+    "count": 3
   },
   "faq": {
     "badge": "Întrebări frecvente",
@@ -162,6 +162,14 @@
         "answer": "Nu. Orice intervenție se stabilește după o consultație de specialitate, în care medicul confirmă indicația și verifică investigațiile necesare."
       }
     ]
+  },
+  "euProjects": {
+    "title": "Aparatură achiziționată prin fonduri europene",
+    "text": "Investim în echipamente moderne prin proiecte cu finanțare europeană — de la sterilizarea la temperatură joasă, până la laserul folosit în intervențiile urologice.",
+    "cta": {
+      "label": "Vezi proiectele",
+      "href": "/proiecte-europene"
+    }
   },
   "ctaSecondary": {
     "title": "Ai nevoie de o programare?",

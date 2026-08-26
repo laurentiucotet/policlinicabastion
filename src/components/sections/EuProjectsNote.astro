@@ -1,0 +1,52 @@
+---
+/**
+ * Mențiunea despre finanțarea europeană de pe prima pagină. Deliberat discretă:
+ * o bandă subțire, nu încă un card - proiectele sunt un semn de credibilitate,
+ * nu un îndemn la acțiune.
+ */
+import Icon from '../ui/Icon.astro';
+import { getProiecte } from '../../lib/content';
+
+interface Props {
+  title?: string;
+  text?: string;
+  cta?: { label: string; href: string };
+}
+
+const {
+  title = 'Aparatură achiziționată prin fonduri europene',
+  text = 'Investim în echipamente moderne prin proiecte cu finanțare europeană — de la sterilizarea la temperatură joasă, până la laserul folosit în intervențiile urologice.',
+  cta = { label: 'Vezi proiectele', href: '/proiecte-europene' },
+} = Astro.props;
+
+const projects = await getProiecte();
+const running = projects.filter((project) => project.data.status === 'in-derulare').length;
+---
+
+{
+  projects.length > 0 && (
+    <section class="bg-surface py-8">
+      <div class="container-page">
+        <div class="border-stroke bg-surface-alt flex flex-col gap-4 rounded-2xl border p-5 sm:flex-row sm:items-center sm:gap-6">
+          <span class="bg-surface border-stroke flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border text-2xl" aria-hidden="true">
+            🇪🇺
+          </span>
+
+          <div class="flex-1">
+            <p class="text-ink text-sm leading-5 font-semibold">{title}</p>
+            <p class="text-ink-muted mt-1 text-sm leading-6 text-pretty">{text}</p>
+          </div>
+
+          <a
+            href={cta.href}
+            class="text-brand hover:text-brand-dark inline-flex shrink-0 items-center gap-1 text-sm font-semibold"
+          >
+            {cta.label}
+            {running > 0 && <span class="text-ink-subtle font-normal">({running} în derulare)</span>}
+            <Icon name="arrow-right" size={16} />
+          </a>
+        </div>
+      </div>
+    </section>
+  )
+}

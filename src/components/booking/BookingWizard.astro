@@ -333,38 +333,115 @@ const option =
             </div>
           </div>
 
-          {/* ----------------------------- CONFIRMARE ----------------------------- */}
+          {/* ------------------------- PASUL 4: CODUL SMS ------------------------- */}
           <div data-step="4" hidden>
-            <div class="flex flex-col items-center gap-3 text-center">
-              <span class="bg-whatsapp/15 text-whatsapp flex h-14 w-14 items-center justify-center rounded-full">
-                <Icon name="check" size={28} />
-              </span>
-              <h2 class="font-heading text-ink text-2xl leading-8 font-bold">Îți mulțumim!</h2>
-              <p class="text-ink-muted max-w-xl text-base leading-7 text-pretty">
-                Am înregistrat cererea de programare. Îți trimitem un cod de confirmare prin SMS — introdu-l mai jos
-                sau confirmă direct din mesaj.
-              </p>
-            </div>
-
-            <div class="mt-8 grid gap-4 lg:grid-cols-2">
-              <div class="border-stroke bg-surface-alt rounded-2xl border p-6">
-                <h3 class="text-ink text-sm leading-5 font-semibold">Detaliile programării</h3>
-                <dl class="mt-4 flex flex-col gap-3 text-sm" data-confirmation-summary />
-              </div>
-
-              <div class="border-brand/30 bg-brand-50 flex flex-col items-center justify-center gap-3 rounded-2xl border p-6 text-center">
-                <p class="text-chip-ink text-xs leading-4 font-semibold">Cod de confirmare trimis prin SMS</p>
-                <p class="font-heading text-brand text-4xl leading-none font-bold tracking-[0.3em]" data-otp />
-                <p class="text-ink-muted text-xs leading-5">
-                  Cod demonstrativ, afișat aici pentru prezentare. Într-o implementare reală ajunge prin SMS la numărul
-                  introdus și expiră în câteva minute.
+            <div data-otp-stage="pending">
+              <div class="flex flex-col items-center gap-3 text-center">
+                <span class="bg-brand-50 text-brand flex h-14 w-14 items-center justify-center rounded-full">
+                  <Icon name="send" size={26} />
+                </span>
+                <h2 class="font-heading text-ink text-2xl leading-8 font-bold">Confirmă programarea</h2>
+                <p class="text-ink-muted max-w-xl text-base leading-7 text-pretty">
+                  Ți-am trimis un cod din 6 cifre prin SMS, la numărul introdus. Introdu-l mai jos ca să încheiem
+                  programarea.
                 </p>
               </div>
+
+              <div class="mt-8 grid gap-4 lg:grid-cols-2">
+                <div class="border-stroke bg-surface-alt rounded-2xl border p-6">
+                  <h3 class="text-ink text-sm leading-5 font-semibold">Detaliile programării</h3>
+                  <dl class="mt-4 flex flex-col gap-3 text-sm" data-confirmation-summary />
+                </div>
+
+                <div class="border-brand/30 bg-brand-50 flex flex-col items-center justify-center gap-4 rounded-2xl border p-6 text-center">
+                  <form class="flex w-full flex-col items-center gap-4" data-otp-form novalidate>
+                    <label class="flex w-full flex-col items-center gap-2" for="otp-input">
+                      <span class="text-chip-ink text-xs leading-4 font-semibold">Codul primit prin SMS</span>
+                      <input
+                        id="otp-input"
+                        type="text"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        maxlength="6"
+                        placeholder="······"
+                        aria-describedby="otp-hint"
+                        class="border-stroke focus:border-brand font-heading text-ink w-full max-w-[260px] rounded-xl border bg-white py-3 text-center text-3xl leading-none font-bold tracking-[0.3em] focus:outline-none"
+                        data-otp-input
+                      />
+                    </label>
+
+                    <p class="text-star hidden text-sm font-semibold" role="alert" data-otp-error />
+
+                    <Button type="submit">Confirmă codul</Button>
+                  </form>
+
+                  <p id="otp-hint" class="text-ink-muted text-xs leading-5">
+                    {data.demo ? 'Cod demonstrativ, afișat aici pentru prezentare:' : 'Nu ai primit codul?'}
+                    {data.demo && <strong class="text-brand ml-1 tracking-[0.2em]" data-otp />}
+                  </p>
+
+                  <button type="button" class="text-brand text-xs font-semibold hover:underline" data-otp-resend>
+                    Retrimite codul
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-6 flex justify-center">
+                <button type="button" class="text-ink-subtle text-sm hover:underline" data-back="3">
+                  Modifică datele de contact
+                </button>
+              </div>
             </div>
 
-            <div class="mt-8 flex flex-wrap justify-center gap-3">
-              <Button href="/" variant="outline">Înapoi la prima pagină</Button>
-              <Button type="button" data-restart>Fă o altă programare</Button>
+            {/* --------------------- PASUL 5: PROGRAMARE CONFIRMATA -------------------- */}
+            <div data-otp-stage="done" hidden>
+              <div class="flex flex-col items-center gap-3 text-center">
+                <span class="bg-whatsapp/15 text-whatsapp flex h-14 w-14 items-center justify-center rounded-full">
+                  <Icon name="check" size={28} />
+                </span>
+                <h2 class="font-heading text-ink text-2xl leading-8 font-bold">Programare confirmată</h2>
+                <p class="text-ink-muted max-w-xl text-base leading-7 text-pretty">
+                  Îți mulțumim! Am trimis detaliile și pe email. Dacă nu mai poți ajunge, sună la recepție cât mai
+                  devreme — intervalul ajunge la alt pacient care așteaptă.
+                </p>
+                <p class="border-stroke bg-surface-alt text-ink-muted rounded-full border px-4 py-1.5 text-xs">
+                  Cod de confirmare: <strong class="text-ink tracking-[0.2em]" data-otp-used />
+                </p>
+              </div>
+
+              <div class="mt-8 grid gap-4 lg:grid-cols-2">
+                <div class="border-stroke bg-surface-alt rounded-2xl border p-6">
+                  <h3 class="text-ink text-sm leading-5 font-semibold">Detaliile programării</h3>
+                  <dl class="mt-4 flex flex-col gap-3 text-sm" data-confirmation-summary />
+                </div>
+
+                <div class="border-stroke bg-surface flex flex-col gap-3 rounded-2xl border p-6">
+                  <h3 class="text-ink text-sm leading-5 font-semibold">Ce aduci cu tine</h3>
+                  <ul class="text-ink-muted flex flex-col gap-2 text-sm leading-6">
+                    {[
+                      'Act de identitate și cardul de sănătate',
+                      'Biletul de trimitere, dacă vrei decontare CNAS',
+                      'Analizele și investigațiile anterioare',
+                      'Lista medicamentelor pe care le iei',
+                    ].map((item) => (
+                      <li class="flex gap-2">
+                        <span class="text-whatsapp mt-0.5 shrink-0">
+                          <Icon name="check" size={16} />
+                        </span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <a href="/suport/ce-aduc-la-prima-consultatie" class="text-brand mt-auto pt-2 text-sm font-semibold hover:underline">
+                    Vezi lista completă
+                  </a>
+                </div>
+              </div>
+
+              <div class="mt-8 flex flex-wrap justify-center gap-3">
+                <Button href="/" variant="outline">Înapoi la prima pagină</Button>
+                <Button type="button" data-restart>Fă o altă programare</Button>
+              </div>
             </div>
           </div>
         </div>
@@ -739,7 +816,7 @@ const option =
         if (!state.slot) state.weekStart = firstAvailableWeek();
         renderCalendar();
       }
-      if (step === 2 || step === 3 || step === 4) renderSummaries();
+      if (step >= 2) renderSummaries();
 
       const heading = root.querySelector<HTMLElement>(`[data-step="${step}"] h2`);
       heading?.scrollIntoView({ block: 'nearest' });
@@ -800,10 +877,33 @@ const option =
     });
 
     /* --------------------------------------------------------------------- *
-     * Trimiterea (demonstrativa)
+     * Trimiterea si confirmarea prin cod
+     *
+     * Codul e generat local si comparat local: e un flux demonstrativ. Intr-o
+     * implementare reala, codul se genereaza pe server, se trimite prin SMS si
+     * se verifica tot pe server - niciodata in browser.
      * --------------------------------------------------------------------- */
     const form = root.querySelector<HTMLFormElement>('[data-booking-form]');
     const formError = root.querySelector<HTMLElement>('[data-form-error]');
+    const otpForm = root.querySelector<HTMLFormElement>('[data-otp-form]');
+    const otpInput = root.querySelector<HTMLInputElement>('[data-otp-input]');
+    const otpError = root.querySelector<HTMLElement>('[data-otp-error]');
+
+    let expectedCode = '';
+
+    const issueCode = () => {
+      expectedCode = String(Math.floor(100_000 + Math.random() * 900_000));
+      const shown = root!.querySelector<HTMLElement>('[data-otp]');
+      if (shown) shown.textContent = expectedCode;
+      if (otpInput) otpInput.value = '';
+      otpError?.classList.add('hidden');
+    };
+
+    const showOtpStage = (stage: 'pending' | 'done') => {
+      for (const panel of root!.querySelectorAll<HTMLElement>('[data-otp-stage]')) {
+        panel.hidden = panel.dataset.otpStage !== stage;
+      }
+    };
 
     form?.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -816,12 +916,49 @@ const option =
       }
 
       formError?.classList.add('hidden');
-
-      const otp = root!.querySelector<HTMLElement>('[data-otp]');
-      if (otp) otp.textContent = String(Math.floor(100_000 + Math.random() * 900_000));
-
+      issueCode();
+      showOtpStage('pending');
       showStep(4);
       root!.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      otpInput?.focus();
+    });
+
+    // Doar cifre, maximum sase.
+    otpInput?.addEventListener('input', () => {
+      otpInput.value = otpInput.value.replace(/\D/g, '').slice(0, 6);
+      if (otpInput.value.length === 6) otpError?.classList.add('hidden');
+    });
+
+    otpForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const code = otpInput?.value ?? '';
+
+      if (code.length !== 6) {
+        otpError?.classList.remove('hidden');
+        if (otpError) otpError.textContent = 'Introdu codul din 6 cifre primit prin SMS.';
+        otpInput?.focus();
+        return;
+      }
+
+      if (code !== expectedCode) {
+        otpError?.classList.remove('hidden');
+        if (otpError) otpError.textContent = 'Codul nu este corect. Verifică SMS-ul sau cere unul nou.';
+        otpInput?.select();
+        return;
+      }
+
+      otpError?.classList.add('hidden');
+      const used = root!.querySelector<HTMLElement>('[data-otp-used]');
+      if (used) used.textContent = code;
+
+      showOtpStage('done');
+      renderSummaries();
+      root!.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    root.querySelector<HTMLButtonElement>('[data-otp-resend]')?.addEventListener('click', () => {
+      issueCode();
+      otpInput?.focus();
     });
 
     /* --------------------------------------------------------------------- *

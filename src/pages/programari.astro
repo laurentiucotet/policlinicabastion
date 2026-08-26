@@ -4,7 +4,7 @@ import PageTitleHeader from '../components/sections/PageTitleHeader.astro';
 import BookingWizard from '../components/booking/BookingWizard.astro';
 import SimpleHeading from '../components/ui/SimpleHeading.astro';
 import Icon from '../components/ui/Icon.astro';
-import { site } from '../lib/site';
+import { site, whatsappHref } from '../lib/site';
 
 const alternatives = [
   {
@@ -14,10 +14,12 @@ const alternatives = [
     action: { label: site.phones[0]?.value ?? 'Sună-ne', href: site.phones[0]?.href ?? '#' },
   },
   {
-    icon: 'mail' as const,
-    title: 'Prin formular',
-    text: 'Scrie-ne ce ai nevoie și te sunăm noi pentru confirmarea intervalului.',
-    action: { label: 'Formularul de contact', href: '/contact' },
+    icon: 'whatsapp' as const,
+    title: 'Pe WhatsApp',
+    text: 'Scrie-ne ce ai nevoie și îți răspundem cu primul interval disponibil.',
+    action: { label: 'Deschide WhatsApp', href: whatsappHref || '/contact' },
+    accent: 'bg-whatsapp/10 text-whatsapp',
+    external: true,
   },
   {
     icon: 'info' as const,
@@ -50,11 +52,21 @@ const alternatives = [
           alternatives.map((item) => (
             <li>
               <article class="border-stroke bg-surface shadow-card card-surface hover:border-brand/40 group flex h-full flex-col gap-2 rounded-2xl border p-5 transition hover:shadow-md">
-                <span class="bg-brand-50 text-brand flex h-10 w-10 items-center justify-center rounded-xl">
+                <span
+                  class:list={[
+                    'flex h-10 w-10 items-center justify-center rounded-xl',
+                    item.accent ?? 'bg-brand-50 text-brand',
+                  ]}
+                >
                   <Icon name={item.icon} size={18} />
                 </span>
                 <h3 class="text-ink mt-2 text-base leading-6 font-semibold">
-                  <a href={item.action.href} class="group-hover:text-brand card-link">
+                  <a
+                    href={item.action.href}
+                    class="group-hover:text-brand card-link"
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener' : undefined}
+                  >
                     {item.title}
                   </a>
                 </h3>

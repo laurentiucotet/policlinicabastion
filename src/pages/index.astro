@@ -11,6 +11,7 @@ import CtaBand from '../components/sections/CtaBand.astro';
 import TestimonialsGrid from '../components/sections/TestimonialsGrid.astro';
 import TeamGrid from '../components/sections/TeamGrid.astro';
 import FaqSection from '../components/entity/FaqSection.astro';
+import EuProjectsNote from '../components/sections/EuProjectsNote.astro';
 import { home } from '../lib/site';
 ---
 
@@ -88,6 +89,8 @@ import { home } from '../lib/site';
     items={home.faq.items}
     tone="alt"
   />
+
+  <EuProjectsNote title={home.euProjects.title} text={home.euProjects.text} cta={home.euProjects.cta} />
 
   <CtaBand title={home.ctaSecondary.title} text={home.ctaSecondary.text} cta={home.ctaSecondary.cta} />
 </BaseLayout>

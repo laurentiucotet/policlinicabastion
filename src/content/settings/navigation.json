@@ -20,11 +20,6 @@
       "children": []
     },
     {
-      "label": "Programări",
-      "href": "/programari",
-      "children": []
-    },
-    {
       "label": "Servicii",
       "href": "/servicii",
       "children": []
@@ -37,11 +32,6 @@
     {
       "label": "Noutăți",
       "href": "/noutati",
-      "children": []
-    },
-    {
-      "label": "Proiecte Europene",
-      "href": "/proiecte-europene",
       "children": []
     }
   ],

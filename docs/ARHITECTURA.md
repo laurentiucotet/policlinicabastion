@@ -463,6 +463,19 @@ confunde cu benzile CTA albastre de deasupra lui. Coloanele de linkuri vin din
 `settings/navigation.json` (`footerGroups` + `footerLegal`), deci se editează din
 CMS fără să umble nimeni prin componentă.
 
+### Ce intră în meniul de sus și ce coboară în subsol
+
+Meniul principal ține doar drumurile pe care le caută un pacient care încă nu
+știe unde să meargă: Specializări, Servicii, Afecțiuni, Noutăți. Restul coboară
+în subsol, din două motive distincte:
+
+- **Programări** are deja butonul persistent din header, pe fiecare pagină.
+  Un al doilea link, în același rând, ar fi fost aceeași acțiune de două ori.
+- **Proiecte Europene** este o obligație de transparență, nu un drum de pacient:
+  se caută deliberat, de obicei din subsol. Pe prima pagină a rămas cu o bandă
+  discretă (`sections/EuProjectsNote.astro`), nu cu o bandă CTA — informația
+  există, dar nu concurează cu programarea.
+
 ### Câte îndemnuri la acțiune încap pe o pagină
 
 Pe paginile de serviciu se adunaseră cinci: butonul din header, cele două din
@@ -535,8 +548,20 @@ altfel pacientul ar alege o specializare și ar ajunge într-un calendar gol.
 `site.booking.demo` (bifat în CMS) face două lucruri: pune un banner vizibil în
 capul modulului și marchează ~35% dintre sloturi drept ocupate, printr-un hash
 stabil al perechii medic + oră (stabil ca să nu „clipească" la fiecare
-redesenare). Codul OTP de pe ecranul de final este generat local și afișat pe
-pagină, nu trimis nicăieri.
+redesenare).
+
+### Confirmarea prin cod
+
+Ultimul pas are două ecrane, nu unul: după trimiterea formularului pacientul
+vede rezumatul programării și un câmp pentru codul din 6 cifre; abia după ce
+codul e corect apare „Programare confirmată". Diferența contează: fără câmp,
+ecranul de mulțumire ar apărea înainte ca cineva să fi confirmat ceva.
+
+⚠️ **Codul e generat și verificat în browser** (`issueCode()` din
+`BookingWizard.astro`), iar în modul demonstrativ e afișat pe pagină, sub câmp.
+Este un flux de prezentare, nu o verificare. Într-o implementare reală codul se
+generează pe server, pleacă prin SMS și se verifică tot pe server — niciodată
+în JavaScript-ul paginii, unde oricine îl poate citi.
 
 **Cât timp nu există un backend de programări, steagul trebuie să rămână
 bifat.** Fără el, pacienții ar crede că programarea a fost înregistrată. Când

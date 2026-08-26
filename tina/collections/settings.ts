@@ -321,6 +321,16 @@ export const homepage: Collection = {
     ]),
     {
       type: 'object',
+      name: 'euProjects',
+      label: 'Banda „Fonduri europene”',
+      fields: [
+        { type: 'string', name: 'title', label: 'Titlu' },
+        { type: 'string', name: 'text', label: 'Text', ui: { component: 'textarea' } },
+        ctaField('cta', 'Link'),
+      ],
+    },
+    {
+      type: 'object',
       name: 'ctaSecondary',
       label: 'Bandă CTA (finală)',
       fields: [
