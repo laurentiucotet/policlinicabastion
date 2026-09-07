@@ -28,7 +28,15 @@ const items = navigation.main.map((item) =>
 );
 ---
 
-<header class="sticky top-0 z-50">
+{/*
+  Pe ecrane mici header-ul se retrage la derulare — vezi scriptul de mai jos.
+  Deplasarea se face printr-o variabila CSS, ca sub-navigatia paginilor de
+  catalog sa se poata alinia cu el (`AnchorNav` o adauga la propriul `top`).
+*/}
+<header
+  class="sticky top-0 z-50 translate-y-[var(--header-shift,0px)] transition-transform duration-300 motion-reduce:transition-none"
+  data-header
+>
   <TopBar />
 
   <div class="border-stroke bg-surface/95 relative border-b backdrop-blur">
@@ -155,6 +163,82 @@ const items = navigation.main.map((item) =>
 
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   const menu = document.getElementById('mobile-menu');
+
+  /* --------------------------------------------------------------------- *
+   * Retragerea header-ului la derulare, pe ecrane mici
+   *
+   * Pe telefon, header-ul mananca aproape un sfert din ecran: bara albastra
+   * cu adresa si telefonul se rupe pe doua randuri, iar sub ea sta bara de
+   * navigatie. Sunt utile la aterizare, nu si dupa ce omul a inceput sa
+   * citeasca.
+   *
+   * Doua trepte, nu una:
+   *   - **derulare in jos** ascunde tot header-ul;
+   *   - **derulare in sus** aduce inapoi doar bara de navigatie (logo,
+   *     cautare, meniu), fara bara albastra. Cine deruleaza in sus cauta de
+   *     obicei meniul, nu programul clinicii.
+   *   - **sus de tot** readuce totul.
+   *
+   * Se misca prin `--header-shift`, nu prin `position`: `AnchorNav` adauga
+   * aceeasi variabila la propriul `top`, deci sub-navigatia paginilor de
+   * catalog urca odata cu header-ul, fara sa ramana o banda goala sub ea.
+   * --------------------------------------------------------------------- */
+  if (header) {
+    const topbar = header.querySelector<HTMLElement>('[data-topbar]');
+    const root = document.documentElement;
+    // Peste `xl` header-ul incape oricum: acolo ramane pe loc.
+    const compact = matchMedia('(max-width: 1279.98px)');
+
+    const setShift = (pixels: number) =>
+      root.style.setProperty('--header-shift', pixels === 0 ? '0px' : `-${pixels}px`);
+
+    let lastY = window.scrollY;
+    let navHidden = false;
+    let queued = false;
+
+    const apply = () => {
+      queued = false;
+      const y = window.scrollY;
+      const menuOpen = menu ? !menu.hidden : false;
+
+      // Cu meniul deschis header-ul nu se misca: meniul e in interiorul lui.
+      if (!compact.matches || menuOpen) {
+        navHidden = false;
+        setShift(0);
+        lastY = y;
+        return;
+      }
+
+      const topbarHeight = topbar?.offsetHeight ?? 0;
+
+      if (y <= topbarHeight) {
+        navHidden = false;
+        setShift(0);
+        lastY = y;
+        return;
+      }
+
+      // Pragul de 4px ignora tremuratul din derularea cu inertie.
+      if (y > lastY + 4) navHidden = true;
+      else if (y < lastY - 4) navHidden = false;
+
+      lastY = y;
+      setShift(navHidden ? header.offsetHeight : topbarHeight);
+    };
+
+    const schedule = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(apply);
+    };
+
+    apply();
+    addEventListener('scroll', schedule, { passive: true });
+    addEventListener('resize', schedule);
+    compact.addEventListener('change', apply);
+
+    toggle?.addEventListener('click', () => requestAnimationFrame(apply));
+  }
 
   toggle?.addEventListener('click', () => {
     const open = toggle.getAttribute('aria-expanded') === 'true';

@@ -33,25 +33,41 @@ const schema = breadcrumbSchema(
 );
 ---
 
-<nav aria-label="Fir de navigare" class={className}>
-  <ol class="text-ink-subtle flex flex-wrap items-center gap-1 text-xs">
+{/*
+  Pe ecrane mici firul sta pe un singur rand si se scurteaza cu „…", in loc sa
+  se rupa pe doua-trei randuri. Titlurile de articol si de serviciu sunt lungi,
+  iar un fir pe trei randuri impinge continutul in jos fara sa spuna nimic in
+  plus — pagina curenta e oricum scrisa intreg in titlul de dedesubt.
+
+  Stramtorarea e impartita: stramosii primesc o latime maxima fixa, iar pagina
+  curenta ia restul si se taie prima. De la `sm` in sus firul se desfasoara
+  normal, cu wrap.
+*/}
+<nav aria-label="Fir de navigare" class:list={['min-w-0 max-w-full', className]}>
+  <ol class="text-ink-subtle flex min-w-0 items-center gap-1 text-xs sm:flex-wrap">
     {
       trail.map((crumb, index) => {
         const isCurrent = index === trail.length - 1;
 
         return (
-          <li class="flex items-center gap-1">
+          <li class:list={['flex min-w-0 items-center gap-1', isCurrent ? 'shrink' : 'shrink-0']}>
             {index > 0 && (
-              <span class="text-ink-subtle/60" aria-hidden="true">
+              <span class="text-ink-subtle/60 shrink-0" aria-hidden="true">
                 <Icon name="chevron-right" size={12} />
               </span>
             )}
             {isCurrent || !crumb.href ? (
-              <span aria-current={isCurrent ? 'page' : undefined} class="text-ink-muted">
+              <span
+                aria-current={isCurrent ? 'page' : undefined}
+                class="text-ink-muted block min-w-0 truncate sm:overflow-visible sm:whitespace-normal"
+              >
                 {crumb.label}
               </span>
             ) : (
-              <a href={crumb.href} class="hover:text-brand">
+              <a
+                href={crumb.href}
+                class="hover:text-brand block max-w-[7.5rem] truncate sm:max-w-none sm:overflow-visible sm:whitespace-normal"
+              >
                 {crumb.label}
               </a>
             )}

@@ -12,6 +12,7 @@ import { getArticole } from '../../lib/content';
 import { formatDate, isoDate } from '../../lib/utils';
 import { site } from '../../lib/site';
 import { clinicRef } from '../../lib/schema';
+import ReadingProgress from '../../components/ui/ReadingProgress.astro';
 
 export const getStaticPaths = (async () => {
   const posts = await getArticole();
@@ -79,6 +80,8 @@ const schema = {
     subtitle={excerpt}
   />
 
+  <ReadingProgress />
+
   <section class="bg-surface py-12">
     <div class="container-page grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
       <article>
@@ -108,7 +111,7 @@ const schema = {
           }
         </p>
 
-        <div class="prose-bastion mt-6 max-w-none">
+        <div class="prose-bastion mt-6 max-w-none" data-article-body>
           <Content />
         </div>
 

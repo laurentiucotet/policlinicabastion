@@ -5,6 +5,10 @@
  *
  * Elementul corespunzator sectiunii in care te afli este marcat activ, pe
  * masura ce derulezi (`aria-current="true"`).
+ *
+ * `top` aduna `--header-shift`, variabila prin care header-ul se retrage la
+ * derulare pe mobil. Fiind negativa, sub-navigatia urca odata cu el, in loc sa
+ * lase o banda goala unde statea header-ul.
  */
 interface Props {
   items: Array<{ id: string; label: string }>;
@@ -17,7 +21,7 @@ const { items } = Astro.props;
   items.length > 1 && (
     <nav
       class="border-stroke bg-surface/95 sticky z-30 border-b backdrop-blur"
-      style="top: var(--header-h, 112px)"
+      style="top: calc(var(--header-h, 112px) + var(--header-shift, 0px))"
       aria-label="Secțiunile paginii"
       data-anchor-nav
     >
