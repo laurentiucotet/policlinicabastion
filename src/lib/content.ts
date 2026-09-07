@@ -1,5 +1,6 @@
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import { byOrder, normalizeText } from './utils';
+import { isFeatureEnabled } from './features';
 
 /* Helpere de citire a continutului. Toate filtreaza `draft: true` in productie,
  * dar le lasa vizibile in `astro dev` ca sa poti previzualiza ce scrii in Tina. */
@@ -44,16 +45,25 @@ export async function getTestimoniale(): Promise<CollectionEntry<'testimoniale'>
 }
 
 export async function getAfectiuni(): Promise<CollectionEntry<'afectiuni'>[]> {
+  // Sectiune stinsa din CMS: lista goala aici goleste si legaturile
+  // incrucisate de pe celelalte pagini, si indexul de cautare. Vezi ./features.
+  if (!isFeatureEnabled('afectiuni')) return [];
   const items = await getCollection('afectiuni', notDraft);
   return items.sort(byOrder);
 }
 
 export async function getServicii(): Promise<CollectionEntry<'servicii'>[]> {
+  // Sectiune stinsa din CMS: lista goala aici goleste si legaturile
+  // incrucisate de pe celelalte pagini, si indexul de cautare. Vezi ./features.
+  if (!isFeatureEnabled('servicii')) return [];
   const items = await getCollection('servicii', notDraft);
   return items.sort(byOrder);
 }
 
 export async function getSuport(): Promise<CollectionEntry<'suport'>[]> {
+  // Sectiune stinsa din CMS: lista goala aici goleste si legaturile
+  // incrucisate de pe celelalte pagini, si indexul de cautare. Vezi ./features.
+  if (!isFeatureEnabled('suport')) return [];
   const items = await getCollection('suport', notDraft);
   return items.sort(byOrder);
 }

@@ -1,6 +1,7 @@
 import siteJson from '../content/settings/site.json';
 import navigationJson from '../content/settings/navigation.json';
 import homeJson from '../content/settings/home.json';
+import { isDisabledHref } from './features';
 
 /* ---------------------------------------------------------------------------
  * "Singleton"-urile (setari globale, meniu, homepage) nu sunt colectii Astro:
@@ -9,8 +10,22 @@ import homeJson from '../content/settings/home.json';
  * ------------------------------------------------------------------------- */
 
 export const site = siteJson;
-export const navigation = navigationJson;
 export const home = homeJson;
+
+/**
+ * Meniul si subsolul, curatate de linkurile catre sectiuni stinse din CMS.
+ * Filtrarea se face o singura data, aici, ca sa nu trebuiasca fiecare
+ * componenta de navigatie sa stie despre comutatoare.
+ */
+export const navigation = {
+  ...navigationJson,
+  main: navigationJson.main
+    .filter((item) => !isDisabledHref(item.href))
+    .map((item) => ({ ...item, children: item.children.filter((child) => !isDisabledHref(child.href)) })),
+  footerGroups: navigationJson.footerGroups
+    .map((group) => ({ ...group, links: group.links.filter((link) => !isDisabledHref(link.href)) }))
+    .filter((group) => group.links.length > 0),
+};
 
 export type Site = typeof siteJson;
 export type Navigation = typeof navigationJson;

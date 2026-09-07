@@ -1,4 +1,16 @@
 ---
+import type { GetStaticPaths } from 'astro';
+import { isFeatureEnabled } from '../../lib/features';
+
+/**
+ * Ruta e dinamica doar ca sa poata fi stinsa: `getStaticPaths` gol inseamna
+ * pagina negenerata. Cand sectiunea e activa produce exact un URL, `/suport/`.
+ * (Un `index.astro` obisnuit s-ar genera intotdeauna, oricat de ascuns ar fi
+ * din meniu — si ar ramane indexabil.)
+ */
+export const getStaticPaths = (() =>
+  isFeatureEnabled('suport') ? [{ params: { index: undefined } }] : []) satisfies GetStaticPaths;
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
 import SimpleHeading from '../../components/ui/SimpleHeading.astro';

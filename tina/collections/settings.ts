@@ -21,6 +21,18 @@ export const setari: Collection = {
     { type: 'string', name: 'tagline', label: 'Slogan' },
     {
       type: 'object',
+      name: 'features',
+      label: 'Secțiuni active',
+      description:
+        'Stinge o secțiune și dispare complet: paginile ei nu se mai generează, iese din meniu, din subsol, din căutare și din legăturile de pe celelalte pagini. Conținutul rămâne salvat — se reaprinde oricând.',
+      fields: [
+        { type: 'boolean', name: 'servicii', label: 'Servicii și intervenții' },
+        { type: 'boolean', name: 'afectiuni', label: 'Afecțiuni tratate' },
+        { type: 'boolean', name: 'suport', label: 'Centrul de suport' },
+      ],
+    },
+    {
+      type: 'object',
       name: 'defaultSeo',
       label: 'SEO implicit',
       fields: [

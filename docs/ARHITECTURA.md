@@ -574,6 +574,51 @@ fiecărui medic se completează din `/admin` înainte de lansare.
 
 ---
 
+## 4octies. Secțiuni care se pot stinge
+
+Trei părți ale site-ului sunt opționale și au fiecare un comutator în CMS
+(`settings/site.json` → `features`): catalogul de **servicii**, catalogul de
+**afecțiuni** și **centrul de suport**.
+
+„Stins" înseamnă aici mai mult decât un link ascuns:
+
+| Ce se întâmplă | Unde |
+| --- | --- |
+| Paginile nu se mai generează | `getStaticPaths` gol, în rutele secțiunii |
+| Dispare din meniu și din subsol | `navigation` filtrat în `src/lib/site.ts` |
+| Dispar legăturile de pe celelalte pagini | `getServicii`/`getAfectiuni`/`getSuport` returnează gol |
+| Iese din căutare și din sitemap | consecință a celor de mai sus |
+
+### De ce sunt rutele scrise ciudat
+
+Fișierele se numesc `[...index].astro` și `[slug].astro`, nu `index.astro` și
+`[...slug].astro`. Motivul e singurul mecanism prin care Astro permite unei
+pagini să nu existe: **`getStaticPaths` care returnează o listă goală**. Un
+`index.astro` obișnuit se generează întotdeauna, oricât de ascuns ar fi din
+meniu — și rămâne indexabil de Google, la un URL către care duc linkurile vechi.
+
+Prima încercare a fost hook-ul de integrare `astro:routes:resolved`, care chiar
+primește lista de rute. Nu funcționează: lista e doar pentru citit, iar
+ștergerea din ea se raportează în log fără să schimbe nimic în build.
+
+`[...index].astro` produce exact un URL — `/servicii/` — sau niciunul.
+`[slug].astro` a devenit parametru simplu pentru că două rute rest în același
+folder se ciocnesc.
+
+### Redirectările
+
+`/interventii → /servicii` se adaugă în `astro.config.mjs` doar dacă secțiunea
+e aprinsă. Astro respinge build-ul dacă o redirectare arată spre o rută care nu
+există, așa că nu pot rămâne necondiționate.
+
+### Ce nu face comutatorul
+
+Nu șterge conținutul. Fișierele din `src/content/servicii/` rămân pe disc și
+reapar întregi când secțiunea se reaprinde. Pentru a scoate definitiv o intrare,
+se șterge din CMS sau se marchează ciornă.
+
+---
+
 ## 5. Imagini
 
 Fișierele urcate din CMS ajung în **`src/assets/uploads/`**, nu în `public/`.

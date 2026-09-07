@@ -4,6 +4,22 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 import tailwindcss from '@tailwindcss/vite';
+import site from './src/content/settings/site.json' with { type: 'json' };
+
+/**
+ * Sectiunile optionale (servicii, afectiuni, centrul de suport) se sting din
+ * CMS, din `settings/site.json` -> `features`.
+ *
+ * Stingerea se face la nivel de ruta: paginile lor sunt rute dinamice al caror
+ * `getStaticPaths` returneaza gol cand sectiunea e stinsa, deci nu se genereaza
+ * si nu ajung nici in sitemap. Aici raman doar redirectarile vechi, care nu pot
+ * arata spre o ruta inexistenta — Astro respinge build-ul daca o fac.
+ *
+ * Perechea din partea de continut e `src/lib/features.ts`.
+ */
+const features = /** @type {Record<string, boolean>} */ (site.features ?? {});
+/** @param {string} name */
+const enabled = (name) => features[name] !== false;
 
 // https://astro.build/config
 export default defineConfig({
@@ -24,8 +40,9 @@ export default defineConfig({
     '/cautare': '/rezultate-cautare',
     // Intervențiile au fost unificate cu serviciile: sunt acelasi tip de
     // entitate, diferentiat printr-o eticheta. Slug-urile s-au pastrat.
-    '/interventii': '/servicii',
-    '/interventii/[...slug]': '/servicii/[...slug]',
+    ...(enabled('servicii')
+      ? { '/interventii': '/servicii', '/interventii/[slug]': '/servicii/[slug]' }
+      : {}),
   },
 
   integrations: [

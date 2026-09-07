@@ -6,6 +6,7 @@
  */
 import Icon from '../ui/Icon.astro';
 import { getAfectiuni, getMedici, getServicii } from '../../lib/content';
+import { isFeatureEnabled } from '../../lib/features';
 
 interface Props {
   title?: string;
@@ -37,19 +38,32 @@ const popular = shortcuts
 const interventii = servicii.filter((item) => item.data.type === 'interventie');
 const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
 
+/**
+ * Dalele care raman dupa ce se sting sectiunile optionale din CMS. Dala mare
+ * (afectiunile) tine cele doua randuri ale grilei; fara ea, restul se aseaza pe
+ * un singur rand. Sub doua dale sectiunea nu mai are ce organiza, deci dispare.
+ */
+const showAfectiuni = isFeatureEnabled('afectiuni');
+const showServicii = isFeatureEnabled('servicii');
+const showSuport = isFeatureEnabled('suport');
+const tileCount = [showAfectiuni, showServicii, showSuport, true].filter(Boolean).length;
+
 const tile =
   'card-surface group flex h-full flex-col rounded-2xl border border-stroke bg-surface p-6 shadow-card transition hover:border-brand/40 hover:shadow-md';
 ---
 
-<section class:list={[tones[tone], 'py-12']}>
+{
+  tileCount > 1 && (
+    <section class:list={[tones[tone], 'py-12']}>
   <div class="container-page">
     <header class="flex flex-col items-center gap-3 text-center">
       <h2 class="font-heading text-ink text-2xl leading-8 font-bold text-balance sm:text-3xl">{title}</h2>
       <p class="text-ink-muted max-w-2xl text-base leading-7 text-pretty">{subtitle}</p>
     </header>
 
-    <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2">
+    <div class:list={['mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4', showAfectiuni && 'lg:grid-rows-2']}>
       {/* Dala mare: afecțiunile, cu scurtături către cele mai căutate */}
+      {showAfectiuni && (
       <article
         class="card-surface from-brand-dark to-brand group flex flex-col justify-between gap-6 rounded-2xl bg-gradient-to-br p-6 transition sm:col-span-2 lg:row-span-2 lg:p-8"
       >
@@ -89,8 +103,10 @@ const tile =
           <Icon name="arrow-right" size={16} />
         </span>
       </article>
+      )}
 
       {/* Servicii — dala lata */}
+      {showServicii && (
       <article class:list={[tile, 'sm:col-span-2']}>
         <div class="flex items-start justify-between gap-4">
           <div>
@@ -115,6 +131,7 @@ const tile =
           </div>
         </dl>
       </article>
+      )}
 
       {/* Medici */}
       <article class={tile}>
@@ -132,6 +149,7 @@ const tile =
       </article>
 
       {/* Suport */}
+      {showSuport && (
       <article class:list={[tile, 'bg-brand-50 border-transparent']}>
         <span class="text-3xl leading-none" aria-hidden="true">💬</span>
         <h3 class="text-ink mt-3 text-base leading-6 font-semibold">
@@ -145,6 +163,9 @@ const tile =
           <Icon name="arrow-right" size={16} />
         </span>
       </article>
+      )}
     </div>
   </div>
-</section>
+    </section>
+  )
+}

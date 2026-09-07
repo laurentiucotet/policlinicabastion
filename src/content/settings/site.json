@@ -2,6 +2,11 @@
   "name": "Policlinica Bastion",
   "legalName": "Policlinica Bastion SRL",
   "tagline": "Policlinica medicală privată din Timișoara",
+  "features": {
+    "servicii": true,
+    "afectiuni": true,
+    "suport": true
+  },
   "defaultSeo": {
     "title": "Policlinica Bastion Timișoara — servicii medicale de specialitate",
     "description": "Policlinică medicală privată în Timișoara: nefrologie, urologie, neurologie, psihiatrie, diabet și nutriție, medicină de familie. Consultații decontate prin CNAS.",
