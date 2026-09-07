@@ -4,6 +4,8 @@ import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
 import CookieBanner from '../components/layout/CookieBanner.astro';
 import { site } from '../lib/site';
+import { clinicSchema, websiteSchema } from '../lib/schema';
+import { getSpecializari } from '../lib/content';
 import '../styles/global.css';
 
 interface Props {
@@ -30,25 +32,21 @@ const pageTitle = title ? (appendSiteName ? `${title} | ${site.name}` : title) :
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString();
 const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
 
-const organization = {
-  '@context': 'https://schema.org',
-  '@type': 'MedicalClinic',
-  name: site.name,
-  url: Astro.site?.toString() ?? canonical,
-  email: site.email,
-  telephone: site.phones.map((phone) => phone.value),
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: site.address.street,
-    addressLocality: site.address.city,
-    addressRegion: site.address.county,
-    postalCode: site.address.postalCode,
-    addressCountry: 'RO',
-  },
-  sameAs: Object.values(site.social).filter(Boolean),
-};
+/**
+ * Un singur graf `@graph` pentru toata pagina, in loc de mai multe blocuri
+ * JSON-LD independente. Motivul e in `lib/schema.ts`: entitatile trimit una la
+ * alta prin `@id`, iar un graf comun le lasa sa se rezolve intre ele.
+ */
+const origin = (Astro.site ?? new URL(Astro.url.origin)).toString();
+const specialities = (await getSpecializari()).map((entry) => entry.data.title);
 
-const schemas = [organization, ...(Array.isArray(schema) ? schema : schema ? [schema] : [])];
+const graph = [
+  clinicSchema(origin, specialities),
+  websiteSchema(origin),
+  ...(Array.isArray(schema) ? schema : schema ? [schema] : []),
+];
+
+const jsonLd = { '@context': 'https://schema.org', '@graph': graph };
 ---
 
 <!doctype html>
@@ -76,7 +74,7 @@ const schemas = [organization, ...(Array.isArray(schema) ? schema : schema ? [sc
     <Font cssVariable="--font-inter" preload />
     <Font cssVariable="--font-public-sans" preload />
 
-    <script type="application/ld+json" set:html={JSON.stringify(schemas)} is:inline />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
     <slot name="head" />
   </head>
 

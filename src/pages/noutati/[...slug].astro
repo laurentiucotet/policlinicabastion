@@ -11,6 +11,7 @@ import LatestNews from '../../components/sections/LatestNews.astro';
 import { getArticole } from '../../lib/content';
 import { formatDate, isoDate } from '../../lib/utils';
 import { site } from '../../lib/site';
+import { clinicRef } from '../../lib/schema';
 
 export const getStaticPaths = (async () => {
   const posts = await getArticole();
@@ -31,15 +32,30 @@ const categoryEntry = category ? await getEntry(category) : undefined;
 const authorEntry = author ? await getEntry(author) : undefined;
 const url = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString();
 
+const origin = (Astro.site ?? new URL(Astro.url.origin)).toString();
+
+/**
+ * `MedicalWebPage`, nu doar `Article`: textul e conținut medical, iar tipul
+ * spune asta explicit. Autorul trimite la pagina medicului, iar editorul la
+ * clinică prin `@id` — vezi `lib/schema.ts` pentru graf.
+ */
 const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'Article',
+  '@type': ['Article', 'MedicalWebPage'],
   headline: title,
   description: excerpt,
   datePublished: date.toISOString(),
   dateModified: (updated ?? date).toISOString(),
-  author: { '@type': authorEntry ? 'Person' : 'Organization', name: authorEntry?.data.name ?? site.name },
-  publisher: { '@type': 'Organization', name: site.name },
+  inLanguage: 'ro-RO',
+  author: authorEntry
+    ? {
+        '@type': 'Physician',
+        name: authorEntry.data.name,
+        jobTitle: authorEntry.data.role,
+        url: new URL(`/medici/${authorEntry.id}`, origin).toString(),
+        worksFor: clinicRef(origin),
+      }
+    : clinicRef(origin),
+  publisher: clinicRef(origin),
   mainEntityOfPage: url,
 };
 ---

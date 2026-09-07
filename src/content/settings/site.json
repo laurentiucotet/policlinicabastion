@@ -35,6 +35,8 @@
     "city": "Timișoara",
     "county": "Timiș",
     "postalCode": "300600",
+    "latitude": "",
+    "longitude": "",
     "mapsUrl": "https://maps.google.com/?q=Policlinica+Bastion+Timisoara",
     "mapEmbedUrl": ""
   },

@@ -12,6 +12,8 @@ import { serviceTypes } from '../../lib/catalog';
 import { formatPrice, hasPrice } from '../../lib/utils';
 import type { Price } from '../../lib/utils';
 import { home } from '../../lib/site';
+import { collectionSchema, clinicRef } from '../../lib/schema';
+import { getMediciBySpecialitate } from '../../lib/content';
 
 export const getStaticPaths = (async () => {
   const items = await getSpecializari();
@@ -37,9 +39,40 @@ const lower = title.toLowerCase();
 
 /** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
 const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : undefined);
+
+const origin = (Astro.site ?? new URL(Astro.url.origin)).toString();
+const medici = await getMediciBySpecialitate(speciality.id);
+
+/**
+ * Pagina de specializare descrie o ramura medicala si listeaza medicii care o
+ * practica. `MedicalWebPage` + lista de `Physician` spune asta explicit, ca
+ * un cititor automat sa nu trebuiasca sa deduca legatura din machetare.
+ */
+const schema = [
+  {
+    '@type': 'MedicalWebPage',
+    name: title,
+    description: subtitle ?? undefined,
+    about: { '@type': 'MedicalSpecialty', name: title },
+    provider: clinicRef(origin),
+    mainEntity: medici.map((medic) => ({
+      '@type': 'Physician',
+      name: medic.data.name,
+      jobTitle: medic.data.role,
+      medicalSpecialty: title,
+      url: new URL(`/medici/${medic.id}`, origin).toString(),
+      worksFor: clinicRef(origin),
+    })),
+  },
+  collectionSchema({
+    origin,
+    name: `Servicii — ${title}`,
+    items: servicii.map((item) => ({ name: item.data.title, url: `/servicii/${item.id}` })),
+  }),
+];
 ---
 
-<BaseLayout
+<BaseLayout schema={schema}
   title={seo?.title ?? title}
   description={seo?.description ?? speciality.data.shortDescription}
   noindex={seo?.noindex}

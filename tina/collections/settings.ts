@@ -95,6 +95,14 @@ export const setari: Collection = {
         { type: 'string', name: 'city', label: 'Oraș' },
         { type: 'string', name: 'county', label: 'Județ' },
         { type: 'string', name: 'postalCode', label: 'Cod poștal' },
+        {
+          type: 'string',
+          name: 'latitude',
+          label: 'Latitudine',
+          description:
+            'Coordonatele apar în datele structurate (schema.org) și ajută Google și asistenții AI să plaseze corect clinica pe hartă. Se iau din Google Maps: click dreapta pe clădire → prima linie din meniu. Lăsate goale, coordonatele lipsesc pur și simplu — nu se inventează.',
+        },
+        { type: 'string', name: 'longitude', label: 'Longitudine' },
         { type: 'string', name: 'mapsUrl', label: 'Link Google Maps' },
         {
           type: 'string',

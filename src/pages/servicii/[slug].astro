@@ -108,7 +108,7 @@ const tones = new Map(sections.map((section, index) => [section.id, index % 2 ==
 const toneOf = (id: string): 'white' | 'alt' => tones.get(id) ?? 'white';
 
 // `BreadcrumbList` e emis de componenta de fir de navigare, nu de aici.
-const schema = [serviceSchema(serviciu, site.name), faqSchema(faq)].filter(Boolean) as Record<string, unknown>[];
+const schema = [serviceSchema(serviciu, (Astro.site ?? new URL(Astro.url.origin)).toString()), faqSchema(faq)].filter(Boolean) as Record<string, unknown>[];
 
 const tags: Array<{ label: string; href?: string }> = [{ label: serviceTypes[type] }];
 if (speciality) tags.unshift({ label: speciality.data.title, href: `/specializari/${speciality.id}` });

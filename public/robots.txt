@@ -3,4 +3,23 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
+# Crawlerele modelelor de limbaj au voie deliberat: informația medicală de aici
+# e scrisă ca să ajungă la pacienți, inclusiv prin asistenții pe care îi întreabă
+# înainte să sune la clinică. Harta scrisă pentru ele este /llms.txt.
+# Ca să blochezi unul, adaugă-l mai jos cu `Disallow: /`.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
 Sitemap: https://www.policlinicabastion.ro/sitemap-index.xml

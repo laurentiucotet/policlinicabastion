@@ -653,6 +653,68 @@ banner și un rând nou în tabelul de acolo, înainte de punerea în funcțiune
 
 ---
 
+## 4decies. SEO și date structurate
+
+### Un singur graf, nu blocuri separate
+
+`BaseLayout` publică un singur `<script type="application/ld+json">` cu un
+`@graph` care conține: clinica, site-ul și schema specifică paginii curente.
+Membrii grafului **nu** își poartă propriul `@context` — îl moștenesc.
+
+Clinica are un `@id` stabil (`<domeniu>/#clinica`), iar restul entităților
+trimit la el în loc să-l repete. Un serviciu spune „furnizorul meu este
+`#clinica`", un articol spune „editorul meu este `#clinica`". Fără asta, fiecare
+pagină ar descrie din nou o clinică pe care un cititor automat n-are cum să o
+recunoască drept aceeași.
+
+| Pagină | Ce publică peste clinică și site |
+| --- | --- |
+| Afecțiune | `MedicalCondition` + `FAQPage` |
+| Serviciu | `MedicalProcedure` sau `MedicalTest` + `FAQPage` |
+| Medic | `Physician` |
+| Articol | `Article` + `MedicalWebPage`, cu autorul ca `Physician` |
+| Specializare | `MedicalWebPage` + medicii ca `Physician` + `ItemList` de servicii |
+| Liste (medici, cataloage) | `CollectionPage` cu `ItemList` |
+| Suport | `QAPage` |
+
+Programul din CMS („Luni, Miercuri, Vineri" / „08:00 – 22:00") se traduce
+automat în `OpeningHoursSpecification`. Rândurile „Închis" se sar — absența unei
+zile înseamnă deja închis.
+
+### Ce se completează din CMS
+
+Coordonatele geografice (`address.latitude` / `longitude`) sunt **goale**. Nu
+le-am inventat pentru o adresă reală: fără ele, `geo` lipsește pur și simplu din
+JSON-LD, ceea ce e corect. Se iau din Google Maps (click dreapta pe clădire) și
+se completează din setări.
+
+Fiecare colecție are deja câmpuri SEO proprii în Tina (titlu, descriere,
+imagine, `noindex`), folosite ca suprascriere peste valorile derivate din
+conținut.
+
+### `/llms.txt`
+
+`src/pages/llms.txt.ts` generează, la build, o hartă în text simplu a site-ului
+pentru modelele de limbaj: cine e clinica, ce specializări are, ce medici, ce
+servicii cu ce preț, ce afecțiuni tratează, întrebările frecvente și articolele
+recente.
+
+De ce, pe lângă sitemap și JSON-LD: un model care răspunde la „unde fac o
+biopsie fusion în Timișoara?" nu parcurge 130 de pagini HTML. Are nevoie de un
+singur fișier care spune totul, cu linkuri către detalii.
+
+Două reguli pe care fișierul le respectă: **nu inventează** (totul vine din
+conținutul real; fără preț scrie „la cerere", nu o cifră) și **nu dă sfaturi
+medicale** (enumeră și trimite, iar nota de la final spune explicit că nu
+înlocuiește consultul).
+
+`robots.txt` permite explicit crawlerele de modele de limbaj, cu motivul scris
+în fișier — informația medicală de aici e scrisă ca să ajungă la pacienți,
+inclusiv prin asistenții pe care îi întreabă înainte să sune. Blocarea uneia se
+face adăugând `Disallow: /` sub numele ei.
+
+---
+
 ## 5. Imagini
 
 Fișierele urcate din CMS ajung în **`src/assets/uploads/`**, nu în `public/`.
