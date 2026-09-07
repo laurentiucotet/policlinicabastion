@@ -10,6 +10,15 @@ interface Props {
 
 const { doctor } = Astro.props;
 const { name, role, academicTitle, badge, photo } = doctor.data;
+
+/** Vezi DoctorCard: initialele tin loc de fotografie cat timp una lipseste. */
+const TITLES = /^(prof|conf|sef|șef|lucr|asist|univ|as|dr|psih|drd)\.?$/i;
+const initials = name
+  .split(/[\s-]+/)
+  .filter((word) => word && !TITLES.test(word))
+  .slice(0, 2)
+  .map((word) => word[0]?.toUpperCase() ?? '')
+  .join('');
 ---
 
 <section class="bg-surface-alt border-stroke border-b">
@@ -23,7 +32,12 @@ const { name, role, academicTitle, badge, photo } = doctor.data;
         photo ? (
           <Image src={photo} alt={name} width={200} height={200} class="h-full w-full object-cover" />
         ) : (
-          <div class="text-ink-subtle flex h-full w-full items-center justify-center text-5xl">🩺</div>
+          <div
+            class="from-brand-50 to-surface-alt flex h-full w-full items-center justify-center bg-gradient-to-br"
+            aria-hidden="true"
+          >
+            <span class="font-heading text-brand/70 text-5xl leading-none font-bold tracking-wide">{initials}</span>
+          </div>
         )
       }
     </div>

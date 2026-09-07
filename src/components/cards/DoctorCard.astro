@@ -9,6 +9,19 @@ interface Props {
 
 const { doctor } = Astro.props;
 const href = `/medici/${doctor.id}`;
+
+/**
+ * Initialele numelui, fara titluri. "Asist. Univ. Dr. Dema Vlad" -> "DV".
+ * Tine loc de fotografie cat timp una lipseste: un card gol repetat de 20 de ori
+ * arata a eroare, initialele arata a persoana pentru care inca nu avem poza.
+ */
+const TITLES = /^(prof|conf|sef|șef|lucr|asist|univ|as|dr|psih|drd)\.?$/i;
+const initials = doctor.data.name
+  .split(/[\s-]+/)
+  .filter((word) => word && !TITLES.test(word))
+  .slice(0, 2)
+  .map((word) => word[0]?.toUpperCase() ?? '')
+  .join('');
 ---
 
 <article
@@ -25,7 +38,12 @@ const href = `/medici/${doctor.id}`;
           class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />
       ) : (
-        <div class="text-ink-subtle flex h-full w-full items-center justify-center text-4xl">🩺</div>
+        <div
+          class="from-brand-50 to-surface-alt flex h-full w-full items-center justify-center bg-gradient-to-br"
+          aria-hidden="true"
+        >
+          <span class="font-heading text-brand/70 text-4xl leading-none font-bold tracking-wide">{initials}</span>
+        </div>
       )
     }
   </div>
