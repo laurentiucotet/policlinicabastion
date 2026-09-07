@@ -619,6 +619,40 @@ se șterge din CMS sau se marchează ciornă.
 
 ---
 
+## 4nonies. Cookie-uri și consimțământ
+
+`components/layout/CookieBanner.astro`, montat o singură dată în `BaseLayout`.
+
+Trei decizii care nu se citesc din cod:
+
+**Refuzul e la fel de ușor ca acceptul.** „Accept toate" și „Doar necesare" au
+aceeași mărime și același nivel vizual. Un accept colorat lângă un refuz scris
+mărunt este exact tiparul pe care ANSPDCP îl sancționează.
+
+**Nimic nu se încarcă înainte de consimțământ.** Site-ul nu are azi niciun
+script de urmărire, dar are câmp pentru GTM în setări. Injectarea lui se face în
+banner, după acord — nu în `<head>`. Altfel ar exista momentul în care cineva
+completează ID-ul în CMS și urmărirea pornește pentru toată lumea, retroactiv
+fără acord.
+
+**Bannerul nu blochează pagina.** Nu e dialog modal și nu capturează focusul:
+conținutul medical rămâne citibil și pentru cine nu alege nimic.
+
+Alegerea stă în `localStorage`, sub `bastion:cookie-consent`, cu versiune. Când
+apare o categorie nouă de cookie-uri se crește `CONSENT_VERSION` din componentă,
+iar consimțământul se cere din nou — cel vechi nu acoperă ce s-a adăugat.
+Citirea și scrierea sunt în `try/catch`: în navigare privată `localStorage`
+aruncă pe unele browsere, iar asta nu trebuie să rupă pagina.
+
+Retragerea acordului se face din „Setări cookie-uri", în rândul legal din
+subsol. Butonul redeschide bannerul cu panoul de categorii desfășurat.
+
+⚠️ Pagina `/politica-cookies` descrie exact ce stochează site-ul azi. **Orice
+instrument nou — analiză, hartă încorporată, chat — cere o categorie nouă în
+banner și un rând nou în tabelul de acolo, înainte de punerea în funcțiune.**
+
+---
+
 ## 5. Imagini
 
 Fișierele urcate din CMS ajung în **`src/assets/uploads/`**, nu în `public/`.
