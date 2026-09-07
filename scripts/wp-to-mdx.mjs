@@ -128,7 +128,7 @@ const yaml = (value) =>
     : JSON.stringify(value);
 
 const input = JSON.parse(await new Response(process.stdin).text());
-const { slug, title, date, category, excerpt, cover, seo, html, projects = [] } = input;
+const { slug, title, date, category, author, excerpt, cover, seo, html, projects = [] } = input;
 
 const front = [
   '---',
@@ -136,6 +136,7 @@ const front = [
   `date: ${date}`,
   `excerpt: ${yaml(excerpt)}`,
   ...(category ? [`category: ${category}`] : []),
+  ...(author ? [`author: ${author}`] : []),
   ...(projects.length ? ['projects:', ...projects.map((entry) => `  - ${entry}`)] : []),
   'featured: false',
   'seo:',
