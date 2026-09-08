@@ -38,6 +38,10 @@ export default defineConfig({
   // header, iar rezultatele au pagina lor. Pastram vechiul URL functional.
   redirects: {
     '/cautare': '/rezultate-cautare',
+    // Astro numeste harta site-ului `sitemap-index.xml`, dar aproape toate
+    // uneltele (si o parte din crawlere) o cauta intai la adresa conventionala.
+    // Un audit care nu o gaseste raporteaza ca site-ul nu are sitemap.
+    '/sitemap.xml': '/sitemap-index.xml',
     // Intervențiile au fost unificate cu serviciile: sunt acelasi tip de
     // entitate, diferentiat printr-o eticheta. Slug-urile s-au pastrat.
     ...(enabled('servicii')

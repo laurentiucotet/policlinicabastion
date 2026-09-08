@@ -692,6 +692,41 @@ Fiecare colecție are deja câmpuri SEO proprii în Tina (titlu, descriere,
 imagine, `noindex`), folosite ca suprascriere peste valorile derivate din
 conținut.
 
+### Lungimile din `<head>`
+
+`src/lib/seo.ts` aplică două reguli, în `BaseLayout`, peste tot:
+
+- **Titlul** primește sufixul „| Policlinica Bastion" doar dacă rezultatul stă
+  sub 60 de caractere. Peste, brandul cade — el se vede oricum în URL-ul de sub
+  titlu, în timp ce subiectul articolului nu are altă șansă. Titlurile lungi în
+  sine nu se taie: un titlu ciuntit de cod arată mai rău decât unul pe care
+  Google îl scurtează singur.
+- **Descrierea** se taie la 160 de caractere, de preferat la sfârșit de
+  propoziție; dacă asta ar lăsa sub 120, se taie la ultimul cuvânt întreg, cu
+  „…".
+
+Regulile sunt în cod, nu în procedură, ca să nu depindă de cine scrie în CMS.
+Câmpurile SEO din Tina rămân suprascrierea manuală, când textul derivat din
+conținut nu e cel potrivit.
+
+### Imaginea de distribuire
+
+`og:image` are nevoie de o **adresă publică**, iar TinaCMS salvează căile
+relativ la `mediaRoot` (`src/assets/uploads`). Când cineva salvează în CMS un
+câmp care avea deja o cale publică, Tina îi pune prefixul în față și iese
+`/src/assets/uploads/uploads/x.png` — adresă care nu există în site-ul construit,
+deci card gol pe Facebook și WhatsApp. S-a întâmplat exact așa.
+
+`src/lib/media.ts` traduce calea înapoi: caută întâi fișierul printre cele
+procesate de Astro, altfel scoate prefixul și rămâne cu adresa publică. Dacă tot
+nu iese nimic, `og:image` lipsește cu totul — o etichetă care dă 404 e mai rea
+decât una absentă, pentru că se observă mai greu.
+
+Imaginea implicită (`public/uploads/og-default.png`) e generată de
+`scripts/make-og-image.mjs` din culorile și semnul site-ului, cu specializările
+și datele de contact citite din conținut. Se înlocuiește din CMS cu o fotografie
+reală a clinicii, când există una.
+
 ### `/llms.txt`
 
 `src/pages/llms.txt.ts` generează, la build, o hartă în text simplu a site-ului

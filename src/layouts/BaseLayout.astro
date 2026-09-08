@@ -5,6 +5,8 @@ import Footer from '../components/layout/Footer.astro';
 import CookieBanner from '../components/layout/CookieBanner.astro';
 import { site } from '../lib/site';
 import { clinicSchema, websiteSchema } from '../lib/schema';
+import { metaDescription, pageTitle } from '../lib/seo';
+import { publicMediaPath } from '../lib/media';
 import { getSpecializari } from '../lib/content';
 import '../styles/global.css';
 
@@ -28,9 +30,17 @@ const {
   schema,
 } = Astro.props;
 
-const pageTitle = title ? (appendSiteName ? `${title} | ${site.name}` : title) : site.defaultSeo.title;
+/* Titlul si descrierea trec prin regulile de lungime din `lib/seo.ts`: altfel
+ * ajung taiate de Google exact acolo unde spun ceva. */
+const headTitle = title ? pageTitle(title, site.name, appendSiteName) : site.defaultSeo.title;
+const headDescription = metaDescription(description);
+
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString();
-const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
+/* Fara imagine, `og:image` lipseste cu totul: o adresa care da 404 face
+ * reteaua sa arate cardul gol, la fel ca lipsa etichetei, dar mai greu de
+ * observat. */
+const imagePath = publicMediaPath(image);
+const ogImage = imagePath ? new URL(imagePath, Astro.site ?? Astro.url.origin).toString() : '';
 
 /**
  * Un singur graf `@graph` pentru toata pagina, in loc de mai multe blocuri
@@ -58,16 +68,16 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': graph };
     <link rel="canonical" href={canonical} />
     <link rel="sitemap" href="/sitemap-index.xml" />
 
-    <title>{pageTitle}</title>
-    <meta name="description" content={description} />
+    <title>{headTitle}</title>
+    <meta name="description" content={headDescription} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.name} />
-    <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:title" content={headTitle} />
+    <meta property="og:description" content={headDescription} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={ogImage} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
     <meta property="og:locale" content="ro_RO" />
     <meta name="twitter:card" content="summary_large_image" />
 

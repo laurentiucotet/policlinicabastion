@@ -8,6 +8,7 @@ import ExploreBand from '../../../components/sections/ExploreBand.astro';
 import CtaBand from '../../../components/sections/CtaBand.astro';
 import { getArticole, getCategorii } from '../../../lib/content';
 import { home } from '../../../lib/site';
+import { countOf } from '../../../lib/utils';
 
 export const getStaticPaths = (async () => {
   const [categories, posts] = await Promise.all([getCategorii(), getArticole()]);
@@ -36,13 +37,13 @@ const { category, withCount, total, posts } = Astro.props;
 
 <BaseLayout
   title={`Noutăți — ${category.data.name}`}
-  description={`Articole din categoria ${category.data.name} de la Policlinica Bastion.`}
+  description={`${countOf(posts.length, 'articol', 'articole')} din categoria ${category.data.name}, scrise de medicii Policlinicii Bastion din Timișoara. Afecțiuni, investigații, tratamente și noutăți din clinică.`}
 >
   <PageTitleHeader
     breadcrumbs={[{ label: 'Noutăți', href: '/noutati' }, { label: category.data.name }]}
     badge="Blog & Noutăți"
     title={category.data.name}
-    subtitle={`${posts.length} ${posts.length === 1 ? 'articol' : 'articole'} în această categorie.`}
+    subtitle={`${countOf(posts.length, 'articol', 'articole')} în această categorie.`}
   />
 
   <section class="bg-surface py-12">

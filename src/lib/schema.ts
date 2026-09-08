@@ -232,3 +232,29 @@ export function serviceSchema(entry: CollectionEntry<'servicii'>, origin: string
     indication: indications.map((name) => ({ '@type': 'MedicalIndication', name })),
   };
 }
+
+/**
+ * Medicul, legat de clinica prin `@id`.
+ *
+ * `worksFor` nu repeta obiectul clinicii, ci trimite la el: asa, un model care
+ * citeste pagina medicului ajunge la adresa, program si specializari fara sa le
+ * ghiceasca, iar Google stie ca cei 24 de medici sunt ai aceleiasi clinici, nu
+ * 24 de cabinete separate.
+ */
+export function physicianSchema(
+  entry: CollectionEntry<'medici'>,
+  origin: string,
+  medicalSpecialty?: string,
+) {
+  const { name, role, academicTitle } = entry.data;
+
+  return {
+    '@type': 'Physician',
+    '@id': absolute(`/medici/${entry.id}#medic`, origin),
+    url: absolute(`/medici/${entry.id}`, origin),
+    name,
+    jobTitle: [role, academicTitle].filter(Boolean),
+    ...(medicalSpecialty ? { medicalSpecialty } : {}),
+    worksFor: clinicRef(origin),
+  };
+}

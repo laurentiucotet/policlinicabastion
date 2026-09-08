@@ -88,3 +88,17 @@ export function formatPrice(price?: Price): string {
 export function hasPrice(price?: Price): boolean {
   return Boolean(price?.from || price?.to);
 }
+
+/**
+ * „un articol", „12 articole", „24 de articole".
+ *
+ * In romana, numeralul cere „de" inaintea substantivului cand restul lui la 100
+ * e zero sau intre 20 si 99. Regula e marunta, dar „24 articole" se aude gresit
+ * din prima, iar textele astea ajung in rezultatele cautarii.
+ */
+export function countOf(value: number, singular: string, plural: string): string {
+  const rest = value % 100;
+  const linker = rest === 0 || rest >= 20 ? 'de ' : '';
+
+  return `${value} ${linker}${value === 1 ? singular : plural}`;
+}

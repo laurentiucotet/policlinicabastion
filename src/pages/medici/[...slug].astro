@@ -13,7 +13,8 @@ import { getAfectiuniBySpecialitate, getMedici, getServiciiForMedic } from '../.
 import { serviceTypes } from '../../lib/catalog';
 import { formatPrice, hasPrice } from '../../lib/utils';
 import type { Price } from '../../lib/utils';
-import { home } from '../../lib/site';
+import { home, site } from '../../lib/site';
+import { physicianSchema } from '../../lib/schema';
 
 export const getStaticPaths = (async () => {
   const items = await getMedici();
@@ -37,14 +38,14 @@ const afectiuni = (
   await Promise.all(specialities.map((ref) => getAfectiuniBySpecialitate(ref.id)))
 ).flat();
 
-const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'Physician',
-  name,
-  medicalSpecialty: primarySpeciality?.data.title,
-  jobTitle: role,
-  worksFor: { '@type': 'MedicalClinic', name: 'Policlinica Bastion' },
-};
+const origin = (Astro.site ?? new URL(Astro.url.origin)).toString();
+const schema = physicianSchema(doctor, origin, primarySpeciality?.data.title);
+
+/* Descrierea din rezultatele cautarii. Se compune din date reale (nume, rol,
+ * telefonul din setari), ca sa spuna cui se adreseaza pagina si ce poate face
+ * omul mai departe — o singura propozitie de identificare ar fi prea saraca
+ * pentru a-l convinge sa intre. */
+const defaultDescription = `${name} — ${role.toLowerCase()} la Policlinica Bastion din Timișoara. Consultații în regim ambulatoriu; programări la ${site.phones[0]?.value ?? site.topBar.phonesShort}.`;
 
 /** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
 const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : undefined);
@@ -52,7 +53,7 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
 
 <BaseLayout
   title={seo?.title ?? name}
-  description={seo?.description ?? `${name} — ${role} la Policlinica Bastion Timișoara.`}
+  description={seo?.description ?? defaultDescription}
   noindex={seo?.noindex}
   schema={schema}
 >
