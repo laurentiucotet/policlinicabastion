@@ -10,7 +10,7 @@
   "defaultSeo": {
     "title": "Policlinica Bastion Timișoara — servicii medicale de specialitate",
     "description": "Policlinică medicală privată în Timișoara: nefrologie, urologie, neurologie, psihiatrie, diabet și nutriție, medicină de familie. Consultații decontate prin CNAS.",
-    "image": "/uploads/og-default.jpg"
+    "image": "/src/assets/uploads/uploads/og-default.jpg"
   },
   "topBar": {
     "addressShort": "Str. Mircea cel Bătrân 122C, Timișoara",
@@ -30,6 +30,12 @@
     }
   ],
   "email": "receptie@policlinicabastion.ro",
+  "booking": {
+    "label": "Programează-te",
+    "href": "/programari",
+    "leadTimeHours": 24,
+    "demo": true
+  },
   "address": {
     "street": "Str. Mircea cel Bătrân nr. 122C",
     "city": "Timișoara",
@@ -58,16 +64,10 @@
     "number": "+40738826587",
     "message": "Bună ziua! Aș dori o programare la Policlinica Bastion."
   },
-  "booking": {
-    "label": "Programează-te",
-    "href": "/programari",
-    "leadTimeHours": 24,
-    "demo": true
-  },
   "social": {
     "facebook": "https://www.facebook.com/policlinicabastion/",
     "instagram": "https://www.instagram.com/policlinica.bastion/",
-    "linkedin": ""
+    "linkedin": "https://www.linkedin.com/company/policlinica-bastion/"
   },
   "analytics": {
     "gtmId": ""
