@@ -1,6 +1,6 @@
 /* Tipurile folosite de catalogul cu categorii din stanga (/afectiuni,
  * /servicii). Stau aici, nu in componenta, ca paginile sa le poata importa
- * fara sa depinda de un fisier .astro. */
+ * fara sa depinda de un fisier.astro. */
 
 export interface CatalogItem {
   id: string;
@@ -43,7 +43,7 @@ export interface CatalogFlag {
 
 /**
  * Etichetele serviciilor. Consultatia, investigatia si interventia sunt acelasi
- * tip de entitate — ceva ce pacientul programeaza — si difera doar prin
+ * tip de entitate, ceva ce pacientul programeaza si difera doar prin
  * eticheta de aici.
  */
 export const serviceTypes = {

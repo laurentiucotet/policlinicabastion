@@ -6,10 +6,10 @@ import { isFeatureEnabled } from '../../lib/features';
  * Ruta e dinamica doar ca sa poata fi stinsa: `getStaticPaths` gol inseamna
  * pagina negenerata. Cand sectiunea e activa produce exact un URL, `/afectiuni/`.
  * (Un `index.astro` obisnuit s-ar genera intotdeauna, oricat de ascuns ar fi
- * din meniu — si ar ramane indexabil.)
+ * din meniu si ar ramane indexabil.)
  */
 export const getStaticPaths = (() =>
-  isFeatureEnabled('afectiuni') ? [{ params: { index: undefined } }] : []) satisfies GetStaticPaths;
+  isFeatureEnabled('afectiuni') ? [{ params: { index: undefined } }]: []) satisfies GetStaticPaths;
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
@@ -34,13 +34,13 @@ const items: CatalogItem[] = afectiuni.map((item) => ({
   description: item.data.shortDescription,
   href: `/afectiuni/${item.id}`,
   groupId: item.data.speciality.id,
-  keywords: [...item.data.keywords, ...item.data.alsoKnownAs],
+  keywords: [...item.data.keywords,...item.data.alsoKnownAs],
   // Cautarea acopera si continut care nu incape pe card.
   searchText: [
-    ...item.data.symptoms,
-    ...item.data.diagnosis.map((entry) => entry.name),
-    ...item.data.treatments.map((entry) => entry.name),
-    ...item.data.faq.map((entry) => entry.question),
+...item.data.symptoms,
+...item.data.diagnosis.map((entry) => entry.name),
+...item.data.treatments.map((entry) => entry.name),
+...item.data.faq.map((entry) => entry.question),
   ].join(' '),
   meta: item.data.alsoKnownAs.slice(0, 2),
 }));

@@ -1,9 +1,23 @@
 ---
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
-import { getSpecializari } from '../../lib/content';
 
-const specializari = await getSpecializari();
+/**
+ * Motivele sunt scrise din perspectiva recepției, nu a site-ului: ele decid
+ * cine preia mesajul și cât de repede. O specializare nu spunea asta, pentru
+ * că oricum se afla din text, iar cine scria „vreau rezultatele" trebuia să
+ * aleagă una fără legătură cu întrebarea lui.
+ */
+const reasons = [
+  'Programare la consultație',
+  'Reprogramare sau anulare',
+  'Informații despre un serviciu sau o investigație',
+  'Rezultate și documente medicale',
+  'Decontare prin CNAS și bilete de trimitere',
+  'Sesizare sau reclamație',
+  'Colaborare profesională',
+  'Altceva',
+];
 
 const field =
   'w-full rounded-lg border border-stroke bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-subtle focus:border-brand focus:outline-none';
@@ -40,10 +54,10 @@ const label = 'text-sm font-semibold text-ink';
     </div>
 
     <div class="flex flex-col gap-1.5 sm:col-span-2">
-      <label class={label} for="speciality">Specializare</label>
-      <select class={field} id="speciality" name="speciality">
-        <option value="">Alege specializarea</option>
-        {specializari.map((item) => <option value={item.data.title}>{item.data.title}</option>)}
+      <label class={label} for="reason">Motivul contactării *</label>
+      <select class={field} id="reason" name="reason" required>
+        <option value="">Alege motivul</option>
+        {reasons.map((reason) => <option value={reason}>{reason}</option>)}
       </select>
     </div>
 

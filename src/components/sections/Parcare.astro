@@ -1,0 +1,36 @@
+---
+/**
+ * Parcarea, pe pagina de contact.
+ *
+ * Stă lângă hartă, nu în lista de date de contact: e o informație de drum,
+ * folositoare exact în momentul în care omul se uită unde vine, nu când caută
+ * un număr de telefon. Pentru un pacient care ajunge cu o trimitere în mână,
+ * „unde las mașina" e o întrebare la fel de reală ca „la ce etaj".
+ *
+ * Textul vine din setări, ca să poată fi schimbat din CMS fără cod. Fără
+ * descriere, secțiunea nu se randează deloc.
+ */
+import Icon from '../ui/Icon.astro';
+import { site } from '../../lib/site';
+
+const { title, description, note } = site.parking;
+---
+
+{
+  description && (
+    <div class="border-stroke bg-surface shadow-card rounded-2xl border p-6">
+      <h2 class="text-ink flex items-center gap-2 text-base leading-6 font-semibold">
+        <span class="text-brand">
+          <Icon name="map-pin" size={18} />
+        </span>
+        {title}
+      </h2>
+
+      <p class="text-ink-muted mt-3 text-sm leading-6">{description}</p>
+
+      {note && (
+        <p class="text-ink-subtle border-stroke mt-3 border-t pt-3 text-sm leading-6">{note}</p>
+      )}
+    </div>
+  )
+}

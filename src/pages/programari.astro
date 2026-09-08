@@ -24,7 +24,7 @@ const alternatives = [
   {
     icon: 'info' as const,
     title: 'Ai întrebări înainte?',
-    text: 'Bilet de trimitere, decontare CNAS, ce aduci la prima consultație — răspunsuri scurte.',
+    text: 'Bilet de trimitere, decontare CNAS, ce aduci la prima consultație, răspunsuri scurte.',
     action: { label: 'Centrul de suport', href: '/suport' },
   },
 ];
@@ -64,8 +64,8 @@ const alternatives = [
                   <a
                     href={item.action.href}
                     class="group-hover:text-brand card-link"
-                    target={item.external ? '_blank' : undefined}
-                    rel={item.external ? 'noopener' : undefined}
+                    target={item.external ? '_blank': undefined}
+                    rel={item.external ? 'noopener': undefined}
                   >
                     {item.title}
                   </a>

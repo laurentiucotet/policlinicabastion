@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Converteste un articol WordPress in fisierul .mdx al colectiei `articole`.
+ * Converteste un articol WordPress in fisierul.mdx al colectiei `articole`.
  *
  * Se citeste un JSON de pe stdin, cu forma:
  *
@@ -32,7 +32,7 @@ const ENTITIES = {
   '&#8220;': '„',
   '&#8221;': '”',
   '&#8211;': '–',
-  '&#8212;': '—',
+  '&#8212;': '-',
   '&#8230;': '…',
   '&hellip;': '…',
   '&bdquo;': '„',
@@ -42,32 +42,32 @@ const ENTITIES = {
 
 const decode = (text) =>
   text
-    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
-    .replace(/&[a-z]+;|&#\d+;/gi, (entity) => ENTITIES[entity] ?? entity);
+.replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+.replace(/&[a-z]+;|&#\d+;/gi, (entity) => ENTITIES[entity] ?? entity);
 
 /** Continutul inline al unui tag: bold, italic, linkuri. Restul se arunca. */
 const inline = (html) =>
   decode(
     html
-      .replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, (_, __, text) => {
+.replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, (_, __, text) => {
         const inner = text.replace(/<[^>]+>/g, '').trim();
-        return inner ? `**${inner}**` : '';
+        return inner ? `**${inner}**`: '';
       })
-      .replace(/<(em|i)\b[^>]*>([\s\S]*?)<\/\1>/gi, (_, __, text) => {
+.replace(/<(em|i)\b[^>]*>([\s\S]*?)<\/\1>/gi, (_, __, text) => {
         const inner = text.replace(/<[^>]+>/g, '').trim();
-        return inner ? `*${inner}*` : '';
+        return inner ? `*${inner}*`: '';
       })
-      .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_, href, text) => {
+.replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_, href, text) => {
         const label = text.replace(/<[^>]+>/g, '').trim();
         // Linkurile interne pastreaza doar calea: domeniul se schimba la mutare.
         const url = href.replace(/^https?:\/\/(www\.)?policlinicabastion\.ro/, '') || '/';
-        return label ? `[${label}](${url})` : '';
+        return label ? `[${label}](${url})`: '';
       })
-      .replace(/<br\s*\/?>/gi, ' ')
-      .replace(/<[^>]+>/g, ''),
+.replace(/<br\s*\/?>/gi, ' ')
+.replace(/<[^>]+>/g, ''),
   )
-    .replace(/[ \t ]+/g, ' ')
-    .trim();
+.replace(/[ \t ]+/g, ' ')
+.trim();
 
 /**
  * Un paragraf integral ingrosat (tipar frecvent pe site-ul vechi, unde
@@ -76,7 +76,7 @@ const inline = (html) =>
  */
 const unwrapWholeBold = (text) => {
   const match = text.match(/^\*\*([\s\S]+)\*\*$/);
-  return match && !match[1].includes('**') ? match[1] : text;
+  return match && !match[1].includes('**') ? match[1]: text;
 };
 
 const toMarkdown = (html) => {
@@ -95,11 +95,11 @@ const toMarkdown = (html) => {
 
     if (tag === 'ul' || tag === 'ol') {
       const items = [...body.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)]
-        .map((item, index) => {
+.map((item, index) => {
           const text = unwrapWholeBold(inline(item[1]));
-          return text ? `${tag === 'ol' ? `${index + 1}.` : '-'} ${text}` : '';
+          return text ? `${tag === 'ol' ? `${index + 1}.`: '-'} ${text}`: '';
         })
-        .filter(Boolean);
+.filter(Boolean);
       if (items.length) blocks.push(items.join('\n'));
       continue;
     }
@@ -123,9 +123,9 @@ const toMarkdown = (html) => {
 
 /** YAML: ghilimele doar cand chiar sunt necesare. */
 const yaml = (value) =>
-  /^[\w\săâîșțĂÂÎȘȚ.,()–—-]+$/u.test(value) && !/^[-?:>|&*!%@`]/.test(value) && !value.includes(': ')
+  /^[\w\săâîșțĂÂÎȘȚ.,()–, -]+$/u.test(value) && !/^[-?:>|&*!%@`]/.test(value) && !value.includes(': ')
     ? value
-    : JSON.stringify(value);
+: JSON.stringify(value);
 
 const input = JSON.parse(await new Response(process.stdin).text());
 const { slug, title, date, category, author, excerpt, cover, seo, html, projects = [], featured = false } = input;
@@ -135,9 +135,9 @@ const front = [
   `title: ${yaml(title)}`,
   `date: ${date}`,
   `excerpt: ${yaml(excerpt)}`,
-  ...(category ? [`category: ${category}`] : []),
-  ...(author ? [`author: ${author}`] : []),
-  ...(projects.length ? ['projects:', ...projects.map((entry) => `  - ${entry}`)] : []),
+...(category ? [`category: ${category}`]: []),
+...(author ? [`author: ${author}`]: []),
+...(projects.length ? ['projects:',...projects.map((entry) => `  - ${entry}`)]: []),
   `featured: ${featured === true}`,
   'seo:',
   `  description: ${yaml(seo ?? excerpt)}`,

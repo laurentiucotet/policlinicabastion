@@ -6,10 +6,10 @@ import { isFeatureEnabled } from '../../lib/features';
  * Ruta e dinamica doar ca sa poata fi stinsa: `getStaticPaths` gol inseamna
  * pagina negenerata. Cand sectiunea e activa produce exact un URL, `/suport/`.
  * (Un `index.astro` obisnuit s-ar genera intotdeauna, oricat de ascuns ar fi
- * din meniu — si ar ramane indexabil.)
+ * din meniu si ar ramane indexabil.)
  */
 export const getStaticPaths = (() =>
-  isFeatureEnabled('suport') ? [{ params: { index: undefined } }] : []) satisfies GetStaticPaths;
+  isFeatureEnabled('suport') ? [{ params: { index: undefined } }]: []) satisfies GetStaticPaths;
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
@@ -25,12 +25,12 @@ import { site } from '../../lib/site';
 const entries = await getSuport();
 
 const groups = supportTopicOrder
-  .map((topic) => ({ id: topic, ...supportTopics[topic], items: entries.filter((e) => e.data.topic === topic) }))
-  .filter((group) => group.items.length > 0);
+.map((topic) => ({ id: topic,...supportTopics[topic], items: entries.filter((e) => e.data.topic === topic) }))
+.filter((group) => group.items.length > 0);
 
 /** Textul dupa care cauta filtrul din pagina. */
 const haystack = (entry: (typeof entries)[number]) =>
-  normalizeText([entry.data.title, entry.data.shortAnswer, ...entry.data.keywords].join(' '));
+  normalizeText([entry.data.title, entry.data.shortAnswer,...entry.data.keywords].join(' '));
 
 const schema = faqSchema(entries.map((e) => ({ question: e.data.title, answer: e.data.shortAnswer })));
 ---
@@ -44,7 +44,7 @@ const schema = faqSchema(entries.map((e) => ({ question: e.data.title, answer: e
     breadcrumbs={[{ label: 'Suport' }]}
     badge="Suport"
     title="Cu ce te putem ajuta?"
-    subtitle="Întrebările administrative pe care le primim cel mai des — asigurare, bilete de trimitere, medic de familie, documente. Scrie ce te interesează sau alege o temă."
+    subtitle="Întrebările administrative pe care le primim cel mai des, asigurare, bilete de trimitere, medic de familie, documente. Scrie ce te interesează sau alege o temă."
   />
 
   <section class="bg-surface py-12">
@@ -153,9 +153,9 @@ const schema = faqSchema(entries.map((e) => ({ question: e.data.title, answer: e
 
     const normalize = (value: string) =>
       value
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '');
+.toLowerCase()
+.normalize('NFD')
+.replace(/[\u0300-\u036f]/g, '');
 
     const apply = () => {
       const query = normalize(search?.value.trim() ?? '');
@@ -178,7 +178,7 @@ const schema = faqSchema(entries.map((e) => ({ question: e.data.title, answer: e
         status.textContent =
           visible === total
             ? `${total} întrebări, grupate pe teme`
-            : `${visible} ${visible === 1 ? 'întrebare găsită' : 'întrebări găsite'}`;
+: `${visible} ${visible === 1 ? 'întrebare găsită': 'întrebări găsite'}`;
       }
       if (empty) empty.classList.toggle('hidden', visible > 0);
     };

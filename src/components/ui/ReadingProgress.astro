@@ -34,7 +34,7 @@ const { target = '[data-article-body]' } = Astro.props;
   {/*
     Starea initiala se da inline, nu prin `scale-x-0`: in Tailwind v4 utilitarul
     acela scrie proprietatea `scale`, care se inmulteste cu `transform`-ul pus
-    de script — bara ar ramane la latime zero indiferent de progres.
+    de script, bara ar ramane la latime zero indiferent de progres.
   */}
   <div
     class="bg-brand h-full w-full origin-left transition-transform duration-75 ease-linear"
@@ -58,7 +58,7 @@ const { target = '[data-article-body]' } = Astro.props;
      * deasupra ei.
      *
      * Articol mai scurt decat ecranul: intervalul de mai sus e negativ, deci
-     * se masoara altfel — cat din articol a trecut de marginea de jos a
+     * se masoara altfel, cat din articol a trecut de marginea de jos a
      * ferestrei. Ajunge la 1 cand ultimul rand se opreste pe acea margine.
      * Fara ramura asta, bara sarea din 0 in 1 dintr-un singur pas.
      */
@@ -69,7 +69,7 @@ const { target = '[data-article-body]' } = Astro.props;
 
       return readable > 0
         ? clamp(scrolled / readable)
-        : clamp((scrolled + window.innerHeight) / height);
+: clamp((scrolled + window.innerHeight) / height);
     };
 
     let queued = false;

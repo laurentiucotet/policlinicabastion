@@ -13,7 +13,7 @@ import site from './src/content/settings/site.json' with { type: 'json' };
  * Stingerea se face la nivel de ruta: paginile lor sunt rute dinamice al caror
  * `getStaticPaths` returneaza gol cand sectiunea e stinsa, deci nu se genereaza
  * si nu ajung nici in sitemap. Aici raman doar redirectarile vechi, care nu pot
- * arata spre o ruta inexistenta — Astro respinge build-ul daca o fac.
+ * arata spre o ruta inexistenta, Astro respinge build-ul daca o fac.
  *
  * Perechea din partea de continut e `src/lib/features.ts`.
  */
@@ -44,9 +44,9 @@ export default defineConfig({
     '/sitemap.xml': '/sitemap-index.xml',
     // Intervențiile au fost unificate cu serviciile: sunt acelasi tip de
     // entitate, diferentiat printr-o eticheta. Slug-urile s-au pastrat.
-    ...(enabled('servicii')
+...(enabled('servicii')
       ? { '/interventii': '/servicii', '/interventii/[slug]': '/servicii/[slug]' }
-      : {}),
+: {}),
   },
 
   integrations: [

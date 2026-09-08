@@ -12,7 +12,7 @@ import {
 import { formatPrice, hasPrice } from '../lib/utils';
 
 /**
- * `/llms.txt` — harta site-ului scrisa pentru modele de limbaj.
+ * `/llms.txt`, harta site-ului scrisa pentru modele de limbaj.
  *
  * De ce exista, pe langa sitemap si JSON-LD: un model care raspunde la
  * „ce face clinica asta?" sau „unde fac o biopsie fusion in Timisoara?" nu
@@ -47,7 +47,7 @@ export const GET: APIRoute = async ({ site: astroSite, url }) => {
   const lines: string[] = [];
   const section = (title: string, entries: string[]) => {
     if (entries.length === 0) return;
-    lines.push('', `## ${title}`, '', ...entries);
+    lines.push('', `## ${title}`, '',...entries);
   };
 
   lines.push(
@@ -58,7 +58,7 @@ export const GET: APIRoute = async ({ site: astroSite, url }) => {
     `- Adresă: ${site.address.street}, ${site.address.city}, județul ${site.address.county}`,
     `- Telefon: ${site.phones.map((phone) => `${phone.value} (${phone.label.toLowerCase()})`).join(', ')}`,
     `- Email: ${site.email}`,
-    ...site.schedule.map((entry) => `- Program ${entry.days}: ${entry.hours}`),
+...site.schedule.map((entry) => `- Program ${entry.days}: ${entry.hours}`),
     `- Programări online: ${link('/programari')}`,
   );
 
@@ -71,10 +71,10 @@ export const GET: APIRoute = async ({ site: astroSite, url }) => {
     'Medici',
     medici.map((entry) => {
       const specialities = entry.data.specialities
-        .map((ref) => specializari.find((item) => item.id === ref.id)?.data.title)
-        .filter(Boolean)
-        .join(', ');
-      return `- [${entry.data.name}](${link(`/medici/${entry.id}`)}): ${entry.data.role}${specialities ? ` — ${specialities}` : ''}`;
+.map((ref) => specializari.find((item) => item.id === ref.id)?.data.title)
+.filter(Boolean)
+.join(', ');
+      return `- [${entry.data.name}](${link(`/medici/${entry.id}`)}): ${entry.data.role}${specialities ? `, ${specialities}`: ''}`;
     }),
   );
 
@@ -82,8 +82,8 @@ export const GET: APIRoute = async ({ site: astroSite, url }) => {
     'Servicii și intervenții',
     servicii.map((entry) => {
       const facts = [
-        hasPrice(entry.data.price) ? formatPrice(entry.data.price) : 'preț la cerere',
-        entry.data.cnas ? 'decontat CNAS cu bilet de trimitere' : undefined,
+        hasPrice(entry.data.price) ? formatPrice(entry.data.price): 'preț la cerere',
+        entry.data.cnas ? 'decontat CNAS cu bilet de trimitere': undefined,
         entry.data.duration,
       ].filter(Boolean);
       return `- [${entry.data.title}](${link(`/servicii/${entry.id}`)}): ${entry.data.shortDescription} (${facts.join('; ')})`;
@@ -110,8 +110,8 @@ export const GET: APIRoute = async ({ site: astroSite, url }) => {
   section(
     'Articole recente',
     articole
-      .slice(0, 25)
-      .map((entry) => `- [${entry.data.title}](${link(`/noutati/${entry.id}`)}): ${entry.data.excerpt}`),
+.slice(0, 25)
+.map((entry) => `- [${entry.data.title}](${link(`/noutati/${entry.id}`)}): ${entry.data.excerpt}`),
   );
 
   section('Altele', [

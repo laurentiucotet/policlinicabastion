@@ -32,7 +32,7 @@ export function pageTitle(title: string | undefined, siteName: string, appendSit
 
   const withSuffix = `${title} | ${siteName}`;
 
-  return appendSiteName && withSuffix.length <= TITLE_MAX ? withSuffix : title;
+  return appendSiteName && withSuffix.length <= TITLE_MAX ? withSuffix: title;
 }
 
 /**
@@ -54,5 +54,5 @@ export function metaDescription(text: string | undefined): string {
   if (sentenceLength >= DESCRIPTION_MIN_AFTER_CUT) return head.slice(0, sentenceLength);
 
   const lastSpace = head.lastIndexOf(' ');
-  return `${head.slice(0, lastSpace > 0 ? lastSpace : head.length - 1).replace(/[,;:–—-]$/, '')}…`;
+  return `${head.slice(0, lastSpace > 0 ? lastSpace: head.length - 1).replace(/[,;:–, -]$/, '')}…`;
 }

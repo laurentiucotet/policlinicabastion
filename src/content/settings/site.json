@@ -8,7 +8,7 @@
     "suport": true
   },
   "defaultSeo": {
-    "title": "Policlinica Bastion — policlinică privată în Timișoara",
+    "title": "Policlinica Bastion, policlinică privată în Timișoara",
     "description": "Policlinică medicală privată în Timișoara: nefrologie, urologie, neurologie, psihiatrie, diabet, medicină de familie. Consultații decontate prin CNAS.",
     "image": "/uploads/og-default.png"
   },
@@ -45,6 +45,11 @@
     "longitude": "",
     "mapsUrl": "https://maps.google.com/?q=Policlinica+Bastion+Timisoara",
     "mapEmbedUrl": ""
+  },
+  "parking": {
+    "title": "Parcare în curtea policlinicii",
+    "description": "Pacienții pot parca în curtea policlinicii, în limita locurilor disponibile. Intrarea se face din Str. Mircea cel Bătrân nr. 122C.",
+    "note": ""
   },
   "schedule": [
     {

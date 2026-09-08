@@ -1,7 +1,7 @@
 ---
 /**
  * Intervențiile de referință, pe prima pagină. Carduri late, cu datele
- * esențiale la vedere — alt format decât grila de trei carduri mici, ca pagina
+ * esențiale la vedere, alt format decât grila de trei carduri mici, ca pagina
  * să nu arate ca o listă continuă.
  */
 import SectionHeading from '../ui/SectionHeading.astro';
@@ -28,13 +28,13 @@ interface Props {
 const { badge, title, subtitle, cta, items: picked = [], count = 3, tone = 'white' } = Astro.props;
 
 const toSlug = (entry: string | { ref?: string }) =>
-  (typeof entry === 'string' ? entry : (entry.ref ?? '')).split('/').pop()?.replace(/\.(mdx?|json)$/, '') ?? '';
+  (typeof entry === 'string' ? entry: (entry.ref ?? '')).split('/').pop()?.replace(/\.(mdx?|json)$/, '') ?? '';
 
 const interventii = (await getServicii()).filter((item) => item.data.type === 'interventie');
 const items = (
   picked.length
     ? picked.map((entry) => interventii.find((item) => item.id === toSlug(entry))).filter(Boolean)
-    : interventii
+: interventii
 ).slice(0, count) as typeof interventii;
 const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
 ---

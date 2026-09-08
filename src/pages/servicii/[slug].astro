@@ -77,11 +77,11 @@ const facts = [
   { label: 'Preț', value: formatPrice(price) },
   { label: 'Tip', value: serviceTypes[type] },
   duration && { label: 'Durată', value: duration },
-  { label: 'Decontare CNAS', value: cnas ? 'Da, cu bilet de trimitere' : 'Nu, serviciu cu plată' },
+  { label: 'Decontare CNAS', value: cnas ? 'Da, cu bilet de trimitere': 'Nu, serviciu cu plată' },
   anesthesia && { label: 'Anestezie', value: anesthesia },
   admission && { label: 'Regim', value: admission },
   recovery && { label: 'Recuperare', value: recovery },
-  ...quickFacts,
+...quickFacts,
 ].filter((fact): fact is { label: string; value: string } => Boolean(fact));
 
 /* Structura paginii: aceleasi sectiuni, in aceeasi ordine, pentru toate
@@ -104,7 +104,7 @@ const sections = [
   { id: 'noutati', label: 'Noutăți', present: articles.length > 0 },
 ].filter((section) => section.present);
 
-const tones = new Map(sections.map((section, index) => [section.id, index % 2 === 0 ? 'white' : 'alt'] as const));
+const tones = new Map(sections.map((section, index) => [section.id, index % 2 === 0 ? 'white': 'alt'] as const));
 const toneOf = (id: string): 'white' | 'alt' => tones.get(id) ?? 'white';
 
 // `BreadcrumbList` e emis de componenta de fir de navigare, nu de aici.
@@ -116,7 +116,7 @@ if (cnas) tags.push({ label: 'Decontat CNAS', href: '/servicii-decontate-cnas' }
 if (hasPrice(price)) tags.push({ label: formatPrice(price) });
 
 /** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
-const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : undefined);
+const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price): undefined);
 ---
 
 <BaseLayout
@@ -138,7 +138,7 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
 
   <KeyFacts facts={facts} note={price?.note} />
 
-  <section id="despre" class:list={[toneOf('despre') === 'alt' ? 'bg-surface-alt' : 'bg-surface', 'py-12']}>
+  <section id="despre" class:list={[toneOf('despre') === 'alt' ? 'bg-surface-alt': 'bg-surface', 'py-12']}>
     <div class="container-page">
       <SimpleHeading title={`Despre ${title.toLowerCase()}`} />
       <div class="prose-bastion mt-8 max-w-3xl">
@@ -212,7 +212,7 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
   <PointsSection
     id="riscuri"
     title="Riscuri și posibile complicații"
-    intro="Orice intervenție are riscuri. Sunt rare, iar echipa le previne activ — dar trebuie să le cunoști înainte de a-ți da acordul."
+    intro="Orice intervenție are riscuri. Sunt rare, iar echipa le previne activ, dar trebuie să le cunoști înainte de a-ți da acordul."
     items={risks}
     variant="alert"
     tone={toneOf('riscuri')}
@@ -222,12 +222,12 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
 
   {
     doctors.length > 0 && (
-      <section id="medici" class:list={[toneOf('medici') === 'alt' ? 'bg-surface-alt' : 'bg-surface', 'py-12']}>
+      <section id="medici" class:list={[toneOf('medici') === 'alt' ? 'bg-surface-alt': 'bg-surface', 'py-12']}>
         <div class="container-page flex flex-col items-center gap-8">
           <SectionHeading
             badge="Medici"
             title="Cine asigură acest serviciu"
-            subtitle={speciality ? `Echipa de ${speciality.data.title.toLowerCase()} a Policlinicii Bastion.` : undefined}
+            subtitle={speciality ? `Echipa de ${speciality.data.title.toLowerCase()} a Policlinicii Bastion.`: undefined}
           />
           <div class="grid w-full grid-cols-2 gap-4 lg:grid-cols-4">
             {doctors.map((doctor) => (

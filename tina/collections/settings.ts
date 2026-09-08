@@ -24,7 +24,7 @@ export const setari: Collection = {
       name: 'features',
       label: 'Secțiuni active',
       description:
-        'Stinge o secțiune și dispare complet: paginile ei nu se mai generează, iese din meniu, din subsol, din căutare și din legăturile de pe celelalte pagini. Conținutul rămâne salvat — se reaprinde oricând.',
+        'Stinge o secțiune și dispare complet: paginile ei nu se mai generează, iese din meniu, din subsol, din căutare și din legăturile de pe celelalte pagini. Conținutul rămâne salvat, se reaprinde oricând.',
       fields: [
         { type: 'boolean', name: 'servicii', label: 'Servicii și intervenții' },
         { type: 'boolean', name: 'afectiuni', label: 'Afecțiuni tratate' },
@@ -100,7 +100,7 @@ export const setari: Collection = {
           name: 'latitude',
           label: 'Latitudine',
           description:
-            'Coordonatele apar în datele structurate (schema.org) și ajută Google și asistenții AI să plaseze corect clinica pe hartă. Se iau din Google Maps: click dreapta pe clădire → prima linie din meniu. Lăsate goale, coordonatele lipsesc pur și simplu — nu se inventează.',
+            'Coordonatele apar în datele structurate (schema.org) și ajută Google și asistenții AI să plaseze corect clinica pe hartă. Se iau din Google Maps: click dreapta pe clădire → prima linie din meniu. Lăsate goale, coordonatele lipsesc pur și simplu, nu se inventează.',
         },
         { type: 'string', name: 'longitude', label: 'Longitudine' },
         { type: 'string', name: 'mapsUrl', label: 'Link Google Maps' },
@@ -134,10 +134,33 @@ export const setari: Collection = {
     },
     {
       type: 'object',
+      name: 'parking',
+      label: 'Parcare',
+      description:
+        'Apare pe pagina de contact, sub hartă. Lasă descrierea goală ca să ascunzi complet secțiunea.',
+      fields: [
+        { type: 'string', name: 'title', label: 'Titlu' },
+        {
+          type: 'string',
+          name: 'description',
+          label: 'Descriere',
+          description: 'Câte locuri sunt, dacă parcarea e gratuită și pe unde se intră în curte.',
+          ui: { component: 'textarea' },
+        },
+        {
+          type: 'string',
+          name: 'note',
+          label: 'Notă suplimentară',
+          description: 'Opțional: ce face pacientul dacă toate locurile sunt ocupate.',
+        },
+      ],
+    },
+    {
+      type: 'object',
       name: 'social',
       label: 'Rețele sociale',
       description:
-        'Linkul complet al fiecărui profil. Un câmp lăsat gol ascunde iconița din subsol — nu apare un link mort.',
+        'Linkul complet al fiecărui profil. Un câmp lăsat gol ascunde iconița din subsol, nu apare un link mort.',
       fields: [
         {
           type: 'string',
@@ -201,7 +224,7 @@ export const meniu: Collection = {
     {
       type: 'object',
       name: 'footerGroups',
-      label: 'Subsol — coloane de linkuri',
+      label: 'Subsol: coloane de linkuri',
       list: true,
       ui: { itemProps: (item) => ({ label: item?.title ?? 'Coloană' }) },
       fields: [
@@ -222,7 +245,7 @@ export const meniu: Collection = {
     {
       type: 'object',
       name: 'footerLegal',
-      label: 'Subsol — rândul de jos (legal)',
+      label: 'Subsol: rândul de jos (legal)',
       list: true,
       ui: { itemProps: (item) => ({ label: item?.label ?? 'Link' }) },
       fields: [
@@ -259,9 +282,9 @@ export const homepage: Collection = {
       name: 'hero',
       label: 'Hero',
       fields: [
-        { type: 'string', name: 'titleBefore', label: 'Titlu — prima linie' },
+        { type: 'string', name: 'titleBefore', label: 'Titlu, prima linie' },
         { type: 'string', name: 'titleHighlight', label: 'Cuvânt evidențiat (albastru)' },
-        { type: 'string', name: 'titleAfter', label: 'Titlu — restul' },
+        { type: 'string', name: 'titleAfter', label: 'Titlu, restul' },
         { type: 'string', name: 'subtitle', label: 'Subtitlu', ui: { component: 'textarea' } },
         ctaField('primaryCta', 'Buton principal'),
         ctaField('secondaryCta', 'Buton secundar'),

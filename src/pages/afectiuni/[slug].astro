@@ -82,14 +82,14 @@ const sections = [
   { id: 'noutati', label: 'Noutăți', present: articles.length > 0 },
 ].filter((section) => section.present);
 
-const tones = new Map(sections.map((section, index) => [section.id, index % 2 === 0 ? 'white' : 'alt'] as const));
+const tones = new Map(sections.map((section, index) => [section.id, index % 2 === 0 ? 'white': 'alt'] as const));
 const toneOf = (id: string): 'white' | 'alt' => tones.get(id) ?? 'white';
 
 // `BreadcrumbList` e emis de componenta de fir de navigare, nu de aici.
 const schema = [conditionSchema(afectiune), faqSchema(faq)].filter(Boolean) as Record<string, unknown>[];
 
 /** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
-const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : undefined);
+const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price): undefined);
 ---
 
 <BaseLayout
@@ -106,14 +106,14 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
     breadcrumbs={[{ label: 'Afecțiuni', href: '/afectiuni' }, { label: title }]}
     tags={speciality
       ? [{ label: speciality.data.title, href: `/specializari/${speciality.id}` }]
-      : []}
+: []}
   />
 
   <AnchorNav items={sections.map(({ id, label }) => ({ id, label }))} />
 
   <KeyFacts facts={quickFacts} />
 
-  <section id="despre" class:list={[toneOf('despre') === 'alt' ? 'bg-surface-alt' : 'bg-surface', 'py-12']}>
+  <section id="despre" class:list={[toneOf('despre') === 'alt' ? 'bg-surface-alt': 'bg-surface', 'py-12']}>
     <div class="container-page">
       <SimpleHeading title={`Despre ${title.toLowerCase()}`} />
       <div class="prose-bastion mt-8 max-w-3xl">
@@ -125,7 +125,7 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
   <PointsSection
     id="simptome"
     title="Simptome"
-    intro="Simptomele pot lipsi complet în stadiile incipiente. Prezența lor nu confirmă diagnosticul — îl stabilește medicul, după consultație și investigații."
+    intro="Simptomele pot lipsi complet în stadiile incipiente. Prezența lor nu confirmă diagnosticul, îl stabilește medicul, după consultație și investigații."
     items={symptoms}
     variant="info"
     tone={toneOf('simptome')}
@@ -161,7 +161,7 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
     id="interventii"
     badge="Intervenții"
     title="Intervenții care tratează această afecțiune"
-    subtitle="Protocolul complet — indicații, pregătire, cum decurge pas cu pas și recuperare — este descris pe pagina fiecărei intervenții."
+    subtitle="Protocolul complet (indicații, pregătire, cum decurge pas cu pas și recuperare) este descris pe pagina fiecărei intervenții."
     tone={toneOf('interventii')}
     items={interventii.map((item) => ({
       href: `/servicii/${item.id}`,
@@ -185,7 +185,7 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
       title: item.data.title,
       description: item.data.shortDescription,
       eyebrow: serviceTypes[item.data.type],
-      meta: [priceChip(item.data.price), item.data.cnas ? 'Decontat CNAS' : undefined].filter(
+      meta: [priceChip(item.data.price), item.data.cnas ? 'Decontat CNAS': undefined].filter(
         (value): value is string => Boolean(value),
       ),
     }))}
@@ -219,7 +219,7 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
     title="Medicii care tratează această afecțiune"
     subtitle={speciality
       ? `Echipa de ${speciality.data.title.toLowerCase()} a Policlinicii Bastion.`
-      : undefined}
+: undefined}
     specialityId={afectiune.data.speciality.id}
     tone={toneOf('medici')}
     count={8}

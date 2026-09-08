@@ -27,7 +27,7 @@ const { name, role, procedures, pathologies, education, memberships, specialitie
 
 // Serviciile afisate pe pagina de medic vin din prima lui specializare,
 // ca sa nu fie nevoie sa fie duplicate in CMS.
-const primarySpeciality = specialities[0] ? await getEntry(specialities[0]) : undefined;
+const primarySpeciality = specialities[0] ? await getEntry(specialities[0]): undefined;
 
 // Interventiile pe care le efectueaza si afectiunile din specializarile lui:
 // relatia e declarata o singura data, pe interventie / pe afectiune.
@@ -43,12 +43,12 @@ const schema = physicianSchema(doctor, origin, primarySpeciality?.data.title);
 
 /* Descrierea din rezultatele cautarii. Se compune din date reale (nume, rol,
  * telefonul din setari), ca sa spuna cui se adreseaza pagina si ce poate face
- * omul mai departe — o singura propozitie de identificare ar fi prea saraca
+ * omul mai departe, o singura propozitie de identificare ar fi prea saraca
  * pentru a-l convinge sa intre. */
-const defaultDescription = `${name} — ${role.toLowerCase()} la Policlinica Bastion din Timișoara. Consultații în regim ambulatoriu; programări la ${site.phones[0]?.value ?? site.topBar.phonesShort}.`;
+const defaultDescription = `${name}, ${role.toLowerCase()} la Policlinica Bastion din Timișoara. Consultații în regim ambulatoriu; programări la ${site.phones[0]?.value ?? site.topBar.phonesShort}.`;
 
 /** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
-const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : undefined);
+const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price): undefined);
 ---
 
 <BaseLayout
@@ -111,7 +111,7 @@ const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : und
       title: item.data.title,
       description: item.data.shortDescription,
       eyebrow: serviceTypes[item.data.type],
-      meta: [priceChip(item.data.price), item.data.cnas ? 'Decontat CNAS' : undefined].filter(
+      meta: [priceChip(item.data.price), item.data.cnas ? 'Decontat CNAS': undefined].filter(
         (value): value is string => Boolean(value),
       ),
     }))}

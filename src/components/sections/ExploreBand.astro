@@ -18,7 +18,7 @@ interface Props {
 
 const {
   title = 'Caută după ce te interesează',
-  subtitle = 'Aceleași informații, organizate în mai multe feluri — alege drumul care ți se potrivește.',
+  subtitle = 'Aceleași informații, organizate în mai multe feluri. Alege drumul care ți se potrivește.',
   shortcuts = [
     'adenom-de-prostata',
     'litiaza-renala',
@@ -32,8 +32,8 @@ const {
 const [afectiuni, servicii, medici] = await Promise.all([getAfectiuni(), getServicii(), getMedici()]);
 
 const popular = shortcuts
-  .map((slug) => afectiuni.find((item) => item.id === slug))
-  .filter((item): item is (typeof afectiuni)[number] => Boolean(item));
+.map((slug) => afectiuni.find((item) => item.id === slug))
+.filter((item): item is (typeof afectiuni)[number] => Boolean(item));
 
 const interventii = servicii.filter((item) => item.data.type === 'interventie');
 const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
@@ -105,7 +105,7 @@ const tile =
       </article>
       )}
 
-      {/* Servicii — dala lata */}
+      {/* Servicii, dala lata */}
       {showServicii && (
       <article class:list={[tile, 'sm:col-span-2']}>
         <div class="flex items-start justify-between gap-4">
@@ -156,7 +156,7 @@ const tile =
           <a href="/suport" class="group-hover:text-brand card-link">Ai o întrebare?</a>
         </h3>
         <p class="text-ink-muted mt-1 text-sm leading-5 text-pretty">
-          Bilet de trimitere, asigurare CNAS, medic de familie — răspunsuri scurte, la obiect.
+          Bilet de trimitere, asigurare CNAS, medic de familie, răspunsuri scurte, la obiect.
         </p>
         <span class="text-brand mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold">
           Centrul de suport

@@ -10,7 +10,7 @@
  *
  * 2. **Nimic nu se incarca inainte de consimtamant.** Site-ul nu are azi niciun
  *    script de urmarire, dar are camp pentru GTM in setari. Incarcarea lui e
- *    legata de consimtamantul pentru analiza, aici — nu in `<head>` — ca sa nu
+ *    legata de consimtamantul pentru analiza, aici, nu in `<head>`, ca sa nu
  *    existe momentul in care cineva completeaza ID-ul si urmarirea porneste
  *    pentru toata lumea.
  *
@@ -35,7 +35,7 @@ const gtmId = site.analytics?.gtmId ?? '';
   data-gtm-id={gtmId}
 >
   <div class="container-page pb-4 sm:pb-6">
-    {/* Cu setările deschise pe un ecran mic, cardul ar acoperi toată pagina —
+    {/* Cu setările deschise pe un ecran mic, cardul ar acoperi toată pagina,
         deci se limitează în înălțime și derulează în interior. */}
     <div
       class="border-stroke bg-surface shadow-card mx-auto max-h-[75dvh] max-w-4xl overflow-y-auto rounded-2xl border p-5 sm:p-6"
@@ -45,7 +45,7 @@ const gtmId = site.analytics?.gtmId ?? '';
           <h2 class="font-heading text-ink text-base leading-6 font-bold">Cookie-uri pe acest site</h2>
           <p class="text-ink-muted mt-2 text-sm leading-6 text-pretty">
             Folosim cookie-uri strict necesare ca site-ul să funcționeze. Pentru statistici de trafic avem nevoie de
-            acordul tău — fără el nu se încarcă nimic. Poți schimba alegerea oricând din subsolul paginii.
+            acordul tău, fără el nu se încarcă nimic. Poți schimba alegerea oricând din subsolul paginii.
           </p>
           <p class="mt-2 text-sm leading-6">
             <a href="/politica-cookies" class="text-brand font-semibold underline underline-offset-2">
@@ -98,7 +98,7 @@ const gtmId = site.analytics?.gtmId ?? '';
             <label class="flex-1 cursor-pointer" for="consent-analytics">
               <span class="text-ink block text-sm leading-5 font-semibold">Analiză de trafic</span>
               <span class="text-ink-muted mt-1 block text-sm leading-5 text-pretty">
-                Ne arată ce pagini sunt căutate, ca să știm ce informație lipsește. Datele sunt agregate — nu te
+                Ne arată ce pagini sunt căutate, ca să știm ce informație lipsește. Datele sunt agregate, nu te
                 identifică.
               </span>
             </label>
@@ -144,7 +144,7 @@ const gtmId = site.analytics?.gtmId ?? '';
         const raw = localStorage.getItem(KEY);
         if (!raw) return null;
         const parsed = JSON.parse(raw) as Consent;
-        return parsed.version === CONSENT_VERSION ? parsed : null;
+        return parsed.version === CONSENT_VERSION ? parsed: null;
       } catch {
         return null;
       }
@@ -162,7 +162,7 @@ const gtmId = site.analytics?.gtmId ?? '';
 
     /**
      * GTM se injecteaza abia dupa consimtamant, si o singura data. Fara ID
-     * configurat in CMS nu se incarca nimic — cazul de azi.
+     * configurat in CMS nu se incarca nimic, cazul de azi.
      */
     const loadAnalytics = () => {
       const id = root.dataset.gtmId;

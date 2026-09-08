@@ -14,8 +14,8 @@ import { site } from './site';
  *
  * De aceea fiecare entitate importanta are un `@id` stabil, restul paginilor
  * trimit la el in loc sa repete obiectul, iar `BaseLayout` le publica pe toate
- * intr-un singur `@graph`. Membrii grafului nu isi poarta propriul `@context`
- * — il mosteneste graful.
+ * intr-un singur `@graph`. Membrii grafului nu isi poarta propriul `@context`:
+ * il mostenesc din graf.
  *
  * Perechea pentru cititorii automati care nu parseaza JSON-LD e `/llms.txt`.
  * ------------------------------------------------------------------------- */
@@ -53,9 +53,9 @@ const openingHours = () =>
     if (!match) return [];
 
     const dayOfWeek = entry.days
-      .split(/[,/]/)
-      .map((day) => DAYS[day.trim().toLowerCase()])
-      .filter((day): day is string => Boolean(day));
+.split(/[,/]/)
+.map((day) => DAYS[day.trim().toLowerCase()])
+.filter((day): day is string => Boolean(day));
     if (dayOfWeek.length === 0) return [];
 
     return [{ '@type': 'OpeningHoursSpecification', dayOfWeek, opens: match[1], closes: match[2] }];
@@ -67,7 +67,7 @@ export function clinicSchema(origin: string, specialities: string[] = []) {
   const geo =
     latitude && longitude
       ? { '@type': 'GeoCoordinates', latitude, longitude }
-      : undefined;
+: undefined;
 
   return {
     '@type': 'MedicalClinic',
@@ -87,14 +87,14 @@ export function clinicSchema(origin: string, specialities: string[] = []) {
       postalCode: site.address.postalCode,
       addressCountry: 'RO',
     },
-    ...(geo ? { geo, hasMap: site.address.mapsUrl || undefined } : {}),
+...(geo ? { geo, hasMap: site.address.mapsUrl || undefined }: {}),
     openingHoursSpecification: openingHours(),
     // Pacientii vin din toata regiunea de vest, nu doar din oras.
     areaServed: [
       { '@type': 'City', name: site.address.city },
       { '@type': 'AdministrativeArea', name: `Județul ${site.address.county}` },
     ],
-    ...(specialities.length ? { medicalSpecialty: specialities } : {}),
+...(specialities.length ? { medicalSpecialty: specialities }: {}),
     sameAs: Object.values(site.social).filter(Boolean),
   };
 }
@@ -124,7 +124,7 @@ export function websiteSchema(origin: string) {
 
 /**
  * Paginile de catalog. `ItemList` spune explicit ce contine lista si in ce
- * ordine — altfel un cititor automat vede doar o insiruire de linkuri.
+ * ordine, altfel un cititor automat vede doar o insiruire de linkuri.
  */
 export function collectionSchema(options: {
   origin: string;
@@ -136,7 +136,7 @@ export function collectionSchema(options: {
   return {
     '@type': 'CollectionPage',
     name,
-    ...(description ? { description } : {}),
+...(description ? { description }: {}),
     isPartOf: { '@id': absolute(schemaIds.website, origin) },
     about: clinicRef(origin),
     mainEntity: {
@@ -201,7 +201,7 @@ export function conditionSchema(entry: CollectionEntry<'afectiuni'>) {
     })),
     primaryPrevention: prevention.length
       ? { '@type': 'MedicalTherapy', name: 'Prevenție', description: prevention.join(' ') }
-      : undefined,
+: undefined,
   };
 }
 
@@ -254,7 +254,7 @@ export function physicianSchema(
     url: absolute(`/medici/${entry.id}`, origin),
     name,
     jobTitle: [role, academicTitle].filter(Boolean),
-    ...(medicalSpecialty ? { medicalSpecialty } : {}),
+...(medicalSpecialty ? { medicalSpecialty }: {}),
     worksFor: clinicRef(origin),
   };
 }

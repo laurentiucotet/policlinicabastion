@@ -2,13 +2,13 @@
 /**
  * Build de productie.
  *
- * Site-ul (astro build) NU depinde de TinaCloud — vezi docs/ARHITECTURA.md.
+ * Site-ul (astro build) NU depinde de TinaCloud, vezi docs/ARHITECTURA.md.
  * Singurul lucru care depinde de el este panoul /admin, generat de
  * `tinacms build`.
  *
  * De aceea, o problema la TinaCloud nu trebuie sa opreasca niciodata deploy-ul
  * clinicii: nici lipsa credentialelor, nici un branch neindexat (normal pe
- * orice preview), nici un proiect care nu raspunde inca (`project not found` —
+ * orice preview), nici un proiect care nu raspunde inca (`project not found`,
  * de obicei conexiunea GitHub <-> TinaCloud nu s-a terminat de procesat, sau
  * o variabila de mediu are un spatiu/newline in plus). Sarim mereu peste
  * verificarea de cloud (`--skip-cloud-checks`) si toleram orice esec al
@@ -34,7 +34,7 @@ const branch = process.env.TINA_BRANCH || process.env.VERCEL_GIT_COMMIT_REF || '
 
 if (!hasTinaCredentials) {
   warn(
-    'TINA_PUBLIC_CLIENT_ID / TINA_TOKEN lipsesc — sar peste `tinacms build`.\n' +
+    'TINA_PUBLIC_CLIENT_ID / TINA_TOKEN lipsesc, sar peste `tinacms build`.\n' +
       '   Site-ul se construieste normal, dar /admin nu va fi disponibil.\n' +
       '   Adauga variabilele in Vercel → Settings → Environment Variables.',
   );
@@ -48,7 +48,7 @@ if (!hasTinaCredentials) {
     );
   } else {
     warn(
-      `\`tinacms build\` a esuat pentru branch-ul \`${branch}\` — continui doar cu site-ul.\n` +
+      `\`tinacms build\` a esuat pentru branch-ul \`${branch}\`, continui doar cu site-ul.\n` +
         '   Motive frecvente: proiectul TinaCloud nu e inca conectat la\n' +
         '   acest repo/branch ("project not found"), sau credentialele au\n' +
         '   spatii/ghilimele in plus copiate din greseala in Vercel.\n' +

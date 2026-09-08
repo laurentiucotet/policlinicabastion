@@ -14,12 +14,12 @@ export const getStaticPaths = (async () => {
   const [categories, posts] = await Promise.all([getCategorii(), getArticole()]);
 
   const withCount = categories
-    .map((category) => ({
+.map((category) => ({
       id: category.id,
       name: category.data.name,
       count: posts.filter((post) => post.data.category?.id === category.id).length,
     }))
-    .filter((category) => category.count > 0);
+.filter((category) => category.count > 0);
 
   return categories.map((category) => ({
     params: { slug: category.id },
@@ -36,7 +36,7 @@ const { category, withCount, total, posts } = Astro.props;
 ---
 
 <BaseLayout
-  title={`Noutăți — ${category.data.name}`}
+  title={`Noutăți, ${category.data.name}`}
   description={`${countOf(posts.length, 'articol', 'articole')} din categoria ${category.data.name}, scrise de medicii Policlinicii Bastion din Timișoara. Afecțiuni, investigații, tratamente și noutăți din clinică.`}
 >
   <PageTitleHeader
@@ -57,7 +57,7 @@ const { category, withCount, total, posts } = Astro.props;
               <BlogCard post={post} categoryName={category.data.name} />
             ))}
           </div>
-        ) : (
+        ): (
           <p class="text-ink-muted text-center">Momentan nu există articole în această categorie.</p>
         )
       }

@@ -44,12 +44,12 @@ const specialityDir = resolve(root, 'src/content/specializari');
 const specialities = (
   await Promise.all(
     (await readdir(specialityDir))
-      .filter((file) => file.endsWith('.mdx'))
-      .map(async (file) => /^title:\s*(.+)$/m.exec(await readFile(resolve(specialityDir, file), 'utf8'))?.[1]?.trim()),
+.filter((file) => file.endsWith('.mdx'))
+.map(async (file) => /^title:\s*(.+)$/m.exec(await readFile(resolve(specialityDir, file), 'utf8'))?.[1]?.trim()),
   )
 )
-  .filter((title) => Boolean(title))
-  .sort((a, b) => a.localeCompare(b, 'ro'));
+.filter((title) => Boolean(title))
+.sort((a, b) => a.localeCompare(b, 'ro'));
 
 /** Le imparte pe randuri, ca sa nu iasa din marginea imaginii. */
 const LINE_BUDGET = 62;
@@ -92,11 +92,11 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${
   <text x="96" y="350" font-family="${FONT}" font-size="44" font-weight="400" fill="${INK_MUTED}">Policlinică medicală privată în Timișoara</text>
 
   ${specialityLines
-    .map(
+.map(
       (line, index) =>
         `<text x="96" y="${SPECIALITY_TOP + index * SPECIALITY_STEP}" font-family="${FONT}" font-size="30" font-weight="400" fill="${INK_SUBTLE}">${line}</text>`,
     )
-    .join('\n  ')}
+.join('\n  ')}
 
   <text x="96" y="${claimY}" font-family="${FONT}" font-size="28" font-weight="700" fill="${BRAND}">Consultații decontate prin CNAS</text>
 
@@ -111,4 +111,4 @@ const png = await sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toBuffer(
 await writeFile(output, png);
 
 const { width, height } = await sharp(png).metadata();
-console.log(`✅ ${output.replace(`${root}/`, '')} — ${width}x${height}, ${(png.length / 1024).toFixed(0)} KB`);
+console.log(`✅ ${output.replace(`${root}/`, '')}, ${width}x${height}, ${(png.length / 1024).toFixed(0)} KB`);

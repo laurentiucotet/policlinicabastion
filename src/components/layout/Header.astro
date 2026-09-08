@@ -29,7 +29,7 @@ const items = navigation.main.map((item) =>
 ---
 
 {/*
-  Pe ecrane mici header-ul se retrage la derulare — vezi scriptul de mai jos.
+  Pe ecrane mici header-ul se retrage la derulare, vezi scriptul de mai jos.
   Deplasarea se face printr-o variabila CSS, ca sub-navigatia paginilor de
   catalog sa se poata alinia cu el (`AnchorNav` o adauga la propriul `top`).
 */}
@@ -104,7 +104,11 @@ const items = navigation.main.map((item) =>
           aria-controls="mobile-menu"
           data-menu-toggle
         >
-          <Icon name="menu" size={24} />
+          {/* Ambele iconite stau in pagina, iar butonul o ascunde pe cea
+              nepotrivita. Asa nu depinde de JavaScript ca sa arate corect si
+              nu se vede nicio clipire la comutare. */}
+          <span data-menu-icon="inchis"><Icon name="menu" size={24} /></span>
+          <span data-menu-icon="deschis" hidden><Icon name="close" size={24} /></span>
         </button>
       </div>
     </div>
@@ -240,10 +244,17 @@ const items = navigation.main.map((item) =>
     toggle?.addEventListener('click', () => requestAnimationFrame(apply));
   }
 
+  const closedIcon = toggle?.querySelector<HTMLElement>('[data-menu-icon="inchis"]');
+  const openIcon = toggle?.querySelector<HTMLElement>('[data-menu-icon="deschis"]');
+
   toggle?.addEventListener('click', () => {
     const open = toggle.getAttribute('aria-expanded') === 'true';
     toggle.setAttribute('aria-expanded', String(!open));
     toggle.setAttribute('aria-label', open ? 'Deschide meniul' : 'Închide meniul');
     if (menu) menu.hidden = open;
+
+    // Cu meniul deschis, butonul arata ce face acum: inchide.
+    if (closedIcon) closedIcon.hidden = !open;
+    if (openIcon) openIcon.hidden = open;
   });
 </script>

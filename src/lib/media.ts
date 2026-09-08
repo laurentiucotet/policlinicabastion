@@ -5,7 +5,7 @@
  * TinaCMS scrie caile relativ la propriul `mediaRoot` (`src/assets/uploads`).
  * Pentru imaginile din continut asta e corect: Astro le proceseaza prin
  * `<Image />` si le da un nume cu amprenta. Dar campurile care ajung direct
- * intr-un `<meta>` — `og:image` e singurul de acum — au nevoie de o adresa
+ * intr-un `<meta>`, `og:image` e singurul de acum, au nevoie de o adresa
  * publica, iar `/src/assets/...` nu exista in site-ul construit.
  *
  * In plus, cand cineva salveaza in CMS un camp care avea deja o cale publica,

@@ -9,7 +9,7 @@ import { getPosturi } from '../lib/content';
 import { site } from '../lib/site';
 
 const positions = await getPosturi();
-const applyHref = `mailto:${site.email}?subject=${encodeURIComponent('Aplicare — Policlinica Bastion')}`;
+const applyHref = `mailto:${site.email}?subject=${encodeURIComponent('Aplicare, Policlinica Bastion')}`;
 
 const reasons = [
   {
@@ -71,8 +71,8 @@ const reasons = [
 
                     <ul class="flex shrink-0 flex-wrap gap-2">
                       {[position.data.department, position.data.type, position.data.location]
-                        .filter(Boolean)
-                        .map((chip) => (
+.filter(Boolean)
+.map((chip) => (
                           <li class="bg-surface-alt text-ink-muted rounded-full px-3 py-1.5 text-xs font-semibold">
                             {chip}
                           </li>
@@ -86,8 +86,8 @@ const reasons = [
                       { title: 'Ce îți cerem', items: position.data.requirements },
                       { title: 'Ce oferim', items: position.data.offer },
                     ]
-                      .filter((column) => column.items.length > 0)
-                      .map((column) => (
+.filter((column) => column.items.length > 0)
+.map((column) => (
                         <div>
                           <h4 class="text-ink-subtle text-xs leading-4 font-semibold tracking-wide uppercase">
                             {column.title}
@@ -114,13 +114,13 @@ const reasons = [
               </li>
             ))}
           </ul>
-        ) : (
+        ): (
           <div class="border-stroke bg-surface-alt mt-8 rounded-2xl border border-dashed p-8 text-center">
             <p class="text-ink text-base leading-7 font-semibold">
               Momentan nu avem posturi deschise anunțate public.
             </p>
             <p class="text-ink-muted mx-auto mt-2 max-w-2xl text-sm leading-6 text-pretty">
-              Asta nu înseamnă că nu căutăm oameni. Trimite-ne CV-ul și specialitatea ta — păstrăm candidaturile și
+              Asta nu înseamnă că nu căutăm oameni. Trimite-ne CV-ul și specialitatea ta, păstrăm candidaturile și
               revenim când apare o poziție potrivită.
             </p>
           </div>

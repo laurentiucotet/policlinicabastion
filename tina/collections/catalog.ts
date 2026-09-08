@@ -166,12 +166,12 @@ const priceField: TinaField = {
 };
 
 /**
- * Servicii — catalogul unificat.
+ * Servicii, catalogul unificat.
  *
  * O consultație, o investigație și o intervenție sunt același tip de lucru:
  * ceva ce pacientul programează. Diferă prin eticheta „Tip serviciu" și prin
  * cât din protocol e completat. Câmpurile de protocol (anestezie, pași,
- * recuperare, riscuri) rămân goale la o consultație — secțiunile lor pur și
+ * recuperare, riscuri) rămân goale la o consultație, secțiunile lor pur și
  * simplu nu apar pe pagină.
  */
 export const servicii: Collection = {
@@ -263,7 +263,7 @@ export const servicii: Collection = {
 };
 
 /**
- * Centrul de suport — întrebări administrative (asigurare, bilete, documente).
+ * Centrul de suport, întrebări administrative (asigurare, bilete, documente).
  * Sunt separate de întrebările frecvente de pe paginile de serviciu pentru că
  * nu țin de o afecțiune anume.
  */
@@ -361,7 +361,7 @@ export const posturi: Collection = {
 };
 
 /**
- * Programul medicilor — sursa sloturilor din /programari.
+ * Programul medicilor, sursa sloturilor din /programari.
  *
  * Nu se completează sloturi individuale, ci intervale pe zile ale săptămânii.
  * Sloturile concrete se calculează automat, ținând cont de durata serviciului
@@ -407,7 +407,7 @@ export const program: Collection = {
         {
           type: 'number',
           name: 'day',
-          label: 'Ziua (1 = luni ... 7 = duminică)',
+          label: 'Ziua (1 = luni... 7 = duminică)',
           required: true,
         },
         { type: 'string', name: 'from', label: 'De la (HH:MM)', required: true },

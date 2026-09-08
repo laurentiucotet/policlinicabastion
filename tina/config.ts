@@ -3,10 +3,10 @@ import { contentCollections } from './collections/content';
 import { settingsCollections } from './collections/settings';
 
 /* ---------------------------------------------------------------------------
- * TinaCMS — stratul de editare al site-ului.
+ * TinaCMS, stratul de editare al site-ului.
  *
  * Cum functioneaza:
- *   1. Continutul sta in fisiere .mdx / .json in `src/content` (in acest repo).
+ *   1. Continutul sta in fisiere.mdx /.json in `src/content` (in acest repo).
  *   2. Clientul editeaza la `https://<site>/admin` (o aplicatie React statica,
  *      generata de `tinacms build` in `public/admin`).
  *   3. La Salvare, Tina Cloud face commit direct in branch-ul configurat mai jos.
@@ -14,7 +14,7 @@ import { settingsCollections } from './collections/settings';
  *
  * Astro NU foloseste API-ul GraphQL al Tinei: citeste direct fisierele prin
  * content collections (`src/content.config.ts`). Cele doua scheme trebuie
- * tinute in sincron manual — vezi docs/ARHITECTURA.md.
+ * tinute in sincron manual, vezi docs/ARHITECTURA.md.
  * ------------------------------------------------------------------------- */
 
 const branch =
@@ -48,6 +48,6 @@ export default defineConfig({
   client: { skip: true },
 
   schema: {
-    collections: [...settingsCollections, ...contentCollections],
+    collections: [...settingsCollections,...contentCollections],
   },
 });

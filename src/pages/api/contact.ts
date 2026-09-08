@@ -22,11 +22,11 @@ export const POST: APIRoute = async ({ request, url }) => {
     const name = String(form.get('name') ?? '').trim();
     const phone = String(form.get('phone') ?? '').trim();
     const email = String(form.get('email') ?? '').trim();
-    const speciality = String(form.get('speciality') ?? '').trim();
+    const reason = String(form.get('reason') ?? '').trim();
     const message = String(form.get('message') ?? '').trim();
     const gdpr = form.get('gdpr');
 
-    if (!name || !phone || !message || !gdpr) return redirect(origin, 'eroare');
+    if (!name || !phone || !reason || !message || !gdpr) return redirect(origin, 'eroare');
 
     const apiKey = import.meta.env.RESEND_API_KEY;
     const to = import.meta.env.CONTACT_TO_EMAIL;
@@ -36,12 +36,12 @@ export const POST: APIRoute = async ({ request, url }) => {
       `Nume: ${name}`,
       `Telefon: ${phone}`,
       email && `Email: ${email}`,
-      speciality && `Specializare: ${speciality}`,
+      `Motiv: ${reason}`,
       '',
       message,
     ]
-      .filter(Boolean)
-      .join('\n');
+            .filter(Boolean)
+            .join('\n');
 
     if (!apiKey || !to || !from) {
       // Fara cheie de email configurata mesajul ajunge doar in logurile Vercel.
@@ -59,7 +59,8 @@ export const POST: APIRoute = async ({ request, url }) => {
         from,
         to: [to],
         reply_to: email || undefined,
-        subject: `Mesaj nou de pe site — ${name}`,
+        // Motivul intra in subiect: recepția vede din listă cine preia mesajul.
+        subject: `Mesaj de pe site: ${reason} (${name})`,
         text: body,
       }),
     });

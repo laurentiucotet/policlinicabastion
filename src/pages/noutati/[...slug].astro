@@ -29,8 +29,8 @@ const { post, sidebarPosts } = Astro.props;
 const { Content, headings } = await render(post);
 const { title, date, updated, excerpt, cover, coverAlt, category, author, seo } = post.data;
 
-const categoryEntry = category ? await getEntry(category) : undefined;
-const authorEntry = author ? await getEntry(author) : undefined;
+const categoryEntry = category ? await getEntry(category): undefined;
+const authorEntry = author ? await getEntry(author): undefined;
 const url = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString();
 
 const origin = (Astro.site ?? new URL(Astro.url.origin)).toString();
@@ -38,7 +38,7 @@ const origin = (Astro.site ?? new URL(Astro.url.origin)).toString();
 /**
  * `MedicalWebPage`, nu doar `Article`: textul e conținut medical, iar tipul
  * spune asta explicit. Autorul trimite la pagina medicului, iar editorul la
- * clinică prin `@id` — vezi `lib/schema.ts` pentru graf.
+ * clinică prin `@id`, vezi `lib/schema.ts` pentru graf.
  */
 const schema = {
   '@type': ['Article', 'MedicalWebPage'],
@@ -55,7 +55,7 @@ const schema = {
         url: new URL(`/medici/${authorEntry.id}`, origin).toString(),
         worksFor: clinicRef(origin),
       }
-    : clinicRef(origin),
+: clinicRef(origin),
   publisher: clinicRef(origin),
   mainEntityOfPage: url,
 };
@@ -70,9 +70,9 @@ const schema = {
   <PageTitleHeader
     breadcrumbs={[
       { label: 'Noutăți', href: '/noutati' },
-      ...(categoryEntry
+...(categoryEntry
         ? [{ label: categoryEntry.data.name, href: `/noutati/categorie/${categoryEntry.id}` }]
-        : []),
+: []),
       { label: title },
     ]}
     badge={categoryEntry?.data.name ?? 'Blog & Noutăți'}

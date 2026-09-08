@@ -41,7 +41,7 @@ const option =
             <a href={site.phones[0]?.href} class="text-brand font-semibold underline underline-offset-2">
               {site.phones[0]?.value}
             </a>
-            .
+.
           </span>
         </p>
       )
@@ -75,7 +75,7 @@ const option =
         <p class="border-stroke bg-surface rounded-2xl border p-8 text-center text-base">
           Programarea online nu este disponibilă momentan. Sună-ne la recepție și îți găsim un interval.
         </p>
-      ) : (
+      ): (
         <div class="border-stroke bg-surface shadow-card rounded-2xl border p-6 lg:p-8">
           {/* ------------------------------- PASUL 1 ------------------------------ */}
           <div data-step="1">
@@ -312,7 +312,7 @@ const option =
                     <a href="/politica-de-confidentialitate" class="text-brand underline underline-offset-2">
                       politicii de confidențialitate
                     </a>
-                    . *
+. *
                   </span>
                 </label>
 
@@ -376,7 +376,7 @@ const option =
                   </form>
 
                   <p id="otp-hint" class="text-ink-muted text-xs leading-5">
-                    {data.demo ? 'Cod demonstrativ, afișat aici pentru prezentare:' : 'Nu ai primit codul?'}
+                    {data.demo ? 'Cod demonstrativ, afișat aici pentru prezentare:': 'Nu ai primit codul?'}
                     {data.demo && <strong class="text-brand ml-1 tracking-[0.2em]" data-otp />}
                   </p>
 
@@ -402,7 +402,7 @@ const option =
                 <h2 class="font-heading text-ink text-2xl leading-8 font-bold">Programare confirmată</h2>
                 <p class="text-ink-muted max-w-xl text-base leading-7 text-pretty">
                   Îți mulțumim! Am trimis detaliile și pe email. Dacă nu mai poți ajunge, sună la recepție cât mai
-                  devreme — intervalul ajunge la alt pacient care așteaptă.
+                  devreme, intervalul ajunge la alt pacient care așteaptă.
                 </p>
                 <p class="border-stroke bg-surface-alt text-ink-muted rounded-full border px-4 py-1.5 text-xs">
                   Cod de confirmare: <strong class="text-ink tracking-[0.2em]" data-otp-used />
@@ -507,7 +507,7 @@ const option =
     const ymd = (date: Date) =>
       `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-    /** Luni = 1 ... duminica = 7, ca in datele de program. */
+    /** Luni = 1... duminica = 7, ca in datele de program. */
     const isoDay = (date: Date) => ((date.getDay() + 6) % 7) + 1;
 
     const startOfWeek = (date: Date) => {
@@ -575,7 +575,7 @@ const option =
 
       const intervals: Interval[] = exception?.from
         ? [{ day: isoDay(date), from: exception.from, to: exception.to ?? exception.from }]
-        : rules.intervals.filter((interval) => interval.day === isoDay(date));
+: rules.intervals.filter((interval) => interval.day === isoDay(date));
 
       const limit = earliest().getTime();
       const windowEnd = Date.now() + rules.bookingWindowDays * DAY;
@@ -604,7 +604,7 @@ const option =
     };
 
     /* --------------------------------------------------------------------- *
-     * Pasul 1 — cascada specializare → medic → serviciu
+     * Pasul 1, cascada specializare → medic → serviciu
      * --------------------------------------------------------------------- */
     const doctorField = root.querySelector<HTMLElement>('[data-doctor-field]');
     const serviceField = root.querySelector<HTMLElement>('[data-service-field]');
@@ -651,7 +651,7 @@ const option =
     };
 
     /* --------------------------------------------------------------------- *
-     * Pasul 2 — calendarul saptamanal
+     * Pasul 2, calendarul saptamanal
      * --------------------------------------------------------------------- */
     const calendar = root.querySelector<HTMLElement>('[data-calendar]');
     const weekLabel = root.querySelector<HTMLElement>('[data-week-label]');
@@ -677,14 +677,14 @@ const option =
 
         const isToday = ymd(day) === ymd(new Date());
         column.innerHTML = `
-          <p class="text-xs font-semibold ${isToday ? 'text-brand' : 'text-ink'}">${dayNames[isoDay(day) - 1]}</p>
+          <p class="text-xs font-semibold ${isToday ? 'text-brand': 'text-ink'}">${dayNames[isoDay(day) - 1]}</p>
           <p class="text-ink-subtle text-xs">${monthFormatter.format(day)}</p>
           <div class="mt-3 flex flex-col gap-1.5" data-day="${ymd(day)}"></div>`;
 
         const list = column.querySelector<HTMLElement>('[data-day]')!;
 
         if (slots.length === 0) {
-          list.innerHTML = '<p class="text-ink-subtle text-xs">—</p>';
+          list.innerHTML = '<p class="text-ink-subtle text-xs">, </p>';
         } else {
           for (const slot of slots) {
             const button = document.createElement('button');
@@ -693,7 +693,7 @@ const option =
             button.dataset.slot = `${slot.date}|${slot.start}|${slot.end}|${slot.room ?? ''}`;
             button.className = slot.busy
               ? 'rounded-lg border border-stroke px-2 py-1.5 text-xs text-ink-subtle line-through opacity-60'
-              : 'rounded-lg border border-stroke px-2 py-1.5 text-xs font-semibold text-ink transition hover:border-brand hover:bg-brand-50 hover:text-brand aria-[pressed=true]:border-brand aria-[pressed=true]:bg-brand aria-[pressed=true]:text-white';
+: 'rounded-lg border border-stroke px-2 py-1.5 text-xs font-semibold text-ink transition hover:border-brand hover:bg-brand-50 hover:text-brand aria-[pressed=true]:border-brand aria-[pressed=true]:bg-brand aria-[pressed=true]:text-white';
             button.setAttribute('aria-pressed', String(
               state.slot?.date === slot.date && state.slot?.start === slot.start,
             ));
@@ -713,13 +713,13 @@ const option =
 
       if (calendarNote) {
         const parts = [
-          current ? `Sloturi de ${current.durationMinutes} de minute` : '',
-          rules ? `programabile cu până la ${rules.bookingWindowDays} de zile înainte` : '',
+          current ? `Sloturi de ${current.durationMinutes} de minute`: '',
+          rules ? `programabile cu până la ${rules.bookingWindowDays} de zile înainte`: '',
           `cel mai devreme peste ${data.leadTimeHours} de ore`,
         ].filter(Boolean);
         calendarNote.textContent = total === 0
           ? 'Nu sunt intervale libere în această săptămână. Încearcă săptămâna următoare.'
-          : `${parts.join(', ')}.`;
+: `${parts.join(', ')}.`;
       }
 
       const thisWeek = startOfWeek(new Date()).getTime();
@@ -727,7 +727,7 @@ const option =
       for (const button of weekButtons) {
         const direction = Number(button.dataset.week);
         const target = addDays(state.weekStart, direction * 7).getTime();
-        button.disabled = direction < 0 ? target < thisWeek : target > maxWeek;
+        button.disabled = direction < 0 ? target < thisWeek: target > maxWeek;
       }
     };
 
@@ -764,26 +764,26 @@ const option =
       const speciality = data.specialities.find((item) => item.id === state.specialityId);
 
       return [
-        ['Serviciu', current?.title ?? '—'],
-        ['Specializare', speciality?.title ?? '—'],
-        ['Medic', chosen?.name ?? '—'],
-        ['Data și ora', slotLabel() || '—'],
-        ['Durată', current ? `${current.durationMinutes} de minute` : '—'],
-        ['Preț', current?.cnas ? `${current.priceLabel} · decontat CNAS cu bilet` : (current?.priceLabel ?? '—')],
-        state.slot?.room ? ['Locație', state.slot.room] : null,
+        ['Serviciu', current?.title ?? '-'],
+        ['Specializare', speciality?.title ?? '-'],
+        ['Medic', chosen?.name ?? '-'],
+        ['Data și ora', slotLabel() || '-'],
+        ['Durată', current ? `${current.durationMinutes} de minute`: '-'],
+        ['Preț', current?.cnas ? `${current.priceLabel} · decontat CNAS cu bilet`: (current?.priceLabel ?? '-')],
+        state.slot?.room ? ['Locație', state.slot.room]: null,
       ].filter(Boolean) as Array<[string, string]>;
     };
 
     const renderSummaries = () => {
       const rows = summaryRows()
-        .map(
+.map(
           ([label, value]) => `
             <div class="flex flex-col gap-0.5">
               <dt class="text-ink-subtle text-xs font-semibold tracking-wide uppercase">${label}</dt>
               <dd class="text-ink font-medium">${value}</dd>
             </div>`,
         )
-        .join('');
+.join('');
 
       for (const node of root.querySelectorAll<HTMLElement>('[data-summary], [data-confirmation-summary]')) {
         node.innerHTML = rows;
@@ -970,7 +970,7 @@ const option =
     if (preselected) {
       state.specialityId = preselected.specialityId;
       const preferred = params.get('medic');
-      state.doctorId = preselected.doctorIds.includes(preferred ?? '') ? preferred! : preselected.doctorIds[0] ?? '';
+      state.doctorId = preselected.doctorIds.includes(preferred ?? '') ? preferred!: preselected.doctorIds[0] ?? '';
       state.serviceId = preselected.id;
     } else if (params.get('specializare')) {
       state.specialityId = params.get('specializare') ?? '';

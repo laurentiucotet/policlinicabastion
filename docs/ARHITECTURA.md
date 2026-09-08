@@ -37,11 +37,11 @@ Dacă medicul tău a recomandat o biopsie de prostată...
 
 Tina are trei componente:
 
-1. **Schema** (`tina/collections/*.ts`) — descrie ce câmpuri are fiecare tip de
+1. **Schema** (`tina/collections/*.ts`), descrie ce câmpuri are fiecare tip de
    conținut. Din ea Tina generează automat formularele din panoul de admin.
-2. **Panoul de admin** (`/admin`) — o aplicație React statică, generată de
+2. **Panoul de admin** (`/admin`), o aplicație React statică, generată de
    `tinacms build` în `public/admin`. Nu rulează pe server, e doar HTML+JS.
-3. **TinaCloud** — serviciul care leagă panoul de GitHub: autentifică editorii
+3. **TinaCloud**: serviciul care leagă panoul de GitHub: autentifică editorii
    și face commit-uri în numele lor.
 
 Fluxul complet când clientul apasă „Save”:
@@ -60,7 +60,7 @@ Fluxul complet când clientul apasă „Save”:
 - Fiecare modificare de conținut are autor, dată și diff în istoricul git.
 - Se poate reveni la orice versiune anterioară.
 - Nu există bază de date de întreținut, de securizat sau care poate pica.
-- Site-ul livrat e HTML static — nu poate fi „spart” prin CMS.
+- Site-ul livrat e HTML static: nu poate fi „spart” prin CMS.
 
 **Consecințe practice, de știut:**
 
@@ -80,7 +80,7 @@ prin *content collections*.
 | --- | --- | --- |
 | Viteză build | Foarte rapid, totul e local | Request-uri de rețea la fiecare build |
 | Tipuri TypeScript | Din schema Zod, native Astro | Generate de Tina |
-| Dependență de TinaCloud la build | Nu — build-ul merge și dacă Tina e picată | Da |
+| Dependență de TinaCloud la build | Nu, build-ul merge și dacă Tina e picată | Da |
 | Visual editing (preview live) | Nu | Da, dar necesită React în Astro |
 | Schema | În două locuri, ținute manual în sincron | Într-un singur loc |
 
@@ -89,10 +89,10 @@ mult decât preview-ul live. De aceea `client: { skip: true }` în `tina/config.
 
 **Costul acestei alegeri:** schema există în două locuri.
 
-- `src/content.config.ts` — validarea Zod + tipurile pentru cod
-- `tina/collections/*.ts` — formularele din panoul de admin
+- `src/content.config.ts`: validarea Zod + tipurile pentru cod
+- `tina/collections/*.ts`: formularele din panoul de admin
 
-Când adaugi un câmp, **adaugă-l în ambele** — și regenerează `tina-lock.json`
+Când adaugi un câmp, **adaugă-l în ambele** și regenerează `tina-lock.json`
 (`npm run tina:lock`), pentru că TinaCloud citește schema din acel fișier, nu
 din `tina/collections/`. Astea sunt singurele două reguli de disciplină ale
 proiectului.
@@ -112,12 +112,12 @@ Derivat direct din paginile din Figma.
 | `afectiuni` | `src/content/afectiuni` | `.mdx` | `/afectiuni/[slug]` |
 | `servicii` | `src/content/servicii` | `.mdx` | `/servicii/[slug]` |
 | `suport` | `src/content/suport` | `.mdx` | `/suport/[slug]` |
-| `posturi` | `src/content/posturi` | `.mdx` | — (listate pe `/cariere`) |
-| `program` | `src/content/program` | `.json` | — (sursa sloturilor din `/programari`) |
+| `posturi` | `src/content/posturi` | `.mdx` |, (listate pe `/cariere`) |
+| `program` | `src/content/program` | `.json` |, (sursa sloturilor din `/programari`) |
 | `articole` | `src/content/articole` | `.mdx` | `/noutati/[slug]` |
 | `categorii` | `src/content/categorii` | `.json` | `/noutati/categorie/[slug]` |
 | `proiecte` | `src/content/proiecte-europene` | `.mdx` | `/proiecte-europene/[slug]` |
-| `testimoniale` | `src/content/testimoniale` | `.json` | — (doar pe prima pagină) |
+| `testimoniale` | `src/content/testimoniale` | `.json` |, (doar pe prima pagină) |
 | `pagini` | `src/content/pagini` | `.mdx` | `/[slug]` |
 
 ### Singletonuri (un singur fișier, fără buton de „adaugă”)
@@ -128,7 +128,7 @@ Derivat direct din paginile din Figma.
 | `settings/navigation.json` | Meniul principal și linkurile din subsol |
 | `settings/home.json` | Toate textele de pe prima pagină (hero, titluri de secțiuni, benzi CTA) |
 
-Singletonurile **nu** sunt content collections Astro — sunt importate direct ca
+Singletonurile **nu** sunt content collections Astro, sunt importate direct ca
 JSON în `src/lib/site.ts`. Nu au nevoie de slug sau de listare, deci importul
 direct e mai simplu și mai rapid. Rămân perfect editabile din Tina.
 
@@ -152,7 +152,7 @@ articol   ───────► afecțiuni / servicii / proiecte europene
 - Un **medic** are una sau mai multe **specializări**.
   Pagina `/specializari/nefrologie` listează automat medicii care o au bifată.
 - Un **articol** are o **categorie** și, opțional, un **autor** (medic).
-- O **afecțiune** aparține unei singure specializări — care devine și categoria
+- O **afecțiune** aparține unei singure specializări: care devine și categoria
   ei în catalogul `/afecțiuni`.
 - Un **serviciu** este ce programează pacientul: o consultație, o investigație
   sau o intervenție. Aparține unei specializări, tratează una sau mai multe
@@ -177,7 +177,7 @@ nevoit să eticheteze retroactiv cele ~30 de articole existente.
 ⚠️ **Detaliu tehnic important.** Tina salvează referințele ca *path complet*
 (`src/content/specializari/nefrologie.mdx`), iar Astro așteaptă *id-ul*
 (`nefrologie`). Normalizarea se face în `src/content.config.ts`, în helperele
-`refTo()` și `refListTo()` — acceptă ambele forme, deci merg și fișierele
+`refTo()` și `refListTo()`, acceptă ambele forme, deci merg și fișierele
 scrise manual, și cele scrise de Tina.
 
 De asemenea, câmpurile `reference` nu suportă `list: true` în interfața Tina.
@@ -195,8 +195,8 @@ pacientului: **ceva ce programează**. Diferă prin cât de mult protocol au (o
 consultație nu are anestezie, pași și recuperare; o biopsie are) și prin
 eticheta sub care apar.
 
-Prima variantă a acestui catalog le ținea separat — `interventii` și `servicii`
-— și a ieșit prost: biopsia fusion, ESWL și cistoscopia existau de două ori, ca
+Prima variantă a acestui catalog le ținea separat, `interventii` și `servicii`
+ și a ieșit prost: biopsia fusion, ESWL și cistoscopia existau de două ori, ca
 două documente care trebuiau ținute în sincron manual. Acum există o singură
 colecție, `servicii`, cu un câmp `type` (Consultație / Investigație / Analize /
 Procedură / **Intervenție**), care este în același timp eticheta din catalog și
@@ -220,7 +220,7 @@ Fiecare serviciu are un câmp `price` cu `from`, `to`, `currency` și `note`:
 | nimic | `La cerere` |
 
 Formatarea e într-un singur loc, `formatPrice()` din `src/lib/utils.ts`. Chip-ul
-de preț apare pe carduri **doar dacă prețul e completat** — „La cerere" pe toate
+de preț apare pe carduri **doar dacă prețul e completat**: „La cerere" pe toate
 cardurile ar fi doar zgomot. Pe pagina serviciului, prețul este primul câmp din
 bara de date esențiale, pentru că e prima întrebare a pacientului.
 
@@ -235,10 +235,10 @@ servicii), căutare după cuvinte-cheie, carduri în dreapta.
 - **Filtrarea se face în browser**, fără request suplimentar: toate intrările
   sunt deja în HTML, scriptul doar le ascunde.
 - **Căutarea acoperă și conținut care nu încape pe card**: `keywords`
-  (sinonime populare — „pietre la rinichi", „nu pot dormi"), simptome,
+  (sinonime populare, „pietre la rinichi", „nu pot dormi"), simptome,
   indicații și întrebările frecvente, puse într-un atribut `data-haystack`.
 - **Etichetele și comutatoarele sunt filtre diferite.** Eticheta (tipul de
-  serviciu) e exclusivă — alegi una. Comutatoarele (`flags`, momentan doar
+  serviciu) e exclusivă, alegi una. Comutatoarele (`flags`, momentan doar
   „Decontat CNAS") se adaugă peste restul filtrelor și se pot combina.
 - **Starea se reflectă în URL**
   (`/servicii?categorie=urologie&tip=interventie&doar=cnas`), deci meniul din
@@ -249,7 +249,7 @@ servicii), căutare după cuvinte-cheie, carduri în dreapta.
 ⚠️ **Capcană rezolvată, de reținut.** Selecția categoriei ascultă `click`-ul pe
 `<summary>`, nu evenimentul `toggle` al lui `<details>`. Motivul: `toggle` se
 declanșează **asincron**, deci se declanșa și când scriptul deschidea singur
-categoriile în timpul unei căutări — iar handlerul interpreta asta drept „a ales
+categoriile în timpul unei căutări, iar handlerul interpreta asta drept „a ales
 utilizatorul categoria" și filtra rezultatele. Efectul vizibil era o căutare
 care „nu funcționează": scriai „prostata" și rămâneau doar rezultatele din
 ultima categorie deschisă automat.
@@ -262,7 +262,7 @@ fundalul alternează automat între cele rămase (`toneOf()` în fiecare pagină
 Din aceeași listă se generează și sub-navigația lipicioasă din capul paginii,
 care marchează secțiunea în care te afli (`aria-current="true"`) pe măsură ce
 derulezi. Secțiunea curentă e ultima al cărei început a trecut de linia de sub
-bară — calcul din poziții, nu din raportul de intersecție al unui
+bară, calcul din poziții, nu din raportul de intersecție al unui
 `IntersectionObserver`: secțiunile au înălțimi foarte diferite, iar una scurtă
 („Beneficii") ar pierde mereu în fața uneia lungi („Cum decurge"). Pe ecrane
 înguste, elementul activ e adus în vizor prin defilarea orizontală a barei.
@@ -270,7 +270,7 @@ bară — calcul din poziții, nu din raportul de intersecție al unui
 ⚠️ **A doua capcană, de reținut.** Bara se defilează prin `scrollLeft`, nu prin
 `scrollIntoView`. `scrollIntoView` urcă prin toți strămoșii defilabili, inclusiv
 documentul, și trăgea pagina înapoi cu câteva zeci de pixeli la fiecare
-schimbare de secțiune — senzația era de scroll „care se opune", nu de bug de
+schimbare de secțiune, senzația era de scroll „care se opune", nu de bug de
 navigație.
 
 | Afecțiune | Serviciu / intervenție |
@@ -294,7 +294,7 @@ Blocurile sunt componente reutilizabile în `components/entity/`: `PointsSection
 construiesc și paginile de proiect european (§4quater).
 
 Fiecare pagină emite și JSON-LD potrivit tipului (`MedicalCondition`,
-`MedicalProcedure` / `MedicalTest`, `FAQPage`, `BreadcrumbList`) — vezi
+`MedicalProcedure` / `MedicalTest`, `FAQPage`, `BreadcrumbList`), vezi
 `src/lib/schema.ts`.
 
 ### Carduri clicabile pe toată suprafața
@@ -303,13 +303,13 @@ Toate cardurile din site (medici, articole, catalog, proiecte, intervenții
 promovate) sunt clicabile integral, nu doar pe titlu. Mecanismul e o pereche de
 utilitare din `global.css`:
 
-- `card-surface` pe container — doar `position: relative`;
-- `card-link` pe linkul principal — un `::after` întins peste tot containerul.
+- `card-surface` pe container: doar `position: relative`;
+- `card-link` pe linkul principal: un `::after` întins peste tot containerul.
 
 **Se folosesc împreună, întotdeauna.** Fără `card-surface`, overlay-ul se
 raportează la pagină și acoperă tot ecranul: linkul cardului fură clickurile din
 header, din firul de navigare și din filtre. Exact asta s-a întâmplat pe
-`/noutati`, unde `BlogCard` avea `card-link` fără container poziționat — filtrele
+`/noutati`, unde `BlogCard` avea `card-link` fără container poziționat, filtrele
 de categorie și breadcrumb-ul păreau „stricate", deși erau linkuri normale.
 De aceea perechea are nume proprii, în loc de `relative` + `after:inset-0`
 scrise de mână la fiecare card.
@@ -323,13 +323,13 @@ proiect"), textul rămâne `<span>`: cardul e deja linkul.
 Toate paginile în afară de prima au fir de navigare, printr-o singură
 componentă: `components/ui/Breadcrumbs.astro`.
 
-- **„Acasă" nu se scrie niciodată în pagini** — îl adaugă componenta. Paginile
+- **„Acasă" nu se scrie niciodată în pagini**: îl adaugă componenta. Paginile
   transmit doar restul drumului: `[{ label: 'Servicii', href: '/servicii' }, { label: title }]`.
 - **Ultimul element se randează fără link**, cu `aria-current="page"`, chiar
   dacă primește un `href`. Așa nu poate apărea un link către pagina curentă.
 - **Componenta emite și JSON-LD-ul `BreadcrumbList`**, din aceeași listă din
-  care randează marcajul vizibil. Alternativa — schema construită separat, în
-  fiecare pagină, și trimisă în `<head>` prin `BaseLayout` — a existat inițial
+  care randează marcajul vizibil. Alternativa, schema construită separat, în
+  fiecare pagină, și trimisă în `<head>` prin `BaseLayout`, a existat inițial
   și e exact felul în care cele două ajung să spună lucruri diferite după
   câteva editări. JSON-LD-ul stă în `<body>`, ceea ce este valid și acceptat de
   Google.
@@ -359,14 +359,14 @@ la prima schimbare de font sau de breakpoint.
 ## 4ter. Căutarea
 
 Căutarea **nu este o pagină**, ci o funcție disponibilă în header, pe orice
-pagină (`components/layout/SearchBox.astro`): butonul — doar iconița de lupă,
-fără etichetă — deschide un panou cu sugestii live. Enter duce la `/rezultate-cautare`, singurul loc unde căutarea are
-pagină proprie — cu filtre pe tip de rezultat.
+pagină (`components/layout/SearchBox.astro`): butonul, doar iconița de lupă,
+fără etichetă, deschide un panou cu sugestii live. Enter duce la `/rezultate-cautare`, singurul loc unde căutarea are
+pagină proprie, cu filtre pe tip de rezultat.
 
 Ambele consumă `/cautare-index.json`, generat la build din toate colecțiile
 (specializări, afecțiuni, servicii, medici, articole, proiecte, pagini), cu
-`keywords` incluse. Serviciile intră în index cu tipul lor real — „Intervenție"
-sau „Serviciu" — ca filtrul din pagina de rezultate să fie util. Rezultatele sunt ordonate după relevanță:
+`keywords` incluse. Serviciile intră în index cu tipul lor real, „Intervenție"
+sau „Serviciu", ca filtrul din pagina de rezultate să fie util. Rezultatele sunt ordonate după relevanță:
 potrivirile din titlu înaintea celor din descriere sau din cuvinte-cheie.
 
 Vechiul URL `/cautare` redirecționează către `/rezultate-cautare` (`astro.config.mjs`).
@@ -384,7 +384,7 @@ descriere, obiective, rezultate, galerie și **noutăți**.
   „Proiecte în derulare" și „Proiecte încheiate".
 - **Datele de identificare** (cod SMIS, număr de contract, perioadă de
   implementare, beneficiar, program, valoare totală și nerambursabilă) au
-  câmpuri proprii, nu o listă liberă — sunt obligatorii pentru respectarea
+  câmpuri proprii, nu o listă liberă, sunt obligatorii pentru respectarea
   regulilor de vizibilitate a finanțării. `details` a rămas, pentru orice câmp
   în plus.
 - **Noutățile** se leagă din articol (câmpul „Proiecte europene legate") sau de
@@ -399,13 +399,13 @@ descriere, obiective, rezultate, galerie și **noutăți**.
 
 ### Ritmul vizual al paginilor lungi
 
-Prima pagină era un șir de secțiuni albe și gri, fiecare cu o grilă de carduri —
+Prima pagină era un șir de secțiuni albe și gri, fiecare cu o grilă de carduri,
 corect, dar monoton. Blocurile de mai jos există ca să rupă acel ritm; fiecare
 are altă formă, nu doar alt conținut:
 
 | Bloc | Formă | Suprafață |
 | --- | --- | --- |
-| `ExploreBand` | trei drumuri către catalog | `brand-50` — a treia suprafață, între alb și gri |
+| `ExploreBand` | trei drumuri către catalog | `brand-50`, a treia suprafață, între alb și gri |
 | `HighlightServices` | carduri late, cu datele esențiale în coloană | gri |
 | `WhyBand` | iconiță + text, fără carduri | **albastru închis** |
 | `StepsBand` | pași numerotați, pe orizontală | alb |
@@ -413,7 +413,7 @@ are altă formă, nu doar alt conținut:
 
 Toate textele lor stau în `settings/home.json` și sunt editabile din Tina, ca
 restul primei pagini. `HighlightServices` primește și lista intervențiilor
-promovate — dacă e goală, ia primele din catalog.
+promovate, dacă e goală, ia primele din catalog.
 
 ### `/noutati`
 
@@ -431,13 +431,13 @@ promovate — dacă e goală, ia primele din catalog.
 
 ### Centrul de suport (`/suport`)
 
-Întrebările administrative — calitatea de asigurat, valabilitatea biletului de
-trimitere, schimbarea medicului de familie — nu aparțin niciunei afecțiuni și
+Întrebările administrative, calitatea de asigurat, valabilitatea biletului de
+trimitere, schimbarea medicului de familie, nu aparțin niciunei afecțiuni și
 nici unui serviciu, așa că nu aveau unde să stea. Au acum colecție proprie,
 grupată pe patru teme (`asigurare`, `programari`, `documente`, `clinica`,
 definite în `src/lib/catalog.ts`).
 
-Pagina de listă are o căutare care filtrează întrebările pe măsură ce scrii —
+Pagina de listă are o căutare care filtrează întrebările pe măsură ce scrii,
 același mecanism ca în catalog, peste titlu, răspunsul scurt și `keywords`.
 Fiecare întrebare are pagină proprie, cu răspunsul scurt evidențiat sus (și
 publicat ca `QAPage` în JSON-LD, ca să poată apărea direct în Google), răspunsul
@@ -450,7 +450,7 @@ schimbă. Fiecare răspuns se încheie cu o notă care trimite la recepție și 
 
 ### `/cariere`
 
-Pagina există chiar și fără posturi deschise — starea „momentan nu avem posturi
+Pagina există chiar și fără posturi deschise, starea „momentan nu avem posturi
 anunțate public, trimite-ne CV-ul" este o stare reală, nu un accident. Posturile
 sunt o colecție proprie (`posturi`), ca să poată fi publicate din CMS fără
 intervenție în cod. `posturi/post-nou-sablon` e o intrare-șablon marcată ciornă,
@@ -473,7 +473,7 @@ Meniul principal ține doar drumurile pe care le caută un pacient care încă n
   Un al doilea link, în același rând, ar fi fost aceeași acțiune de două ori.
 - **Proiecte Europene** este o obligație de transparență, nu un drum de pacient:
   se caută deliberat, de obicei din subsol. Pe prima pagină a rămas cu o bandă
-  discretă (`sections/EuProjectsNote.astro`), nu cu o bandă CTA — informația
+  discretă (`sections/EuProjectsNote.astro`), nu cu o bandă CTA, informația
   există, dar nu concurează cu programarea.
 
 ### Câte îndemnuri la acțiune încap pe o pagină
@@ -483,7 +483,7 @@ capul paginii, unul în cardul de specializare, banda CTA și banda albastră di
 subsol. Prea multe: când totul strigă „programează-te", niciunul nu mai are
 greutate.
 
-Regula acum: **o singură acțiune primară pe zonă de pagină** — butonul persistent
+Regula acum: **o singură acțiune primară pe zonă de pagină**: butonul persistent
 din header, acțiunea din capul paginii, banda CTA de la final și una singură în
 subsol. Cardul de specializare a rămas cu „Vezi specializarea" (e navigație, nu
 conversie), iar banda albastră „PROGRAMAȚI-VĂ" din subsol a dispărut.
@@ -496,7 +496,7 @@ conversie), iar banda albastră „PROGRAMAȚI-VĂ" din subsol a dispărut.
 citită înainte de orice modificare, pentru că are trei decizii care se explică
 greu din cod.
 
-### Sloturile nu se stochează — se calculează
+### Sloturile nu se stochează: se calculează
 
 Prima variantă evidentă ar fi ca fiecare interval liber să fie un document în
 CMS. Ar fi de neîntreținut: un medic cu 5 zile de program înseamnă ~40 de
@@ -540,7 +540,7 @@ rezumatul programării și pagina serviciului nu pot ajunge să spună altceva.
 Regula e cea de pe paginile de serviciu, refolosită: serviciul declară medicii
 (`doctors`), iar dacă lista e goală aparține tuturor medicilor specializării.
 În plus, un program poate restrânge lista prin `services`. Se oferă spre
-programare doar specializările care au cel puțin un medic cu program definit —
+programare doar specializările care au cel puțin un medic cu program definit,
 altfel pacientul ar alege o specializare și ar ajunge într-un calendar gol.
 
 ### Modul demonstrativ
@@ -560,7 +560,7 @@ ecranul de mulțumire ar apărea înainte ca cineva să fi confirmat ceva.
 ⚠️ **Codul e generat și verificat în browser** (`issueCode()` din
 `BookingWizard.astro`), iar în modul demonstrativ e afișat pe pagină, sub câmp.
 Este un flux de prezentare, nu o verificare. Într-o implementare reală codul se
-generează pe server, pleacă prin SMS și se verifică tot pe server — niciodată
+generează pe server, pleacă prin SMS și se verifică tot pe server, niciodată
 în JavaScript-ul paginii, unde oricine îl poate citi.
 
 **Cât timp nu există un backend de programări, steagul trebuie să rămână
@@ -595,13 +595,13 @@ Fișierele se numesc `[...index].astro` și `[slug].astro`, nu `index.astro` și
 `[...slug].astro`. Motivul e singurul mecanism prin care Astro permite unei
 pagini să nu existe: **`getStaticPaths` care returnează o listă goală**. Un
 `index.astro` obișnuit se generează întotdeauna, oricât de ascuns ar fi din
-meniu — și rămâne indexabil de Google, la un URL către care duc linkurile vechi.
+meniu și rămâne indexabil de Google, la un URL către care duc linkurile vechi.
 
 Prima încercare a fost hook-ul de integrare `astro:routes:resolved`, care chiar
 primește lista de rute. Nu funcționează: lista e doar pentru citit, iar
 ștergerea din ea se raportează în log fără să schimbe nimic în build.
 
-`[...index].astro` produce exact un URL — `/servicii/` — sau niciunul.
+`[...index].astro` produce exact un URL, `/servicii/` sau niciunul.
 `[slug].astro` a devenit parametru simplu pentru că două rute rest în același
 folder se ciocnesc.
 
@@ -631,7 +631,7 @@ mărunt este exact tiparul pe care ANSPDCP îl sancționează.
 
 **Nimic nu se încarcă înainte de consimțământ.** Site-ul nu are azi niciun
 script de urmărire, dar are câmp pentru GTM în setări. Injectarea lui se face în
-banner, după acord — nu în `<head>`. Altfel ar exista momentul în care cineva
+banner, după acord, nu în `<head>`. Altfel ar exista momentul în care cineva
 completează ID-ul în CMS și urmărirea pornește pentru toată lumea, retroactiv
 fără acord.
 
@@ -640,7 +640,7 @@ conținutul medical rămâne citibil și pentru cine nu alege nimic.
 
 Alegerea stă în `localStorage`, sub `bastion:cookie-consent`, cu versiune. Când
 apare o categorie nouă de cookie-uri se crește `CONSENT_VERSION` din componentă,
-iar consimțământul se cere din nou — cel vechi nu acoperă ce s-a adăugat.
+iar consimțământul se cere din nou, cel vechi nu acoperă ce s-a adăugat.
 Citirea și scrierea sunt în `try/catch`: în navigare privată `localStorage`
 aruncă pe unele browsere, iar asta nu trebuie să rupă pagina.
 
@@ -648,7 +648,7 @@ Retragerea acordului se face din „Setări cookie-uri", în rândul legal din
 subsol. Butonul redeschide bannerul cu panoul de categorii desfășurat.
 
 ⚠️ Pagina `/politica-cookies` descrie exact ce stochează site-ul azi. **Orice
-instrument nou — analiză, hartă încorporată, chat — cere o categorie nouă în
+instrument nou (analiză, hartă încorporată, chat) cere o categorie nouă în
 banner și un rând nou în tabelul de acolo, înainte de punerea în funcțiune.**
 
 ---
@@ -659,7 +659,7 @@ banner și un rând nou în tabelul de acolo, înainte de punerea în funcțiune
 
 `BaseLayout` publică un singur `<script type="application/ld+json">` cu un
 `@graph` care conține: clinica, site-ul și schema specifică paginii curente.
-Membrii grafului **nu** își poartă propriul `@context` — îl moștenesc.
+Membrii grafului **nu** își poartă propriul `@context`, îl moștenesc.
 
 Clinica are un `@id` stabil (`<domeniu>/#clinica`), iar restul entităților
 trimit la el în loc să-l repete. Un serviciu spune „furnizorul meu este
@@ -678,7 +678,7 @@ recunoască drept aceeași.
 | Suport | `QAPage` |
 
 Programul din CMS („Luni, Miercuri, Vineri" / „08:00 – 22:00") se traduce
-automat în `OpeningHoursSpecification`. Rândurile „Închis" se sar — absența unei
+automat în `OpeningHoursSpecification`. Rândurile „Închis" se sar, absența unei
 zile înseamnă deja închis.
 
 ### Ce se completează din CMS
@@ -697,7 +697,7 @@ conținut.
 `src/lib/seo.ts` aplică două reguli, în `BaseLayout`, peste tot:
 
 - **Titlul** primește sufixul „| Policlinica Bastion" doar dacă rezultatul stă
-  sub 60 de caractere. Peste, brandul cade — el se vede oricum în URL-ul de sub
+  sub 60 de caractere. Peste, brandul cade, el se vede oricum în URL-ul de sub
   titlu, în timp ce subiectul articolului nu are altă șansă. Titlurile lungi în
   sine nu se taie: un titlu ciuntit de cod arată mai rău decât unul pe care
   Google îl scurtează singur.
@@ -714,12 +714,12 @@ conținut nu e cel potrivit.
 `og:image` are nevoie de o **adresă publică**, iar TinaCMS salvează căile
 relativ la `mediaRoot` (`src/assets/uploads`). Când cineva salvează în CMS un
 câmp care avea deja o cale publică, Tina îi pune prefixul în față și iese
-`/src/assets/uploads/uploads/x.png` — adresă care nu există în site-ul construit,
+`/src/assets/uploads/uploads/x.png`, adresă care nu există în site-ul construit,
 deci card gol pe Facebook și WhatsApp. S-a întâmplat exact așa.
 
 `src/lib/media.ts` traduce calea înapoi: caută întâi fișierul printre cele
 procesate de Astro, altfel scoate prefixul și rămâne cu adresa publică. Dacă tot
-nu iese nimic, `og:image` lipsește cu totul — o etichetă care dă 404 e mai rea
+nu iese nimic, `og:image` lipsește cu totul, o etichetă care dă 404 e mai rea
 decât una absentă, pentru că se observă mai greu.
 
 Imaginea implicită (`public/uploads/og-default.png`) e generată de
@@ -744,7 +744,7 @@ medicale** (enumeră și trimite, iar nota de la final spune explicit că nu
 înlocuiește consultul).
 
 `robots.txt` permite explicit crawlerele de modele de limbaj, cu motivul scris
-în fișier — informația medicală de aici e scrisă ca să ajungă la pacienți,
+în fișier, informația medicală de aici e scrisă ca să ajungă la pacienți,
 inclusiv prin asistenții pe care îi întreabă înainte să sune. Blocarea uneia se
 face adăugând `Disallow: /` sub numele ei.
 
@@ -792,7 +792,7 @@ are honeypot anti-spam și trimite emailul prin Resend dacă este configurat.
 mereu `astro build`.
 
 Această decizie a apărut direct dintr-un incident: primul deploy de producție
-a picat cu `project not found` (404) — TinaCloud nu terminase încă de procesat
+a picat cu `project not found` (404), TinaCloud nu terminase încă de procesat
 conectarea proiectului la repo. Eroarea nu avea nicio legătură cu site-ul, dar
 oprea complet deploy-ul unei clinici reale.
 
@@ -800,7 +800,7 @@ Varianta inițială trata diferit producția (strict) față de preview (toleran
 S-a dovedit greșită: o clinică cu programări reale nu ar trebui să depindă de
 disponibilitatea unui serviciu extern de CMS, în niciun mediu. Astro citește
 conținutul direct din fișiere (§3), deci `astro build` nu are nevoie de
-TinaCloud sub nicio formă — motiv suficient ca eșecul lui `tinacms build` să
+TinaCloud sub nicio formă, motiv suficient ca eșecul lui `tinacms build` să
 nu fie niciodată blocant.
 
 Consecința: `/admin` poate lipsi sau poate fi temporar nefuncțional (branch
@@ -827,7 +827,7 @@ Tailwind v4, preluate din variabilele Figma:
 | `--container-page` | `1280px` | `container/7xl` |
 
 Fonturile (Inter pentru text, Public Sans pentru titluri) sunt descărcate la
-build prin Astro Fonts API și servite de pe domeniul propriu — fără request
+build prin Astro Fonts API și servite de pe domeniul propriu, fără request
 către Google la runtime (GDPR) și fără layout shift.
 
 ---
@@ -835,7 +835,7 @@ către Google la runtime (GDPR) și fără layout shift.
 ## 8. Migrarea conținutului de pe policlinicabastion.ro (WordPress)
 
 Site-ul vechi rulează pe WordPress, la `policlinicabastion.ro`. Conținutul din acest
-repo a fost completat cu date reale de pe acel site — dar cu o limitare de mediu
+repo a fost completat cu date reale de pe acel site, dar cu o limitare de mediu
 importantă, explicată mai jos.
 
 ### Limitare: WebFetch e blocat în acest sandbox
@@ -859,7 +859,7 @@ căutare directă.
 ### Ce a fost verificat prin căutare (are încredere ridicată)
 
 - Contact: telefon `0738.826.587`, email `receptie@policlinicabastion.ro`,
-  adresă `Str. Mircea cel Bătrân nr. 122C, Timișoara` — din pagina de contact
+  adresă `Str. Mircea cel Bătrân nr. 122C, Timișoara`, din pagina de contact
   și din politica de confidențialitate a site-ului vechi.
 - Program: Luni/Miercuri/Vineri 08:00–22:00, Marți/Joi 08:00–23:30,
   Sâmbătă–Duminică închis.
@@ -867,21 +867,21 @@ căutare directă.
 - 4 medici reali, cu pagină proprie pe site-ul vechi: Asist. Univ. Dr. Lațcu
   Silviu-Constantin (urologie), Dr. Chiriac Ionel (urologie), Dr. Găină
   Adriana-Margareta (neurologie), Dr. Voichescu Otilia (medicină de familie).
-- Prof. Univ. Dr. Ligia Petrica (nefrologie) — cabinetul ei, fost Centru Medical
+- Prof. Univ. Dr. Ligia Petrica (nefrologie): cabinetul ei, fost Centru Medical
   Nefrotim, a fost preluat de Policlinica Bastion în 2020.
 - ~28 de articole reale de blog (titluri + URL-uri confirmate; vezi tabelul de
   mai jos). 8 dintre ele au dată de publicare confirmată și sunt marcate
   `draft: false`; restul sunt `draft: true` până la completare.
 - Proiectul european real: „Creșterea eficienței prin tehnologii avansate la
   Policlinica Bastion", prin Programul Regional Vest 2021–2027 (sterilizator
-  cu plasmă LowTem + laser Holmium MultiPulse HoPLUS) — nu „eficiență
+  cu plasmă LowTem + laser Holmium MultiPulse HoPLUS), nu „eficiență
   energetică", cum inventasem inițial din eroare.
 
 ### Ce am eliminat pentru că nu era real
 
-- „Oncologie Urologică" ca pagină/specializare separată — nu există pe site-ul
+- „Oncologie Urologică" ca pagină/specializare separată: nu există pe site-ul
   vechi; e tratată ca temă în cadrul urologiei, așa cum e acum și aici.
-- Recenziile inițiale erau text identic, inventat, la toate 6 — risc real de
+- Recenziile inițiale erau text identic, inventat, la toate 6, risc real de
   „recenzii false" pentru o clinică medicală. Înlocuite cu 4 recenzii generice,
   distincte, care trebuie oricum completate cu recenzii reale copiate din
   Google Business Profile înainte de lansare.
@@ -898,16 +898,16 @@ Rămân, însă, texte medicale publicate în numele unei clinici reale. Înaint
 lansare, **fiecare pagină trebuie citită și asumată de medicul specialității
 respective**, cu atenție specială la:
 
-- lista de intervenții — trebuie să conțină exact ce se efectuează în clinică,
+- lista de intervenții: trebuie să conțină exact ce se efectuează în clinică,
   nu ce se efectuează în general în specialitate;
 - **prețurile**, care momentan nu sunt completate deloc: câmpul `price` există
   pe fiecare serviciu, dar e gol, iar pagina afișează „La cerere". Prețurile nu
-  au fost inventate intenționat — o cifră greșită pe site-ul unei clinici e mai
+  au fost inventate intenționat, o cifră greșită pe site-ul unei clinici e mai
   rea decât lipsa ei;
 - datele esențiale (durată, anestezie, regim, recuperare) și pașii din timeline,
   care trebuie să reflecte protocolul real al clinicii;
 - decontarea CNAS (`cnas: true/false`) pentru fiecare serviciu;
-- medicii asociați fiecărei intervenții (`doctors`) — lăsat gol, câmpul atribuie
+- medicii asociați fiecărei intervenții (`doctors`): lăsat gol, câmpul atribuie
   intervenția tuturor medicilor specializării.
 
 Corecturile se pot face integral din `/admin`, fără intervenție în cod.
@@ -940,7 +940,7 @@ poziționarea în Google:
 | orice `/<slug-articol>/` de la rădăcină | `/noutati/<slug-articol>` (slug păstrat identic) |
 
 Toate slug-urile articolelor din `src/content/articole/` au fost păstrate
-identice cu cele găsite pe site-ul vechi — deci maparea pentru fiecare articol
+identice cu cele găsite pe site-ul vechi, deci maparea pentru fiecare articol
 e mereu `/<slug>/` → `/noutati/<slug>`.
 
 ---
@@ -951,33 +951,33 @@ Lucruri conștient lăsate pentru pașii următori:
 
 - [ ] Preluarea textului integral, verbatim, pentru cele ~20 de articole marcate
       `draft: true` și pentru biografiile scurte ale medicilor (Chiriac, Găină,
-      Voichescu, Petrica) — necesită acces direct la site-ul vechi (WebFetch a
+      Voichescu, Petrica), necesită acces direct la site-ul vechi (WebFetch a
       fost blocat în acest mediu; vezi §8).
 - [ ] Recenzii reale, copiate din Google Business Profile (rating actual: ~4,2/5,
       ~70 de recenzii), în locul celor 4 generice din `src/content/testimoniale/`.
 - [ ] Fotografiile medicilor și imaginile pentru articole.
 - [ ] Datele financiare ale proiectului european (cod, valoare, perioadă exactă).
 - [ ] Paginare pe `/noutati` (acum se afișează toate articolele nepublicate ca draft).
-- [ ] Redirect-uri 301 din URL-urile vechi de WordPress (`vercel.json`) — vezi
+- [ ] Redirect-uri 301 din URL-urile vechi de WordPress (`vercel.json`), vezi
       tabelul din §8.
 - [ ] Verificarea fidelității față de Figma, secțiune cu secțiune, pe
       breakpoint-uri (structura și tokenii sunt puși, rafinarea vizuală urmează).
 - [ ] Google Tag Manager (câmpul există deja în `settings/site.json`).
 - [ ] **Revizuirea răspunsurilor din centrul de suport** la fiecare modificare a
       regulilor CNAS (valabilitatea biletelor, transferul între medici de
-      familie) — vezi §4sexies.
-- [ ] Posturile reale pe `/cariere` — momentan există doar intrarea-șablon,
+      familie), vezi §4sexies.
+- [ ] Posturile reale pe `/cariere`: momentan există doar intrarea-șablon,
       marcată ciornă.
 - [ ] **Programele reale ale medicilor** în colecția `program` și un backend de
       programări (`/api/programari`), apoi debifarea modului demonstrativ din
-      `settings/site.json` — vezi §4septies. Blocant pentru lansare, dacă se
+      `settings/site.json`, vezi §4septies. Blocant pentru lansare, dacă se
       dorește programare online reală.
-- [ ] **Validarea medicală a catalogului** (afecțiuni, servicii, intervenții) —
+- [ ] **Validarea medicală a catalogului** (afecțiuni, servicii, intervenții),
       vezi avertismentul din §8. Blocant pentru lansare.
-- [ ] **Prețurile serviciilor** — câmpul `price` există pe fiecare serviciu, dar
+- [ ] **Prețurile serviciilor**: câmpul `price` există pe fiecare serviciu, dar
       este gol; până la completare, pagina afișează „La cerere". Blocant pentru
       lansare, dacă se dorește afișarea prețurilor.
-- [ ] **Al doilea proiect european** — `proiect-nou-sablon` este o intrare-șablon
+- [ ] **Al doilea proiect european**: `proiect-nou-sablon` este o intrare-șablon
       marcată ciornă (nu apare pe site-ul public). Se completează cu datele reale
       ale următorului proiect, apoi se debifează „Ciornă". Datele de identificare
       ale proiectului existent (cod SMIS, contract, valoare, perioadă) sunt tot
@@ -987,4 +987,4 @@ Lucruri conștient lăsate pentru pașii următori:
 - [ ] Fotografii pentru paginile de servicii și de proiecte (câmpul `cover`
       există deja pe ambele).
 - [ ] Etichetarea articolelor existente cu afecțiunile, serviciile și proiectele
-      de care țin — momentan legătura se face automat, după cuvinte-cheie (§4).
+      de care țin, momentan legătura se face automat, după cuvinte-cheie (§4).

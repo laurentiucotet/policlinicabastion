@@ -6,10 +6,10 @@ import { isFeatureEnabled } from '../../lib/features';
  * Ruta e dinamica doar ca sa poata fi stinsa: `getStaticPaths` gol inseamna
  * pagina negenerata. Cand sectiunea e activa produce exact un URL, `/servicii/`.
  * (Un `index.astro` obisnuit s-ar genera intotdeauna, oricat de ascuns ar fi
- * din meniu — si ar ramane indexabil.)
+ * din meniu si ar ramane indexabil.)
  */
 export const getStaticPaths = (() =>
-  isFeatureEnabled('servicii') ? [{ params: { index: undefined } }] : []) satisfies GetStaticPaths;
+  isFeatureEnabled('servicii') ? [{ params: { index: undefined } }]: []) satisfies GetStaticPaths;
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
@@ -40,17 +40,17 @@ const items: CatalogItem[] = servicii.map((item) => ({
   href: `/servicii/${item.id}`,
   groupId: item.data.speciality.id,
   tagId: item.data.type,
-  flags: item.data.cnas ? ['cnas'] : [],
+  flags: item.data.cnas ? ['cnas']: [],
   keywords: [...item.data.keywords, serviceTypes[item.data.type]],
   // Cautarea acopera si continut care nu incape pe card.
   searchText: [
-    ...item.data.indications,
-    ...item.data.includes.map((entry) => entry.name),
-    ...item.data.faq.map((entry) => entry.question),
+...item.data.indications,
+...item.data.includes.map((entry) => entry.name),
+...item.data.faq.map((entry) => entry.question),
   ].join(' '),
   meta: [
-    hasPrice(item.data.price) ? formatPrice(item.data.price) : undefined,
-    item.data.cnas ? 'Decontat CNAS' : undefined,
+    hasPrice(item.data.price) ? formatPrice(item.data.price): undefined,
+    item.data.cnas ? 'Decontat CNAS': undefined,
     item.data.duration,
     item.data.admission,
   ].filter((value): value is string => Boolean(value)),
@@ -65,7 +65,7 @@ const items: CatalogItem[] = servicii.map((item) => ({
     breadcrumbs={[{ label: 'Servicii' }]}
     badge="Servicii"
     title="Serviciile noastre"
-    subtitle="Consultații, investigații și intervenții — cu preț, durată, ce include fiecare serviciu și pentru ce afecțiuni este recomandat. Majoritatea consultațiilor sunt decontate prin CNAS, cu bilet de trimitere."
+    subtitle="Consultații, investigații și intervenții, cu preț, durată, ce include fiecare serviciu și pentru ce afecțiuni este recomandat. Majoritatea consultațiilor sunt decontate prin CNAS, cu bilet de trimitere."
   />
 
   <CatalogBrowser

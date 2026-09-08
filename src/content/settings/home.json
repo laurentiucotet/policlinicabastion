@@ -1,6 +1,6 @@
 {
   "seo": {
-    "title": "Policlinica Bastion Timișoara — consultații decontate CNAS",
+    "title": "Policlinica Bastion Timișoara: consultații decontate CNAS",
     "description": "Policlinică privată în Timișoara: nefrologie, urologie, neurologie, psihiatrie, diabet și medicină de familie. Consultații decontate prin CNAS."
   },
   "hero": {
@@ -34,7 +34,7 @@
   },
   "explore": {
     "title": "Caută după ce te interesează",
-    "subtitle": "Aceleași informații, organizate în mai multe feluri — alege drumul care ți se potrivește."
+    "subtitle": "Aceleași informații, organizate în mai multe feluri. Alege drumul care ți se potrivește."
   },
   "services": {
     "badge": "Specializările noastre",
@@ -59,7 +59,7 @@
   "why": {
     "badge": "De ce Bastion",
     "title": "Ce găsești la Policlinica Bastion",
-    "subtitle": "Patru motive pentru care pacienții aleg clinica noastră — și revin.",
+    "subtitle": "Patru motive pentru care pacienții aleg clinica noastră și revin.",
     "items": [
       {
         "icon": "🎓",
@@ -143,7 +143,7 @@
     "items": [
       {
         "question": "Am nevoie de bilet de trimitere?",
-        "answer": "Pentru consultațiile decontate prin CNAS, da — biletul se obține de la medicul de familie sau de la un alt medic specialist. Fără bilet, consultația se poate efectua contra cost."
+        "answer": "Pentru consultațiile decontate prin CNAS, da, biletul se obține de la medicul de familie sau de la un alt medic specialist. Fără bilet, consultația se poate efectua contra cost."
       },
       {
         "question": "Cât costă o consultație?",
@@ -165,7 +165,7 @@
   },
   "euProjects": {
     "title": "Aparatură achiziționată prin fonduri europene",
-    "text": "Investim în echipamente moderne prin proiecte cu finanțare europeană — de la sterilizarea la temperatură joasă, până la laserul folosit în intervențiile urologice.",
+    "text": "Investim în echipamente moderne prin proiecte cu finanțare europeană, de la sterilizarea la temperatură joasă, până la laserul folosit în intervențiile urologice.",
     "cta": {
       "label": "Vezi proiectele",
       "href": "/proiecte-europene"
@@ -173,7 +173,7 @@
   },
   "ctaSecondary": {
     "title": "Ai nevoie de o programare?",
-    "text": "Sună-ne sau completează formularul de contact — revenim cu confirmarea programării în cel mai scurt timp.",
+    "text": "Sună-ne sau completează formularul de contact. Revenim cu confirmarea programării în cel mai scurt timp.",
     "cta": {
       "label": "Contactează-ne",
       "href": "/contact"

@@ -38,7 +38,7 @@ const alteServicii = servicii.filter((item) => item.data.type !== 'interventie')
 const lower = title.toLowerCase();
 
 /** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
-const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price) : undefined);
+const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price): undefined);
 
 const origin = (Astro.site ?? new URL(Astro.url.origin)).toString();
 const medici = await getMediciBySpecialitate(speciality.id);
@@ -66,7 +66,7 @@ const schema = [
   },
   collectionSchema({
     origin,
-    name: `Servicii — ${title}`,
+    name: `Servicii: ${title}`,
     items: servicii.map((item) => ({ name: item.data.title, url: `/servicii/${item.id}` })),
   }),
 ];
@@ -104,7 +104,7 @@ const schema = [
       title: item.data.title,
       description: item.data.shortDescription,
       eyebrow: serviceTypes[item.data.type],
-      meta: [priceChip(item.data.price), item.data.cnas ? 'Decontat CNAS' : undefined].filter(
+      meta: [priceChip(item.data.price), item.data.cnas ? 'Decontat CNAS': undefined].filter(
         (value): value is string => Boolean(value),
       ),
     }))}
