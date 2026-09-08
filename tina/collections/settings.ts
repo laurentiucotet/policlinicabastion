@@ -136,10 +136,27 @@ export const setari: Collection = {
       type: 'object',
       name: 'social',
       label: 'Rețele sociale',
+      description:
+        'Linkul complet al fiecărui profil. Un câmp lăsat gol ascunde iconița din subsol — nu apare un link mort.',
       fields: [
-        { type: 'string', name: 'facebook', label: 'Facebook' },
-        { type: 'string', name: 'instagram', label: 'Instagram' },
-        { type: 'string', name: 'linkedin', label: 'LinkedIn' },
+        {
+          type: 'string',
+          name: 'facebook',
+          label: 'Facebook',
+          description: 'Ex: https://www.facebook.com/policlinicabastion/',
+        },
+        {
+          type: 'string',
+          name: 'instagram',
+          label: 'Instagram',
+          description: 'Ex: https://www.instagram.com/policlinica.bastion/',
+        },
+        {
+          type: 'string',
+          name: 'linkedin',
+          label: 'LinkedIn',
+          description: 'Ex: https://www.linkedin.com/company/nume-pagina/',
+        },
       ],
     },
     {
