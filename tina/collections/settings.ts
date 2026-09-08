@@ -402,4 +402,129 @@ export const homepage: Collection = {
   ],
 };
 
-export const settingsCollections = [homepage, setari, meniu];
+export const despre: Collection = {
+  name: 'despre',
+  label: 'Pagina „Despre noi"',
+  path: 'src/content/settings',
+  format: 'json',
+  match: { include: 'despre' },
+  ui: { ...singletonUi, router: () => '/despre-noi' },
+  fields: [
+    seoField,
+    {
+      type: 'object',
+      name: 'intro',
+      label: 'Capul paginii',
+      fields: [
+        { type: 'string', name: 'badge', label: 'Etichetă' },
+        { type: 'string', name: 'title', label: 'Titlu' },
+        { type: 'string', name: 'subtitle', label: 'Subtitlu', ui: { component: 'textarea' } },
+      ],
+    },
+    {
+      type: 'object',
+      name: 'story',
+      label: 'Povestea clinicii',
+      description:
+        'Bara cu cifre de deasupra (medici, specializări, servicii) se numără singură din conținut, nu se scrie aici.',
+      fields: [
+        { type: 'string', name: 'title', label: 'Titlu' },
+        {
+          type: 'string',
+          name: 'paragraphs',
+          label: 'Paragrafe',
+          list: true,
+          ui: { component: 'textarea' },
+        },
+        { type: 'string', name: 'highlightsTitle', label: 'Titlul casetei din dreapta' },
+        { type: 'string', name: 'highlights', label: 'Puncte din casetă', list: true },
+      ],
+    },
+    {
+      type: 'object',
+      name: 'values',
+      label: 'Banda albastră (cum lucrăm)',
+      fields: [
+        { type: 'string', name: 'badge', label: 'Etichetă' },
+        { type: 'string', name: 'title', label: 'Titlu' },
+        { type: 'string', name: 'subtitle', label: 'Subtitlu', ui: { component: 'textarea' } },
+        {
+          type: 'object',
+          name: 'items',
+          label: 'Puncte',
+          list: true,
+          ui: { itemProps: (item) => ({ label: item?.title ?? 'Punct' }) },
+          fields: [
+            { type: 'string', name: 'icon', label: 'Emoji' },
+            { type: 'string', name: 'title', label: 'Titlu', required: true },
+            { type: 'string', name: 'text', label: 'Text', ui: { component: 'textarea' } },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'object',
+      name: 'equipment',
+      label: 'Dotări',
+      description: 'Lista de echipamente vine din proiectele europene, ca să nu fie ținută în două locuri.',
+      fields: [
+        { type: 'string', name: 'title', label: 'Titlu' },
+        { type: 'string', name: 'intro', label: 'Introducere', ui: { component: 'textarea' } },
+      ],
+    },
+    {
+      type: 'object',
+      name: 'specialities',
+      label: 'Specializări',
+      fields: [
+        { type: 'string', name: 'badge', label: 'Etichetă' },
+        { type: 'string', name: 'title', label: 'Titlu' },
+        { type: 'string', name: 'subtitle', label: 'Subtitlu', ui: { component: 'textarea' } },
+      ],
+    },
+    {
+      type: 'object',
+      name: 'team',
+      label: 'Echipa',
+      fields: [
+        { type: 'string', name: 'badge', label: 'Etichetă' },
+        { type: 'string', name: 'title', label: 'Titlu' },
+        { type: 'string', name: 'subtitle', label: 'Subtitlu', ui: { component: 'textarea' } },
+        ctaField('cta', 'Buton'),
+      ],
+    },
+    {
+      type: 'object',
+      name: 'steps',
+      label: 'Cum decurge o vizită',
+      fields: [
+        { type: 'string', name: 'badge', label: 'Etichetă' },
+        { type: 'string', name: 'title', label: 'Titlu' },
+        { type: 'string', name: 'subtitle', label: 'Subtitlu', ui: { component: 'textarea' } },
+        {
+          type: 'object',
+          name: 'items',
+          label: 'Pași',
+          list: true,
+          ui: { itemProps: (item) => ({ label: item?.title ?? 'Pas' }) },
+          fields: [
+            { type: 'string', name: 'title', label: 'Titlu', required: true },
+            { type: 'string', name: 'text', label: 'Text', ui: { component: 'textarea' } },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'object',
+      name: 'cta',
+      label: 'Bandă CTA (finală)',
+      fields: [
+        { type: 'string', name: 'title', label: 'Titlu' },
+        { type: 'string', name: 'text', label: 'Text', ui: { component: 'textarea' } },
+        ctaField('cta', 'Buton'),
+      ],
+    },
+  ],
+};
+
+export const settingsCollections = [homepage, despre, setari, meniu];

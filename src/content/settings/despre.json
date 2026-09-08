@@ -1,0 +1,96 @@
+{
+  "seo": {
+    "title": "Despre Policlinica Bastion Timișoara",
+    "description": "Cine suntem: policlinică privată în Timișoara, cu medici din șapte specializări, intervenții în regim ambulatoriu și aparatură cumpărată prin fonduri europene."
+  },
+  "intro": {
+    "badge": "Despre noi",
+    "title": "O clinică în care traseul se termină tot aici",
+    "subtitle": "Policlinică medicală privată în Timișoara. Consultația, investigația și, de cele mai multe ori, intervenția se fac în același loc, în regim ambulatoriu."
+  },
+  "story": {
+    "title": "Cine suntem",
+    "paragraphs": [
+      "Policlinica Bastion este o clinică medicală privată din Timișoara, pe Str. Mircea cel Bătrân nr. 122C. În aceeași clădire lucrează medici din șapte specializări: nefrologie, urologie, neurologie, psihiatrie, diabet și nutriție, medicină de familie și chirurgie generală.",
+      "Ideea din spatele clinicii e simplă. Cele mai multe lucruri pentru care oamenii ajung să aștepte o internare se pot rezolva în regim ambulatoriu: consultația, ecografia și, de multe ori, intervenția se fac aici, iar pacientul pleacă acasă în aceeași zi.",
+      "Aparatura nu a venit dintr-odată. O parte importantă din ea a fost cumpărată printr-un proiect cu finanțare europeană aflat în derulare, iar fiecare echipament a fost ales pentru o procedură anume, nu pentru broșură."
+    ],
+    "highlightsTitle": "Ce înseamnă asta pentru tine",
+    "highlights": [
+      "Consultații decontate prin CNAS, cu bilet de trimitere de la medicul de familie sau de la alt specialist.",
+      "Intervenții minim invazive, în regim ambulatoriu, fără internare și fără anestezie generală în multe dintre cazuri.",
+      "Program extins, până seara, ca să nu îți iei liber de la muncă pentru o consultație.",
+      "Parcare în curtea policlinicii, în limita locurilor disponibile."
+    ]
+  },
+  "values": {
+    "badge": "Cum lucrăm",
+    "title": "Patru lucruri la care ținem",
+    "subtitle": "Nu sunt promisiuni de pe pagina de prezentare, ci reguli după care se lucrează în cabinet.",
+    "items": [
+      {
+        "icon": "🧭",
+        "title": "Un singur traseu, într-un singur loc",
+        "text": "Consultația, investigația, intervenția și controlul se leagă între ele. Nu te trimitem în alt oraș pentru pasul următor."
+      },
+      {
+        "icon": "💬",
+        "title": "Explicații înainte de semnătură",
+        "text": "Ce se întâmplă, ce alternative există, ce riscuri are și cât durează recuperarea. Consimțământul are sens doar dacă e informat."
+      },
+      {
+        "icon": "🩺",
+        "title": "Tehnologie aleasă pentru o procedură",
+        "text": "Fiecare echipament nou rezolvă o problemă concretă: pietre la rinichi fără incizie, biopsie țintită, sterilizare pentru instrumentar sensibil."
+      },
+      {
+        "icon": "📄",
+        "title": "Decontare, nu doar plată",
+        "text": "Avem contract cu Casa de Asigurări. Cu bilet de trimitere, consultația de specialitate este decontată."
+      }
+    ]
+  },
+  "equipment": {
+    "title": "Cu ce lucrăm",
+    "intro": "Echipamentele de mai jos au fost achiziționate prin proiectul cu finanțare europeană aflat în derulare. Fiecare rezolvă o problemă anume din practica de zi cu zi."
+  },
+  "specialities": {
+    "badge": "Specializări",
+    "title": "Ce tratăm",
+    "subtitle": "Șapte specializări, fiecare cu medicii, serviciile și afecțiunile ei."
+  },
+  "team": {
+    "badge": "Echipa",
+    "title": "Oamenii din spatele clinicii",
+    "subtitle": "Profesori universitari, conferențiari, medici primari și specialiști.",
+    "cta": { "label": "Vezi toți medicii", "href": "/medici" }
+  },
+  "steps": {
+    "badge": "Prima vizită",
+    "title": "Cum decurge o vizită la noi",
+    "subtitle": "Ca să știi ce urmează, de la programare până la rezultat.",
+    "items": [
+      {
+        "title": "Programarea",
+        "text": "Suni la recepție sau completezi formularul. Îți spunem ce trebuie să aduci cu tine și cât durează consultația."
+      },
+      {
+        "title": "La recepție",
+        "text": "Cardul de sănătate și buletinul, plus biletul de trimitere dacă vrei decontare prin CNAS. Restul îl rezolvăm noi."
+      },
+      {
+        "title": "Consultația",
+        "text": "Discuția, examenul clinic și, dacă e nevoie, ecografia se fac în aceeași vizită. Pleci cu un plan scris, nu cu o listă de trimiteri."
+      },
+      {
+        "title": "Ce urmează",
+        "text": "Rezultatele se discută la control. Dacă e nevoie de o intervenție, îți spunem exact ce presupune și când se poate face."
+      }
+    ]
+  },
+  "cta": {
+    "title": "Ai o trimitere sau doar o întrebare?",
+    "text": "Recepția îți spune dacă ai nevoie de bilet, cât durează consultația și când e primul interval liber.",
+    "cta": { "label": "Contactează-ne", "href": "/contact" }
+  }
+}

@@ -1,0 +1,131 @@
+---
+/**
+ * Despre noi.
+ *
+ * Pagina e construită din aceleași blocuri ca prima pagină, în altă ordine și
+ * cu alt conținut: bară de cifre, poveste pe două coloane, bandă închisă cu
+ * valori, grilă de specializări, listă de echipamente, echipă, pași și îndemn.
+ * Alternanța de formate e intenționată: o pagină „despre noi" scrisă ca un
+ * singur bloc de text nu se citește, se derulează.
+ *
+ * Cifrele nu sunt scrise de mână nicăieri. Câți medici, câte specializări, câte
+ * cadre didactice, ce aparatură: toate se numără la build din conținutul real,
+ * ca pagina să nu ajungă să promită un medic care a plecat sau un aparat care
+ * nu a venit.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageTitleHeader from '../components/sections/PageTitleHeader.astro';
+import KeyFacts from '../components/entity/KeyFacts.astro';
+import NamedListSection from '../components/entity/NamedListSection.astro';
+import WhyBand from '../components/sections/WhyBand.astro';
+import SpecialitiesGrid from '../components/sections/SpecialitiesGrid.astro';
+import TeamGrid from '../components/sections/TeamGrid.astro';
+import StepsBand from '../components/sections/StepsBand.astro';
+import EuProjectsNote from '../components/sections/EuProjectsNote.astro';
+import CtaBand from '../components/sections/CtaBand.astro';
+import Icon from '../components/ui/Icon.astro';
+import { despre } from '../lib/site';
+import { getMedici, getProiecte, getServicii, getSpecializari } from '../lib/content';
+import { countOf } from '../lib/utils';
+
+const [medici, specializari, servicii, proiecte] = await Promise.all([
+  getMedici(),
+  getSpecializari(),
+  getServicii(),
+  getProiecte(),
+]);
+
+const academics = medici.filter((medic) => Boolean(medic.data.academicTitle)).length;
+
+const facts = [
+  { label: 'Specializări', value: String(specializari.length) },
+  { label: 'Medici', value: String(medici.length) },
+  { label: 'Cadre didactice universitare', value: String(academics) },
+  { label: 'Servicii și intervenții', value: String(servicii.length) },
+];
+
+/* Aparatura se citește din proiectele europene, nu se scrie a doua oară aici:
+ * o listă copiată ar rămâne în urmă la prima achiziție nouă. */
+const equipment = proiecte.flatMap((proiect) => proiect.data.results ?? []);
+---
+
+<BaseLayout title={despre.seo.title} description={despre.seo.description} appendSiteName={false}>
+  <PageTitleHeader
+    breadcrumbs={[{ label: 'Despre noi' }]}
+    badge={despre.intro.badge}
+    title={despre.intro.title}
+    subtitle={despre.intro.subtitle}
+  />
+
+  <KeyFacts facts={facts} />
+
+  <section class="bg-surface py-12">
+    <div class="container-page grid gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-12">
+      <div>
+        <h2 class="font-heading text-2xl leading-8 font-bold sm:text-3xl">{despre.story.title}</h2>
+        <div class="mt-5 flex flex-col gap-4">
+          {despre.story.paragraphs.map((paragraph) => (
+            <p class="text-ink-muted text-base leading-7">{paragraph}</p>
+          ))}
+        </div>
+      </div>
+
+      <aside class="border-stroke bg-surface-alt h-fit rounded-2xl border p-6">
+        <h3 class="text-ink text-base leading-6 font-semibold">{despre.story.highlightsTitle}</h3>
+        <ul class="mt-4 flex flex-col gap-3">
+          {despre.story.highlights.map((item) => (
+            <li class="flex gap-3">
+              <span class="text-brand mt-0.5 shrink-0">
+                <Icon name="check" size={18} />
+              </span>
+              <span class="text-ink-muted text-sm leading-6">{item}</span>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    </div>
+  </section>
+
+  <WhyBand
+    badge={despre.values.badge}
+    title={despre.values.title}
+    subtitle={despre.values.subtitle}
+    items={despre.values.items}
+  />
+
+  <SpecialitiesGrid
+    badge={despre.specialities.badge}
+    title={despre.specialities.title}
+    subtitle={despre.specialities.subtitle}
+    tone="white"
+  />
+
+  <NamedListSection
+    id="dotari"
+    title={despre.equipment.title}
+    intro={despre.equipment.intro}
+    items={equipment}
+    tone="alt"
+  />
+
+  <TeamGrid
+    badge={despre.team.badge}
+    title={despre.team.title}
+    subtitle={`${despre.team.subtitle} ${countOf(medici.length, 'medic', 'medici')} în total.`}
+    cta={despre.team.cta}
+    spread
+    tone="white"
+  />
+
+  <StepsBand
+    badge={despre.steps.badge}
+    title={despre.steps.title}
+    subtitle={despre.steps.subtitle}
+    items={despre.steps.items}
+    tone="alt"
+  />
+
+  <EuProjectsNote />
+
+  <CtaBand title={despre.cta.title} text={despre.cta.text} cta={despre.cta.cta} tone="white" />
+</BaseLayout>

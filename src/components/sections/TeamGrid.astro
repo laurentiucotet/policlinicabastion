@@ -19,6 +19,12 @@ interface Props {
   exclude?: string;
   /** Foloseste doar medicii marcati pentru homepage. */
   onlyHomepage?: boolean;
+  /**
+   * Ia pe rand cate un medic din fiecare specializare, in loc de primii din
+   * lista. Pe o pagina care vorbeste despre clinica intreaga, primele opt
+   * carduri in ordinea implicita ar arata opt nefrologi si ar ascunde restul.
+   */
+  spread?: boolean;
 }
 
 const {
@@ -32,12 +38,31 @@ const {
   specialityId,
   exclude,
   onlyHomepage = false,
+  spread = false,
 } = Astro.props;
 
 let items = await getMedici();
 if (specialityId) items = items.filter((m) => m.data.specialities.some((ref) => ref.id === specialityId));
 if (exclude) items = items.filter((m) => m.id !== exclude);
 if (onlyHomepage) items = items.filter((m) => m.data.showOnHomepage);
+
+if (spread) {
+  const bySpeciality = new Map<string, typeof items>();
+  for (const medic of items) {
+    const key = medic.data.specialities[0]?.id ?? 'altele';
+    bySpeciality.set(key, [...(bySpeciality.get(key) ?? []), medic]);
+  }
+
+  const queues = [...bySpeciality.values()];
+  const mixed: typeof items = [];
+  for (let round = 0; mixed.length < items.length; round += 1) {
+    for (const queue of queues) {
+      if (queue[round]) mixed.push(queue[round]);
+    }
+  }
+  items = mixed;
+}
+
 items = items.slice(0, count);
 
 const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };

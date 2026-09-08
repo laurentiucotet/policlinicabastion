@@ -490,6 +490,48 @@ conversie), iar banda albastră „PROGRAMAȚI-VĂ" din subsol a dispărut.
 
 ---
 
+## 4sexies-bis. Despre noi și feedback
+
+### `/despre-noi`
+
+Pagina e un singleton în CMS (`settings/despre.json`, colecția „Pagina Despre
+noi"), construit din aceleași blocuri ca prima pagină, dar în altă ordine:
+bară de cifre, poveste pe două coloane, bandă albastră cu valori, grilă de
+specializări, listă de dotări, echipă, pași, mențiunea europeană, îndemn.
+Alternanța de formate e intenționată: o pagină „despre noi" scrisă ca un
+bloc de text nu se citește, se derulează.
+
+**Cifrele nu se scriu de mână.** Câți medici, câte specializări, câte cadre
+didactice, câte servicii: toate se numără la build din conținut. Lista de
+echipamente vine din `proiecte-europene`, nu e copiată în setări. Așa pagina
+nu ajunge să promită un medic care a plecat sau un aparat care nu a venit.
+
+Grila de echipă folosește `spread`: ia pe rând câte un medic din fiecare
+specializare. Fără el, primele opt carduri în ordinea implicită ar fi opt
+nefrologi, pe o pagină care tocmai spune că avem șapte specializări.
+
+### `/feedback`
+
+Un formular NPS: notă de la 0 la 10 și o întrebare deschisă care se schimbă
+după notă („ce ar trebui să schimbăm?" pentru un 4, „ce ți-a plăcut cel mai
+mult?" pentru un 10). Fără JavaScript rămâne varianta neutră, deci formularul
+funcționează oricum.
+
+Numele și contactul sunt opționale, iar sub ele scrie de ce: un scor mic se dă
+cel mai ușor anonim și tocmai acela merită citit. Notele nu sunt colorate
+(roșu la stânga, verde la dreapta), ca să nu i se spună omului ce se așteaptă
+de la el înainte să aleagă.
+
+Răspunsul pleacă pe email prin `/api/feedback`, cu scorul și grupa (promotor /
+pasiv / detractor) în subiect. Nu se stochează nimic: site-ul e static, nu are
+bază de date, deci nu poate pierde ce nu ține.
+
+Pagina e făcută să primească și alte formulare: coloana din stânga le adună,
+cea din dreapta rămâne cu explicațiile și cu variantele pentru cine vrea
+răspuns pe loc.
+
+---
+
 ## 4septies. Programările online
 
 `/programari` este singura parte a site-ului cu logică de aplicație. Merită

@@ -22,7 +22,9 @@ const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
       <div class="container-page flex flex-col items-center gap-8">
         <SectionHeading badge={badge} title={title} subtitle={subtitle} />
 
-        <ol class="grid w-full gap-6 md:grid-cols-3">
+        {/* Numarul de coloane urmeaza numarul de pasi: patru pasi pe trei
+            coloane lasa unul singur pe randul al doilea, ca o scapare. */}
+        <ol class:list={['grid w-full gap-6', items.length % 4 === 0 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3']}>
           {items.map((item, index) => (
             <li class="relative flex flex-col gap-3">
               {index < items.length - 1 && (

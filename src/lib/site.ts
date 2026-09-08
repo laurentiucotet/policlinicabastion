@@ -1,6 +1,7 @@
 import siteJson from '../content/settings/site.json';
 import navigationJson from '../content/settings/navigation.json';
 import homeJson from '../content/settings/home.json';
+import despreJson from '../content/settings/despre.json';
 import { isDisabledHref } from './features';
 
 /* ---------------------------------------------------------------------------
@@ -11,6 +12,7 @@ import { isDisabledHref } from './features';
 
 export const site = siteJson;
 export const home = homeJson;
+export const despre = despreJson;
 
 /**
  * Meniul si subsolul, curatate de linkurile catre sectiuni stinse din CMS.
