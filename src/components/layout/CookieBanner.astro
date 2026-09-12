@@ -1,0 +1,238 @@
+---
+/**
+ * Bannerul de cookie-uri.
+ *
+ * Trei decizii care nu se citesc din cod:
+ *
+ * 1. **Refuzul e la fel de usor ca acceptul.** Doua butoane, aceeasi marime,
+ *    acelasi nivel vizual. Un „Accept" colorat langa un „Refuz" scris marunt e
+ *    exact tiparul pe care autoritatea de protectie a datelor il sanctioneaza.
+ *
+ * 2. **Nimic nu se incarca inainte de consimtamant.** Site-ul nu are azi niciun
+ *    script de urmarire, dar are camp pentru GTM in setari. Incarcarea lui e
+ *    legata de consimtamantul pentru analiza, aici, nu in `<head>`, ca sa nu
+ *    existe momentul in care cineva completeaza ID-ul si urmarirea porneste
+ *    pentru toata lumea.
+ *
+ * 3. **Bannerul nu blocheaza pagina.** Nu e `<dialog modal>` si nu prinde
+ *    focusul: continutul medical ramane citibil si pentru cine nu alege nimic.
+ *    Alegerea se cere, nu se santajeaza.
+ *
+ * Decizia se tine in `localStorage`, cu versiune: daca se adauga o categorie
+ * noua de cookie-uri, se creste `CONSENT_VERSION` si consimtamantul se cere din
+ * nou, fiindca nu mai acopera ce s-a schimbat.
+ */
+import { site } from '../../lib/site';
+
+const gtmId = site.analytics?.gtmId ?? '';
+---
+
+<div
+  id="cookie-consent"
+  class="fixed inset-x-0 bottom-0 z-50 hidden print:hidden"
+  role="region"
+  aria-label="Setări cookie-uri"
+  data-gtm-id={gtmId}
+>
+  <div class="container-page pb-4 sm:pb-6">
+    {/* Cu setările deschise pe un ecran mic, cardul ar acoperi toată pagina,
+        deci se limitează în înălțime și derulează în interior. */}
+    <div
+      class="border-stroke bg-surface shadow-card mx-auto max-h-[75dvh] max-w-4xl overflow-y-auto rounded-2xl border p-5 sm:p-6"
+    >
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+        <div class="flex-1">
+          <h2 class="font-heading text-ink text-base leading-6 font-bold">Cookie-uri pe acest site</h2>
+          <p class="text-ink-muted mt-2 text-sm leading-6 text-pretty">
+            Folosim cookie-uri strict necesare ca site-ul să funcționeze. Pentru statistici de trafic avem nevoie de
+            acordul tău, fără el nu se încarcă nimic. Poți schimba alegerea oricând din subsolul paginii.
+          </p>
+          <p class="mt-2 text-sm leading-6">
+            <a href="/politica-cookies" class="text-brand font-semibold underline underline-offset-2">
+              Politica de cookie-uri
+            </a>
+          </p>
+        </div>
+
+        <div class="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
+          <button
+            type="button"
+            class="bg-brand hover:bg-brand-dark focus-visible:outline-brand inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition focus-visible:outline-2 focus-visible:outline-offset-2"
+            data-consent="all"
+          >
+            Accept toate
+          </button>
+          <button
+            type="button"
+            class="border-stroke text-ink hover:border-brand/40 focus-visible:outline-brand inline-flex items-center justify-center rounded-lg border px-5 py-2.5 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2"
+            data-consent="necessary"
+          >
+            Doar necesare
+          </button>
+          <button
+            type="button"
+            class="text-ink-muted hover:text-brand inline-flex items-center justify-center rounded-lg px-3 py-2.5 text-sm font-semibold underline underline-offset-4 transition"
+            data-consent-toggle-details
+            aria-expanded="false"
+            aria-controls="cookie-consent-details"
+          >
+            Setări
+          </button>
+        </div>
+      </div>
+
+      <div id="cookie-consent-details" class="border-stroke mt-5 border-t pt-5" hidden>
+        <ul class="flex flex-col gap-4">
+          <li class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-ink text-sm leading-5 font-semibold">Strict necesare</p>
+              <p class="text-ink-muted mt-1 text-sm leading-5 text-pretty">
+                Rețin alegerea ta de aici și mențin funcționarea formularelor. Fără ele site-ul nu poate funcționa,
+                deci nu pot fi dezactivate.
+              </p>
+            </div>
+            <span class="text-ink-subtle shrink-0 pt-0.5 text-xs font-semibold">Mereu active</span>
+          </li>
+
+          <li class="flex items-start justify-between gap-4">
+            <label class="flex-1 cursor-pointer" for="consent-analytics">
+              <span class="text-ink block text-sm leading-5 font-semibold">Analiză de trafic</span>
+              <span class="text-ink-muted mt-1 block text-sm leading-5 text-pretty">
+                Ne arată ce pagini sunt căutate, ca să știm ce informație lipsește. Datele sunt agregate, nu te
+                identifică.
+              </span>
+            </label>
+            <input
+              type="checkbox"
+              id="consent-analytics"
+              class="border-stroke accent-brand mt-1 h-5 w-5 shrink-0 rounded"
+              data-consent-category="analytics"
+            />
+          </li>
+        </ul>
+
+        <div class="mt-5 flex justify-end">
+          <button
+            type="button"
+            class="bg-ink hover:bg-ink/90 inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition"
+            data-consent="custom"
+          >
+            Salvează alegerea
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const KEY = 'bastion:cookie-consent';
+  /** Se creste cand apare o categorie noua: consimtamantul vechi nu o acopera. */
+  const CONSENT_VERSION = 1;
+
+  type Consent = { version: number; analytics: boolean; date: string };
+
+  const root = document.getElementById('cookie-consent');
+  if (root) {
+    const details = document.getElementById('cookie-consent-details');
+    const detailsToggle = root.querySelector<HTMLButtonElement>('[data-consent-toggle-details]');
+    const analyticsInput = root.querySelector<HTMLInputElement>('[data-consent-category="analytics"]');
+
+    /** localStorage arunca in navigare privata pe unele browsere. */
+    const read = (): Consent | null => {
+      try {
+        const raw = localStorage.getItem(KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as Consent;
+        return parsed.version === CONSENT_VERSION ? parsed: null;
+      } catch {
+        return null;
+      }
+    };
+
+    const write = (consent: Consent) => {
+      try {
+        localStorage.setItem(KEY, JSON.stringify(consent));
+      } catch {
+        /* Fara stocare, alegerea tine doar cat pagina. Nu e motiv de eroare. */
+      }
+    };
+
+    let gtmLoaded = false;
+
+    /**
+     * GTM se injecteaza abia dupa consimtamant, si o singura data. Fara ID
+     * configurat in CMS nu se incarca nimic, cazul de azi.
+     */
+    const loadAnalytics = () => {
+      const id = root.dataset.gtmId;
+      if (!id || gtmLoaded) return;
+      gtmLoaded = true;
+
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(id)}`;
+      (window as unknown as { dataLayer?: unknown[] }).dataLayer ??= [];
+      (window as unknown as { dataLayer: unknown[] }).dataLayer.push({
+        'gtm.start': Date.now(),
+        event: 'gtm.js',
+      });
+      document.head.append(script);
+    };
+
+    const apply = (consent: Consent) => {
+      if (consent.analytics) loadAnalytics();
+      document.dispatchEvent(new CustomEvent('bastion:consent', { detail: consent }));
+    };
+
+    const hide = () => {
+      root.classList.add('hidden');
+    };
+
+    const show = () => {
+      root.classList.remove('hidden');
+      const stored = read();
+      if (analyticsInput) analyticsInput.checked = stored?.analytics ?? false;
+    };
+
+    const save = (analytics: boolean) => {
+      const consent: Consent = { version: CONSENT_VERSION, analytics, date: new Date().toISOString() };
+      write(consent);
+      apply(consent);
+      hide();
+    };
+
+    for (const button of root.querySelectorAll<HTMLButtonElement>('[data-consent]')) {
+      button.addEventListener('click', () => {
+        const choice = button.dataset.consent;
+        if (choice === 'all') save(true);
+        else if (choice === 'necessary') save(false);
+        else save(Boolean(analyticsInput?.checked));
+      });
+    }
+
+    detailsToggle?.addEventListener('click', () => {
+      if (!details) return;
+      const open = details.hidden;
+      details.hidden = !open;
+      detailsToggle.setAttribute('aria-expanded', String(open));
+    });
+
+    /** Linkul din subsol redeschide bannerul ca sa se poata retrage acordul. */
+    for (const trigger of document.querySelectorAll<HTMLElement>('[data-cookie-settings]')) {
+      trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (details) {
+          details.hidden = false;
+          detailsToggle?.setAttribute('aria-expanded', 'true');
+        }
+        show();
+        root.scrollIntoView({ block: 'nearest' });
+      });
+    }
+
+    const existing = read();
+    if (existing) apply(existing);
+    else show();
+  }
+</script>

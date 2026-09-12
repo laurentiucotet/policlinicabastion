@@ -1,0 +1,81 @@
+---
+/**
+ * Firul de navigare, folosit pe toate paginile in afara de prima.
+ *
+ * Componenta emite si JSON-LD-ul `BreadcrumbList`, ca marcajul vizibil si cel
+ * pentru Google sa nu poata ajunge sa spuna lucruri diferite: sunt generate din
+ * aceeasi lista, o singura data.
+ *
+ * `items` NU include "Acasă" - il pune componenta. Ultimul element e pagina
+ * curenta si se randeaza fara link, chiar daca primeste unul.
+ */
+import Icon from './Icon.astro';
+import { breadcrumbSchema } from '../../lib/schema';
+
+export interface Crumb {
+  label: string;
+  href?: string;
+}
+
+interface Props {
+  items: Crumb[];
+  class?: string;
+}
+
+const { items, class: className = '' } = Astro.props;
+
+const trail: Crumb[] = [{ label: 'Acasă', href: '/' },...items];
+
+const origin = Astro.site?.toString() ?? Astro.url.origin;
+const schema = breadcrumbSchema(
+  trail.map((crumb) => ({ name: crumb.label, url: crumb.href ?? Astro.url.pathname })),
+  origin,
+);
+---
+
+{/*
+  Pe ecrane mici firul sta pe un singur rand si se scurteaza cu „…", in loc sa
+  se rupa pe doua-trei randuri. Titlurile de articol si de serviciu sunt lungi,
+  iar un fir pe trei randuri impinge continutul in jos fara sa spuna nimic in
+  plus, pagina curenta e oricum scrisa intreg in titlul de dedesubt.
+
+  Stramtorarea e impartita: stramosii primesc o latime maxima fixa, iar pagina
+  curenta ia restul si se taie prima. De la `sm` in sus firul se desfasoara
+  normal, cu wrap.
+*/}
+<nav aria-label="Fir de navigare" class:list={['min-w-0 max-w-full', className]}>
+  <ol class="text-ink-subtle flex min-w-0 items-center gap-1 text-xs sm:flex-wrap">
+    {
+      trail.map((crumb, index) => {
+        const isCurrent = index === trail.length - 1;
+
+        return (
+          <li class:list={['flex min-w-0 items-center gap-1', isCurrent ? 'shrink': 'shrink-0']}>
+            {index > 0 && (
+              <span class="text-ink-subtle/60 shrink-0" aria-hidden="true">
+                <Icon name="chevron-right" size={12} />
+              </span>
+            )}
+            {isCurrent || !crumb.href ? (
+              <span
+                aria-current={isCurrent ? 'page': undefined}
+                class="text-ink-muted block min-w-0 truncate sm:overflow-visible sm:whitespace-normal"
+              >
+                {crumb.label}
+              </span>
+            ): (
+              <a
+                href={crumb.href}
+                class="hover:text-brand block max-w-[7.5rem] truncate sm:max-w-none sm:overflow-visible sm:whitespace-normal"
+              >
+                {crumb.label}
+              </a>
+            )}
+          </li>
+        );
+      })
+    }
+  </ol>
+</nav>
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />

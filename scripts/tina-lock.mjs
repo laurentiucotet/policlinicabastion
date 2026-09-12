@@ -2,7 +2,7 @@
 /**
  * Regenereaza `tina/tina-lock.json`.
  *
- * TinaCloud citeste schema site-ului din acest fisier, direct din repo — nu din
+ * TinaCloud citeste schema site-ului din acest fisier, direct din repo, nu din
  * build-ul de pe Vercel. Daca fisierul e vechi, panoul /admin va afisa campurile
  * vechi, chiar daca `tina/collections/*.ts` s-a schimbat.
  *
@@ -36,4 +36,4 @@ writeFileSync(
   }),
 );
 
-console.log('\n✅ tina/tina-lock.json regenerat — comite-l ca TinaCloud sa vada schema noua.\n');
+console.log('\n✅ tina/tina-lock.json regenerat, comite-l ca TinaCloud sa vada schema noua.\n');

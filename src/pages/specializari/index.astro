@@ -4,13 +4,21 @@ import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
 import SpecialitiesGrid from '../../components/sections/SpecialitiesGrid.astro';
 import CtaBand from '../../components/sections/CtaBand.astro';
 import { home } from '../../lib/site';
+import { getSpecializari } from '../../lib/content';
+
+/* Enumerarea specializarilor e chiar raspunsul pe care il cauta cineva care
+ * scrie „policlinica Timisoara + specialitate", deci intra in descriere, nu
+ * doar in pagina. Se citeste din continut, ca sa nu ramana in urma. */
+const specializari = await getSpecializari();
+const names = specializari.map((entry) => entry.data.title).join(', ');
 ---
 
 <BaseLayout
   title="Specializări"
-  description="Toate specializările medicale disponibile la Policlinica Bastion Timișoara."
+  description={`Specializările Policlinicii Bastion din Timișoara: ${names}. Consultații, investigații și intervenții în regim ambulatoriu.`}
 >
   <PageTitleHeader
+    breadcrumbs={[{ label: 'Specializări' }]}
     badge="Specializări"
     title="Specializările noastre"
     subtitle="Consultații de specialitate în multiple domenii medicale, majoritatea decontate prin CNAS."

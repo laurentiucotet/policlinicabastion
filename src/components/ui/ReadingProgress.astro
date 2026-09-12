@@ -1,0 +1,94 @@
+---
+/**
+ * Bara de progres a lecturii, pentru paginile de articol.
+ *
+ * Doua decizii:
+ *
+ * 1. **Masoara articolul, nu pagina.** Progresul se raporteaza la corpul
+ *    textului, nu la inaltimea documentului. Altfel bara ar arata „50%" cand
+ *    articolul s-a terminat deja, doar pentru ca sub el urmeaza articolele
+ *    inrudite, banda CTA si subsolul.
+ *
+ * 2. **E ascunsa de la accesibilitate.** Un `role="progressbar"` cu
+ *    `aria-valuenow` actualizat la fiecare cadru de scroll ar produce un flux
+ *    continuu de anunturi intr-un cititor de ecran, fara sa spuna nimic ce nu
+ *    se stie deja din pozitia cursorului. Bara e strict vizuala.
+ *
+ * Se randeaza langa continutul de urmarit; scriptul isi cauta tinta prin
+ * `data-reading-target`.
+ */
+interface Props {
+  /** Selectorul elementului urmarit. Implicit, corpul articolului. */
+  target?: string;
+}
+
+const { target = '[data-article-body]' } = Astro.props;
+---
+
+<div
+  class="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[3px] print:hidden"
+  aria-hidden="true"
+  data-reading-progress
+  data-reading-target={target}
+>
+  {/*
+    Starea initiala se da inline, nu prin `scale-x-0`: in Tailwind v4 utilitarul
+    acela scrie proprietatea `scale`, care se inmulteste cu `transform`-ul pus
+    de script, bara ar ramane la latime zero indiferent de progres.
+  */}
+  <div
+    class="bg-brand h-full w-full origin-left transition-transform duration-75 ease-linear"
+    style="transform: scaleX(0)"
+    data-reading-bar
+  >
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-reading-progress]');
+  const bar = root?.querySelector<HTMLElement>('[data-reading-bar]');
+  const article = document.querySelector<HTMLElement>(root?.dataset.readingTarget ?? '');
+
+  if (root && bar && article) {
+    const clamp = (value: number) => Math.min(Math.max(value, 0), 1);
+
+    /**
+     * Articol mai lung decat ecranul (cazul obisnuit): 0 cand primul rand
+     * ajunge la marginea de sus a ferestrei, 1 cand ultimul rand iese pe
+     * deasupra ei.
+     *
+     * Articol mai scurt decat ecranul: intervalul de mai sus e negativ, deci
+     * se masoara altfel, cat din articol a trecut de marginea de jos a
+     * ferestrei. Ajunge la 1 cand ultimul rand se opreste pe acea margine.
+     * Fara ramura asta, bara sarea din 0 in 1 dintr-un singur pas.
+     */
+    const progress = () => {
+      const { top, height } = article.getBoundingClientRect();
+      const scrolled = -top;
+      const readable = height - window.innerHeight;
+
+      return readable > 0
+        ? clamp(scrolled / readable)
+: clamp((scrolled + window.innerHeight) / height);
+    };
+
+    let queued = false;
+
+    const update = () => {
+      queued = false;
+      bar.style.transform = `scaleX(${progress()})`;
+    };
+
+    const schedule = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(update);
+    };
+
+    update();
+    addEventListener('scroll', schedule, { passive: true });
+    addEventListener('resize', schedule);
+    // Imaginile care se incarca dupa randare schimba inaltimea articolului.
+    new ResizeObserver(schedule).observe(article);
+  }
+</script>

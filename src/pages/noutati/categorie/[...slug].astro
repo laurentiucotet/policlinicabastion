@@ -2,34 +2,53 @@
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageTitleHeader from '../../../components/sections/PageTitleHeader.astro';
-import CategoryChips from '../../../components/ui/CategoryChips.astro';
+import CategoryFilter from '../../../components/blog/CategoryFilter.astro';
 import BlogCard from '../../../components/cards/BlogCard.astro';
+import ExploreBand from '../../../components/sections/ExploreBand.astro';
+import CtaBand from '../../../components/sections/CtaBand.astro';
 import { getArticole, getCategorii } from '../../../lib/content';
+import { home } from '../../../lib/site';
+import { countOf } from '../../../lib/utils';
 
 export const getStaticPaths = (async () => {
   const [categories, posts] = await Promise.all([getCategorii(), getArticole()]);
+
+  const withCount = categories
+.map((category) => ({
+      id: category.id,
+      name: category.data.name,
+      count: posts.filter((post) => post.data.category?.id === category.id).length,
+    }))
+.filter((category) => category.count > 0);
+
   return categories.map((category) => ({
     params: { slug: category.id },
     props: {
       category,
-      categories,
+      withCount,
+      total: posts.length,
       posts: posts.filter((post) => post.data.category?.id === category.id),
     },
   }));
 }) satisfies GetStaticPaths;
 
-const { category, categories, posts } = Astro.props;
+const { category, withCount, total, posts } = Astro.props;
 ---
 
 <BaseLayout
-  title={`Noutăți — ${category.data.name}`}
-  description={`Articole din categoria ${category.data.name} de la Policlinica Bastion.`}
+  title={`Noutăți, ${category.data.name}`}
+  description={`${countOf(posts.length, 'articol', 'articole')} din categoria ${category.data.name}, scrise de medicii Policlinicii Bastion din Timișoara. Afecțiuni, investigații, tratamente și noutăți din clinică.`}
 >
-  <PageTitleHeader badge="Blog & Noutăți" title={category.data.name} />
+  <PageTitleHeader
+    breadcrumbs={[{ label: 'Noutăți', href: '/noutati' }, { label: category.data.name }]}
+    badge="Blog & Noutăți"
+    title={category.data.name}
+    subtitle={`${countOf(posts.length, 'articol', 'articole')} în această categorie.`}
+  />
 
   <section class="bg-surface py-12">
     <div class="container-page flex flex-col gap-8">
-      <CategoryChips categories={categories} activeId={category.id} />
+      <CategoryFilter categories={withCount} total={total} activeId={category.id} />
 
       {
         posts.length > 0 ? (
@@ -38,10 +57,14 @@ const { category, categories, posts } = Astro.props;
               <BlogCard post={post} categoryName={category.data.name} />
             ))}
           </div>
-        ) : (
+        ): (
           <p class="text-ink-muted text-center">Momentan nu există articole în această categorie.</p>
         )
       }
     </div>
   </section>
+
+  <ExploreBand />
+
+  <CtaBand title={home.ctaSecondary.title} text={home.ctaSecondary.text} cta={home.ctaSecondary.cta} />
 </BaseLayout>

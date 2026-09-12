@@ -1,0 +1,99 @@
+---
+/**
+ * Capul paginilor de catalog (afecțiune / intervenție / serviciu): fir de
+ * navigare, etichetă, titlu, denumiri alternative, butoane de acțiune.
+ */
+import Badge from '../ui/Badge.astro';
+import Breadcrumbs from '../ui/Breadcrumbs.astro';
+import type { Crumb } from '../ui/Breadcrumbs.astro';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+import { site } from '../../lib/site';
+
+interface Props {
+  badge?: string;
+  title: string;
+  subtitle?: string;
+  /** Firul de navigare, fara "Acasă": ultimul element e pagina curenta. */
+  breadcrumbs: Crumb[];
+  alsoKnownAs?: string[];
+  /** Chip-uri sub titlu (specializarea, "Decontat CNAS"...). */
+  tags?: Array<{ label: string; href?: string }>;
+  /** Butoanele de programare. Ascunse pe paginile fara legatura cu programarea. */
+  showCta?: boolean;
+  /** Link propriu pentru butonul de programare (ex. cu serviciul preselectat). */
+  bookingHref?: string;
+}
+
+const {
+  badge,
+  title,
+  subtitle,
+  breadcrumbs,
+  alsoKnownAs = [],
+  tags = [],
+  showCta = true,
+  bookingHref = site.booking.href,
+} = Astro.props;
+
+/** Slotul `tags` permite chip-uri proprii (ex. stadiul unui proiect european). */
+const hasTagSlot = Astro.slots.has('tags');
+---
+
+<section class="bg-surface-alt border-stroke border-b">
+  <div class="container-page py-8 lg:py-12">
+    <Breadcrumbs items={breadcrumbs} />
+
+    <div class="mt-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div class="max-w-3xl">
+        {badge && <Badge>{badge}</Badge>}
+        <h1 class="text-ink mt-3 text-3xl leading-tight font-bold text-balance sm:text-4xl lg:text-5xl">{title}</h1>
+        {subtitle && <p class="text-ink-muted mt-3 text-base leading-7 text-pretty">{subtitle}</p>}
+
+        {
+          alsoKnownAs.length > 0 && (
+            <p class="text-ink-subtle mt-3 text-sm">
+              Cunoscută și ca: <span class="text-ink-muted">{alsoKnownAs.join(', ')}</span>
+            </p>
+          )
+        }
+
+        {
+          (tags.length > 0 || hasTagSlot) && (
+            <ul class="mt-4 flex flex-wrap items-center gap-2">
+              <slot name="tags" />
+              {tags.map((tag) => (
+                <li>
+                  {tag.href ? (
+                    <a
+                      href={tag.href}
+                      class="bg-chip text-chip-ink hover:bg-brand-100 hover:text-brand-dark inline-flex rounded-full px-3 py-1.5 text-xs leading-[18px] font-semibold"
+                    >
+                      {tag.label}
+                    </a>
+                  ) : (
+                    <span class="bg-chip text-chip-ink inline-flex rounded-full px-3 py-1.5 text-xs leading-[18px] font-semibold">
+                      {tag.label}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </div>
+
+      {
+        showCta && (
+          <div class="flex shrink-0 flex-wrap gap-2">
+            <Button href={bookingHref}>{site.booking.label}</Button>
+            <Button href={site.phones[0]?.href} variant="outline">
+              <Icon name="phone" size={16} />
+              Sună-ne
+            </Button>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>

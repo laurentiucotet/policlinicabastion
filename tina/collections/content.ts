@@ -1,4 +1,5 @@
 import type { Collection } from 'tinacms';
+import { catalogCollections } from './catalog';
 import { ctaField, draftField, orderField, seoField, slugify } from './shared';
 
 /* ---------------------------------------------------------------------------
@@ -140,6 +141,46 @@ export const articole: Collection = {
     { type: 'string', name: 'coverAlt', label: 'Text alternativ imagine' },
     { type: 'reference', name: 'category', label: 'Categorie', collections: ['categorii'] },
     { type: 'reference', name: 'author', label: 'Autor (medic)', collections: ['medici'] },
+    {
+      // Relatii explicite: articolul apare pe paginile afectiunilor si ale
+      // interventiilor alese aici. Fara ele, legatura se face automat dupa
+      // cuvinte-cheie (vezi getArticoleForEntity in src/lib/content.ts).
+      type: 'object',
+      name: 'conditions',
+      label: 'Afecțiuni legate',
+      list: true,
+      ui: {
+        itemProps: (item) => ({
+          label: item?.ref?.split('/').pop()?.replace(/\.mdx?$/, '') ?? 'Afecțiune',
+        }),
+      },
+      fields: [{ type: 'reference', name: 'ref', label: 'Afecțiune', collections: ['afectiuni'], required: true }],
+    },
+    {
+      type: 'object',
+      name: 'services',
+      label: 'Servicii / intervenții legate',
+      list: true,
+      ui: {
+        itemProps: (item) => ({
+          label: item?.ref?.split('/').pop()?.replace(/\.mdx?$/, '') ?? 'Serviciu',
+        }),
+      },
+      fields: [{ type: 'reference', name: 'ref', label: 'Serviciu', collections: ['servicii'], required: true }],
+    },
+    {
+      type: 'object',
+      name: 'projects',
+      label: 'Proiecte europene legate',
+      description: 'Articolul apare în secțiunea de noutăți a proiectului.',
+      list: true,
+      ui: {
+        itemProps: (item) => ({
+          label: item?.ref?.split('/').pop()?.replace(/\.mdx?$/, '') ?? 'Proiect',
+        }),
+      },
+      fields: [{ type: 'reference', name: 'ref', label: 'Proiect', collections: ['proiecte'], required: true }],
+    },
     { type: 'boolean', name: 'featured', label: 'Articol promovat' },
     { type: 'rich-text', name: 'body', label: 'Conținut', isBody: true },
     draftField,
@@ -152,6 +193,7 @@ export const proiecte: Collection = {
   label: 'Proiecte europene',
   path: 'src/content/proiecte-europene',
   format: 'mdx',
+  defaultItem: () => ({ status: 'in-derulare' }),
   ui: {
     router: ({ document }) => `/proiecte-europene/${document._sys.filename}`,
     filename: { slugify: (values) => slugify(values) },
@@ -163,14 +205,38 @@ export const proiecte: Collection = {
       type: 'string',
       name: 'summary',
       label: 'Rezumat',
+      description: 'Apare pe cardul din listă și în Google.',
       required: true,
       ui: { component: 'textarea' },
     },
+    {
+      type: 'string',
+      name: 'status',
+      label: 'Stadiu',
+      description: 'Eticheta afișată pe card și în capul paginii.',
+      options: [
+        { value: 'in-derulare', label: 'În derulare' },
+        { value: 'incheiat', label: 'Încheiat' },
+      ],
+    },
     { type: 'image', name: 'cover', label: 'Imagine principală' },
+    { type: 'string', name: 'beneficiary', label: 'Beneficiar' },
+    { type: 'string', name: 'program', label: 'Program de finanțare' },
+    { type: 'string', name: 'smis', label: 'Cod SMIS / cod proiect' },
+    { type: 'string', name: 'contractNumber', label: 'Număr contract de finanțare' },
+    {
+      type: 'string',
+      name: 'period',
+      label: 'Perioadă de implementare',
+      description: 'Ex: martie 2024 – august 2026',
+    },
+    { type: 'string', name: 'totalValue', label: 'Valoare totală' },
+    { type: 'string', name: 'grantValue', label: 'Valoare nerambursabilă' },
     {
       type: 'object',
       name: 'details',
-      label: 'Date de identificare',
+      label: 'Alte date de identificare',
+      description: 'Doar pentru câmpuri care nu au loc mai sus.',
       list: true,
       ui: { itemProps: (item) => ({ label: item?.label ?? 'Detaliu' }) },
       fields: [
@@ -178,9 +244,40 @@ export const proiecte: Collection = {
         { type: 'string', name: 'value', label: 'Valoare', required: true },
       ],
     },
-    { type: 'image', name: 'gallery', label: 'Galerie foto', list: true },
-    orderField,
     { type: 'rich-text', name: 'body', label: 'Descriere proiect', isBody: true },
+    {
+      type: 'string',
+      name: 'objectives',
+      label: 'Obiectivele proiectului',
+      list: true,
+      ui: { component: 'textarea' },
+    },
+    {
+      type: 'object',
+      name: 'results',
+      label: 'Rezultate',
+      description: 'Echipamente achiziționate, servicii nou create.',
+      list: true,
+      ui: { itemProps: (item) => ({ label: item?.name ?? 'Rezultat' }) },
+      fields: [
+        { type: 'string', name: 'name', label: 'Denumire', required: true },
+        { type: 'string', name: 'description', label: 'Descriere', ui: { component: 'textarea' }, required: true },
+      ],
+    },
+    { type: 'image', name: 'gallery', label: 'Galerie foto', list: true },
+    {
+      type: 'object',
+      name: 'articles',
+      label: 'Noutăți despre proiect',
+      list: true,
+      ui: {
+        itemProps: (item) => ({
+          label: item?.ref?.split('/').pop()?.replace(/\.mdx?$/, '') ?? 'Articol',
+        }),
+      },
+      fields: [{ type: 'reference', name: 'ref', label: 'Articol', collections: ['articole'], required: true }],
+    },
+    orderField,
     draftField,
     seoField,
   ],
@@ -240,6 +337,7 @@ export const pagini: Collection = {
 export const contentCollections = [
   specializari,
   medici,
+  ...catalogCollections,
   categorii,
   articole,
   proiecte,

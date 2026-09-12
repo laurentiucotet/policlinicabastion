@@ -1,0 +1,149 @@
+---
+/**
+ * Feedback pacienți.
+ *
+ * Pagina e construită în jurul unui singur formular, dar pe o structură care
+ * suportă mai multe: coloana din stânga primește formularele, cea din dreapta
+ * rămâne cu explicațiile și cu variantele pentru cine vrea răspuns pe loc. Un
+ * al doilea formular (de pildă unul despre o vizită anume) se adaugă sub primul,
+ * fără să se schimbe nimic în jur.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageTitleHeader from '../components/sections/PageTitleHeader.astro';
+import NpsForm from '../components/sections/NpsForm.astro';
+import CtaBand from '../components/sections/CtaBand.astro';
+import Icon from '../components/ui/Icon.astro';
+import { site, whatsappHref } from '../lib/site';
+
+/* Ce se întâmplă cu răspunsul. Fără asta, un formular de feedback pare o cutie
+ * în care scrii degeaba, iar oamenii îl completează exact pe măsură. */
+const steps = [
+  {
+    title: 'Ajunge la conducerea clinicii',
+    text: 'Fiecare răspuns este citit de echipa de coordonare, nu de un robot care numără stele.',
+  },
+  {
+    title: 'Îl ducem la echipa potrivită',
+    text: 'Dacă privește recepția, programările sau un cabinet anume, ajunge acolo cu tot contextul.',
+  },
+  {
+    title: 'Te sunăm, dacă vrei',
+    text: 'Când ne lași un număr sau un email, revenim cu un răspuns. Fără ele, rămâne anonim.',
+  },
+];
+
+const quick = [
+  {
+    icon: 'phone' as const,
+    title: 'Vrei răspuns acum',
+    text: 'Sună recepția în timpul programului.',
+    linkLabel: site.phones[0]?.value ?? '',
+    href: site.phones[0]?.href ?? '',
+  },
+  {
+    icon: 'whatsapp' as const,
+    title: 'Preferi să scrii',
+    text: 'Ne poți trimite mesaj pe WhatsApp.',
+    linkLabel: 'Scrie pe WhatsApp',
+    href: whatsappHref,
+  },
+  {
+    icon: 'info' as const,
+    title: 'Ai o sesizare formală',
+    text: 'Drepturile pacientului și pașii unei sesizări sunt scrise pe pagina dedicată.',
+    linkLabel: 'Drepturile pacienților',
+    href: '/drepturile-pacientilor',
+  },
+];
+---
+
+<BaseLayout
+  title="Feedback pacienți"
+  description="Spune-ne cum a fost experiența ta la Policlinica Bastion din Timișoara. Un formular scurt, o notă de la 0 la 10, iar restul e la alegerea ta. Poți răspunde anonim."
+>
+  <PageTitleHeader
+    breadcrumbs={[{ label: 'Feedback pacienți' }]}
+    badge="Feedback"
+    title="Spune-ne cum a fost"
+    subtitle="Durează mai puțin de un minut. Ne interesează și ce a mers bine, și ce nu, pentru că doar al doilea ne arată ce avem de reparat."
+  />
+
+  <section class="bg-surface py-12">
+    <div class="container-page grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div class="flex flex-col gap-8">
+        <NpsForm />
+      </div>
+
+      <aside class="flex flex-col gap-6">
+        <div class="border-stroke bg-surface-alt rounded-2xl border p-6">
+          <h2 class="font-heading text-ink text-lg leading-7 font-bold">Ce facem cu răspunsul tău</h2>
+          <ol class="mt-4 flex flex-col gap-4">
+            {
+              steps.map((step, index) => (
+                <li class="flex gap-3">
+                  <span class="bg-brand flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <p class="text-ink text-sm leading-5 font-semibold">{step.title}</p>
+                    <p class="text-ink-muted mt-1 text-sm leading-5">{step.text}</p>
+                  </div>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          {
+            quick.map((item) => (
+              <a
+                href={item.href}
+                class="border-stroke bg-surface hover:border-brand/40 flex gap-3 rounded-2xl border p-4 transition hover:shadow-md"
+              >
+                <span class="bg-brand-50 text-brand flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
+                  <Icon name={item.icon} size={16} />
+                </span>
+                <div>
+                  <p class="text-ink text-sm leading-5 font-semibold">{item.title}</p>
+                  <p class="text-ink-muted mt-1 text-sm leading-5">{item.text}</p>
+                  <p class="text-brand mt-1 text-sm leading-5 font-semibold">{item.linkLabel}</p>
+                </div>
+              </a>
+            ))
+          }
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <CtaBand
+    tone="alt"
+    title="Ai nevoie de o programare, nu de un formular?"
+    text="Alege specializarea, medicul și ora care ți se potrivesc."
+    cta={{ label: site.booking.label, href: site.booking.href }}
+  />
+</BaseLayout>
+
+<script>
+  // Afiseaza mesajul returnat de /api/feedback, ca pe pagina de contact.
+  const status = new URLSearchParams(location.search).get('status');
+
+  if (status === 'ok' || status === 'eroare') {
+    const form = document.querySelector('form[action="/api/feedback"]');
+    const box = document.createElement('p');
+
+    box.className =
+      status === 'ok'
+        ? 'mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700'
+        : 'mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700';
+    box.textContent =
+      status === 'ok'
+        ? 'Mulțumim! Am primit răspunsul tău și îl citim.'
+        : 'Răspunsul nu a putut fi trimis. Alege o notă de la 0 la 10 și bifează acordul, apoi încearcă din nou.';
+
+    form?.parentElement?.insertBefore(box, form);
+    if (status === 'ok') form?.setAttribute('hidden', '');
+    box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+</script>

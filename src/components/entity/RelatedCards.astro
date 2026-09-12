@@ -1,0 +1,58 @@
+---
+/** Grila de legaturi catre alte entitati (intervenții, afecțiuni, servicii). */
+import SectionHeading from '../ui/SectionHeading.astro';
+import Button from '../ui/Button.astro';
+import EntityCard from '../cards/EntityCard.astro';
+
+interface Props {
+  id?: string;
+  badge?: string;
+  title: string;
+  subtitle?: string;
+  items: Array<{
+    href: string;
+    title: string;
+    description?: string;
+    eyebrow?: string;
+    icon?: string;
+    meta?: string[];
+  }>;
+  cta?: { label: string; href: string };
+  tone?: 'white' | 'alt';
+  columns?: 2 | 3;
+}
+
+const { id, badge, title, subtitle, items, cta, tone = 'white', columns = 3 } = Astro.props;
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+---
+
+{
+  items.length > 0 && (
+    <section id={id} class:list={[tones[tone], 'py-12']}>
+      <div class="container-page flex flex-col items-center gap-8">
+        <SectionHeading badge={badge} title={title} subtitle={subtitle} />
+
+        <ul class:list={['grid w-full gap-4 sm:grid-cols-2', columns === 3 && 'lg:grid-cols-3']}>
+          {items.map((item) => (
+            <li>
+              <EntityCard
+                href={item.href}
+                title={item.title}
+                description={item.description}
+                eyebrow={item.eyebrow}
+                icon={item.icon}
+                meta={item.meta}
+              />
+            </li>
+          ))}
+        </ul>
+
+        {cta && (
+          <Button href={cta.href} variant="outline">
+            {cta.label}
+          </Button>
+        )}
+      </div>
+    </section>
+  )
+}

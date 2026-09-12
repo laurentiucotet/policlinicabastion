@@ -1,0 +1,194 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { isFeatureEnabled } from '../../lib/features';
+
+/**
+ * Ruta e dinamica doar ca sa poata fi stinsa: `getStaticPaths` gol inseamna
+ * pagina negenerata. Cand sectiunea e activa produce exact un URL, `/suport/`.
+ * (Un `index.astro` obisnuit s-ar genera intotdeauna, oricat de ascuns ar fi
+ * din meniu si ar ramane indexabil.)
+ */
+export const getStaticPaths = (() =>
+  isFeatureEnabled('suport') ? [{ params: { index: undefined } }]: []) satisfies GetStaticPaths;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
+import SimpleHeading from '../../components/ui/SimpleHeading.astro';
+import Icon from '../../components/ui/Icon.astro';
+import Button from '../../components/ui/Button.astro';
+import { getSuport } from '../../lib/content';
+import { supportTopicOrder, supportTopics } from '../../lib/catalog';
+import { normalizeText } from '../../lib/utils';
+import { faqSchema } from '../../lib/schema';
+import { site } from '../../lib/site';
+
+const entries = await getSuport();
+
+const groups = supportTopicOrder
+.map((topic) => ({ id: topic,...supportTopics[topic], items: entries.filter((e) => e.data.topic === topic) }))
+.filter((group) => group.items.length > 0);
+
+/** Textul dupa care cauta filtrul din pagina. */
+const haystack = (entry: (typeof entries)[number]) =>
+  normalizeText([entry.data.title, entry.data.shortAnswer,...entry.data.keywords].join(' '));
+
+const schema = faqSchema(entries.map((e) => ({ question: e.data.title, answer: e.data.shortAnswer })));
+---
+
+<BaseLayout
+  title="Centrul de suport"
+  description="Răspunsuri la întrebările administrative frecvente: calitatea de asigurat, bilete de trimitere, schimbarea medicului de familie, documente și rezultate."
+  schema={schema}
+>
+  <PageTitleHeader
+    breadcrumbs={[{ label: 'Suport' }]}
+    badge="Suport"
+    title="Cu ce te putem ajuta?"
+    subtitle="Întrebările administrative pe care le primim cel mai des, asigurare, bilete de trimitere, medic de familie, documente. Scrie ce te interesează sau alege o temă."
+  />
+
+  <section class="bg-surface py-12">
+    <div class="container-page" data-support>
+      <div class="mx-auto max-w-2xl">
+        <form role="search" data-support-form>
+          <label class="sr-only" for="support-q">Caută o întrebare</label>
+          <div class="relative">
+            <span class="text-ink-subtle pointer-events-none absolute top-1/2 left-4 -translate-y-1/2">
+              <Icon name="search" size={20} />
+            </span>
+            <input
+              id="support-q"
+              type="search"
+              name="q"
+              placeholder="Ex: bilet de trimitere, asigurat, medic de familie..."
+              autocomplete="off"
+              class="border-stroke text-ink placeholder:text-ink-subtle focus:border-brand w-full rounded-xl border py-4 pr-4 pl-12 text-base focus:outline-none"
+              data-support-search
+            />
+          </div>
+        </form>
+
+        <p class="text-ink-subtle mt-3 text-center text-sm" aria-live="polite" data-support-status>
+          {entries.length} întrebări, grupate pe teme
+        </p>
+      </div>
+
+      <div class="mt-10 flex flex-col gap-10">
+        {
+          groups.map((group) => (
+            <section data-support-group={group.id}>
+              <div class="flex items-center gap-3">
+                <span class="bg-brand-50 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xl" aria-hidden="true">
+                  {group.icon}
+                </span>
+                <div>
+                  <h2 class="text-ink text-lg leading-6 font-bold">{group.label}</h2>
+                  <p class="text-ink-subtle text-sm leading-5">{group.description}</p>
+                </div>
+              </div>
+
+              <ul class="mt-4 grid gap-3 lg:grid-cols-2">
+                {group.items.map((entry) => (
+                  <li data-support-item data-haystack={haystack(entry)}>
+                    <article class="border-stroke bg-surface shadow-card card-surface hover:border-brand/40 group flex h-full flex-col gap-2 rounded-2xl border p-5 transition hover:shadow-md">
+                      <h3 class="text-ink text-base leading-6 font-semibold">
+                        <a href={`/suport/${entry.id}`} class="group-hover:text-brand card-link">
+                          {entry.data.title}
+                        </a>
+                      </h3>
+                      <p class="text-ink-muted text-sm leading-6 text-pretty">{entry.data.shortAnswer}</p>
+                      <span class="text-brand mt-auto inline-flex items-center gap-1 pt-1 text-sm font-semibold">
+                        Răspunsul complet
+                        <Icon name="arrow-right" size={16} />
+                      </span>
+                    </article>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        }
+      </div>
+
+      <p class="text-ink-muted hidden py-12 text-center text-sm" data-support-empty>
+        Nicio întrebare nu corespunde căutării. Scrie-ne mai jos și îți răspundem noi.
+      </p>
+    </div>
+  </section>
+
+  <section class="bg-surface-alt py-12">
+    <div class="container-page">
+      <div class="border-stroke bg-surface shadow-card flex flex-col gap-6 rounded-2xl border p-6 sm:flex-row sm:items-center sm:gap-8 lg:p-8">
+        <div class="flex-1">
+          <SimpleHeading title="Nu ai găsit răspunsul?" tag="h2" />
+          <p class="text-ink-muted mt-4 text-base leading-7 text-pretty">
+            Scrie-ne întrebarea prin formularul de contact sau sună la recepție. Răspundem în timpul programului, iar
+            întrebările care se repetă ajung aici, în centrul de suport.
+          </p>
+        </div>
+
+        <div class="flex shrink-0 flex-wrap gap-2">
+          <Button href="/contact">Trimite întrebarea</Button>
+          <Button href={site.phones[0]?.href} variant="outline">
+            <Icon name="phone" size={16} />
+            {site.phones[0]?.value}
+          </Button>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-support]');
+
+  if (root) {
+    const search = root.querySelector<HTMLInputElement>('[data-support-search]');
+    const form = root.querySelector<HTMLFormElement>('[data-support-form]');
+    const status = root.querySelector<HTMLElement>('[data-support-status]');
+    const empty = root.querySelector<HTMLElement>('[data-support-empty]');
+    const items = Array.from(root.querySelectorAll<HTMLElement>('[data-support-item]'));
+    const groups = Array.from(root.querySelectorAll<HTMLElement>('[data-support-group]'));
+    const total = items.length;
+
+    const normalize = (value: string) =>
+      value
+.toLowerCase()
+.normalize('NFD')
+.replace(/[\u0300-\u036f]/g, '');
+
+    const apply = () => {
+      const query = normalize(search?.value.trim() ?? '');
+      let visible = 0;
+
+      for (const item of items) {
+        const show = query.length < 2 || (item.dataset.haystack ?? '').includes(query);
+        item.hidden = !show;
+        if (show) visible += 1;
+      }
+
+      // Grupele ramase fara intrebari dispar, ca lista sa nu aiba goluri.
+      for (const group of groups) {
+        group.hidden = !Array.from(group.querySelectorAll<HTMLElement>('[data-support-item]')).some(
+          (item) => !item.hidden,
+        );
+      }
+
+      if (status) {
+        status.textContent =
+          visible === total
+            ? `${total} întrebări, grupate pe teme`
+: `${visible} ${visible === 1 ? 'întrebare găsită': 'întrebări găsite'}`;
+      }
+      if (empty) empty.classList.toggle('hidden', visible > 0);
+    };
+
+    search?.addEventListener('input', apply);
+    form?.addEventListener('submit', (event) => event.preventDefault());
+
+    const initial = new URLSearchParams(location.search).get('q');
+    if (initial && search) search.value = initial;
+
+    apply();
+  }
+</script>

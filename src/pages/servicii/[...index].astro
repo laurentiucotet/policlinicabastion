@@ -1,0 +1,83 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { isFeatureEnabled } from '../../lib/features';
+
+/**
+ * Ruta e dinamica doar ca sa poata fi stinsa: `getStaticPaths` gol inseamna
+ * pagina negenerata. Cand sectiunea e activa produce exact un URL, `/servicii/`.
+ * (Un `index.astro` obisnuit s-ar genera intotdeauna, oricat de ascuns ar fi
+ * din meniu si ar ramane indexabil.)
+ */
+export const getStaticPaths = (() =>
+  isFeatureEnabled('servicii') ? [{ params: { index: undefined } }]: []) satisfies GetStaticPaths;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
+import CatalogBrowser from '../../components/catalog/CatalogBrowser.astro';
+import type { CatalogFlag, CatalogGroup, CatalogItem, CatalogTag } from '../../lib/catalog';
+import { serviceTypeOrder, serviceTypes } from '../../lib/catalog';
+import CtaBand from '../../components/sections/CtaBand.astro';
+import { getServicii, getSpecializari } from '../../lib/content';
+import { formatPrice, hasPrice } from '../../lib/utils';
+import { home } from '../../lib/site';
+
+const [servicii, specializari] = await Promise.all([getServicii(), getSpecializari()]);
+
+const groups: CatalogGroup[] = specializari.map((speciality) => ({
+  id: speciality.id,
+  label: speciality.data.title,
+  icon: speciality.data.icon,
+  href: `/specializari/${speciality.id}`,
+}));
+
+const tags: CatalogTag[] = serviceTypeOrder.map((type) => ({ id: type, label: serviceTypes[type] }));
+const flags: CatalogFlag[] = [{ id: 'cnas', label: 'Decontat CNAS' }];
+
+const items: CatalogItem[] = servicii.map((item) => ({
+  id: item.id,
+  title: item.data.title,
+  description: item.data.shortDescription,
+  href: `/servicii/${item.id}`,
+  groupId: item.data.speciality.id,
+  tagId: item.data.type,
+  flags: item.data.cnas ? ['cnas']: [],
+  keywords: [...item.data.keywords, serviceTypes[item.data.type]],
+  // Cautarea acopera si continut care nu incape pe card.
+  searchText: [
+...item.data.indications,
+...item.data.includes.map((entry) => entry.name),
+...item.data.faq.map((entry) => entry.question),
+  ].join(' '),
+  meta: [
+    hasPrice(item.data.price) ? formatPrice(item.data.price): undefined,
+    item.data.cnas ? 'Decontat CNAS': undefined,
+    item.data.duration,
+    item.data.admission,
+  ].filter((value): value is string => Boolean(value)),
+}));
+---
+
+<BaseLayout
+  title="Servicii medicale"
+  description="Serviciile medicale ale Policlinicii Bastion Timișoara: consultații, investigații și intervenții, cu preț, durată și tot ce presupun."
+>
+  <PageTitleHeader
+    breadcrumbs={[{ label: 'Servicii' }]}
+    badge="Servicii"
+    title="Serviciile noastre"
+    subtitle="Consultații, investigații și intervenții, cu preț, durată, ce include fiecare serviciu și pentru ce afecțiuni este recomandat. Majoritatea consultațiilor sunt decontate prin CNAS, cu bilet de trimitere."
+  />
+
+  <CatalogBrowser
+    items={items}
+    groups={groups}
+    tags={tags}
+    flags={flags}
+    noun="servicii"
+    searchPlaceholder="Ex: biopsie fusion, ecografie, consultație..."
+    allLabel="Toate serviciile"
+    emptyText="Niciun serviciu nu corespunde căutării. Sună-ne la recepție și te îndrumăm noi."
+  />
+
+  <CtaBand title={home.ctaPrimary.title} text={home.ctaPrimary.text} cta={home.ctaPrimary.cta} tone="alt" />
+</BaseLayout>

@@ -2,7 +2,12 @@
 import { Font } from 'astro:assets';
 import Header from '../components/layout/Header.astro';
 import Footer from '../components/layout/Footer.astro';
+import CookieBanner from '../components/layout/CookieBanner.astro';
 import { site } from '../lib/site';
+import { clinicSchema, websiteSchema } from '../lib/schema';
+import { metaDescription, pageTitle } from '../lib/seo';
+import { publicMediaPath } from '../lib/media';
+import { getSpecializari } from '../lib/content';
 import '../styles/global.css';
 
 interface Props {
@@ -25,29 +30,33 @@ const {
   schema,
 } = Astro.props;
 
-const pageTitle = title ? (appendSiteName ? `${title} | ${site.name}` : title) : site.defaultSeo.title;
+/* Titlul si descrierea trec prin regulile de lungime din `lib/seo.ts`: altfel
+ * ajung taiate de Google exact acolo unde spun ceva. */
+const headTitle = title ? pageTitle(title, site.name, appendSiteName) : site.defaultSeo.title;
+const headDescription = metaDescription(description);
+
 const canonical = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString();
-const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
+/* Fara imagine, `og:image` lipseste cu totul: o adresa care da 404 face
+ * reteaua sa arate cardul gol, la fel ca lipsa etichetei, dar mai greu de
+ * observat. */
+const imagePath = publicMediaPath(image);
+const ogImage = imagePath ? new URL(imagePath, Astro.site ?? Astro.url.origin).toString() : '';
 
-const organization = {
-  '@context': 'https://schema.org',
-  '@type': 'MedicalClinic',
-  name: site.name,
-  url: Astro.site?.toString() ?? canonical,
-  email: site.email,
-  telephone: site.phones.map((phone) => phone.value),
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: site.address.street,
-    addressLocality: site.address.city,
-    addressRegion: site.address.county,
-    postalCode: site.address.postalCode,
-    addressCountry: 'RO',
-  },
-  sameAs: Object.values(site.social).filter(Boolean),
-};
+/**
+ * Un singur graf `@graph` pentru toata pagina, in loc de mai multe blocuri
+ * JSON-LD independente. Motivul e in `lib/schema.ts`: entitatile trimit una la
+ * alta prin `@id`, iar un graf comun le lasa sa se rezolve intre ele.
+ */
+const origin = (Astro.site ?? new URL(Astro.url.origin)).toString();
+const specialities = (await getSpecializari()).map((entry) => entry.data.title);
 
-const schemas = [organization, ...(Array.isArray(schema) ? schema : schema ? [schema] : [])];
+const graph = [
+  clinicSchema(origin, specialities),
+  websiteSchema(origin),
+  ...(Array.isArray(schema) ? schema : schema ? [schema] : []),
+];
+
+const jsonLd = { '@context': 'https://schema.org', '@graph': graph };
 ---
 
 <!doctype html>
@@ -56,26 +65,29 @@ const schemas = [organization, ...(Array.isArray(schema) ? schema : schema ? [sc
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {/* Safari pe iOS nu citeste favicon SVG; fara asta, iconita de pe ecranul
+        de start ar fi o captura a paginii. */}
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="canonical" href={canonical} />
     <link rel="sitemap" href="/sitemap-index.xml" />
 
-    <title>{pageTitle}</title>
-    <meta name="description" content={description} />
+    <title>{headTitle}</title>
+    <meta name="description" content={headDescription} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={site.name} />
-    <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:title" content={headTitle} />
+    <meta property="og:description" content={headDescription} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={ogImage} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
     <meta property="og:locale" content="ro_RO" />
     <meta name="twitter:card" content="summary_large_image" />
 
     <Font cssVariable="--font-inter" preload />
     <Font cssVariable="--font-public-sans" preload />
 
-    <script type="application/ld+json" set:html={JSON.stringify(schemas)} is:inline />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
     <slot name="head" />
   </head>
 
@@ -94,5 +106,7 @@ const schemas = [organization, ...(Array.isArray(schema) ? schema : schema ? [sc
     </main>
 
     <Footer />
+
+    <CookieBanner />
   </body>
 </html>

@@ -4,10 +4,16 @@ import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
 import ServicesAccordion from '../../components/sections/ServicesAccordion.astro';
+import RelatedCards from '../../components/entity/RelatedCards.astro';
 import TeamGrid from '../../components/sections/TeamGrid.astro';
 import CtaBand from '../../components/sections/CtaBand.astro';
-import { getSpecializari } from '../../lib/content';
+import { getAfectiuniBySpecialitate, getServiciiBySpecialitate, getSpecializari } from '../../lib/content';
+import { serviceTypes } from '../../lib/catalog';
+import { formatPrice, hasPrice } from '../../lib/utils';
+import type { Price } from '../../lib/utils';
 import { home } from '../../lib/site';
+import { collectionSchema, clinicRef } from '../../lib/schema';
+import { getMediciBySpecialitate } from '../../lib/content';
 
 export const getStaticPaths = (async () => {
   const items = await getSpecializari();
@@ -20,14 +26,63 @@ export const getStaticPaths = (async () => {
 const { speciality } = Astro.props;
 const { Content } = await render(speciality);
 const { title, subtitle, badge, services, seo } = speciality.data;
+
+const [afectiuni, servicii] = await Promise.all([
+  getAfectiuniBySpecialitate(speciality.id),
+  getServiciiBySpecialitate(speciality.id),
+]);
+
+const interventii = servicii.filter((item) => item.data.type === 'interventie');
+const alteServicii = servicii.filter((item) => item.data.type !== 'interventie');
+
+const lower = title.toLowerCase();
+
+/** Pretul apare pe card doar daca e completat; altfel ar fi doar zgomot. */
+const priceChip = (price?: Price) => (hasPrice(price) ? formatPrice(price): undefined);
+
+const origin = (Astro.site ?? new URL(Astro.url.origin)).toString();
+const medici = await getMediciBySpecialitate(speciality.id);
+
+/**
+ * Pagina de specializare descrie o ramura medicala si listeaza medicii care o
+ * practica. `MedicalWebPage` + lista de `Physician` spune asta explicit, ca
+ * un cititor automat sa nu trebuiasca sa deduca legatura din machetare.
+ */
+const schema = [
+  {
+    '@type': 'MedicalWebPage',
+    name: title,
+    description: subtitle ?? undefined,
+    about: { '@type': 'MedicalSpecialty', name: title },
+    provider: clinicRef(origin),
+    mainEntity: medici.map((medic) => ({
+      '@type': 'Physician',
+      name: medic.data.name,
+      jobTitle: medic.data.role,
+      medicalSpecialty: title,
+      url: new URL(`/medici/${medic.id}`, origin).toString(),
+      worksFor: clinicRef(origin),
+    })),
+  },
+  collectionSchema({
+    origin,
+    name: `Servicii: ${title}`,
+    items: servicii.map((item) => ({ name: item.data.title, url: `/servicii/${item.id}` })),
+  }),
+];
 ---
 
-<BaseLayout
+<BaseLayout schema={schema}
   title={seo?.title ?? title}
   description={seo?.description ?? speciality.data.shortDescription}
   noindex={seo?.noindex}
 >
-  <PageTitleHeader badge={badge} title={title} subtitle={subtitle} />
+  <PageTitleHeader
+    breadcrumbs={[{ label: 'Specializări', href: '/specializari' }, { label: title }]}
+    badge={badge}
+    title={title}
+    subtitle={subtitle}
+  />
 
   <section class="bg-surface py-12">
     <div class="container-page">
@@ -38,12 +93,70 @@ const { title, subtitle, badge, services, seo } = speciality.data;
     </div>
   </section>
 
-  <ServicesAccordion title={`Servicii ${title.toLowerCase()}`} services={services} />
+  <RelatedCards
+    id="servicii"
+    badge="Servicii"
+    title={`Servicii de ${lower}`}
+    subtitle="Ce poți programa la Policlinica Bastion în această specializare."
+    tone="alt"
+    items={alteServicii.map((item) => ({
+      href: `/servicii/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: serviceTypes[item.data.type],
+      meta: [priceChip(item.data.price), item.data.cnas ? 'Decontat CNAS': undefined].filter(
+        (value): value is string => Boolean(value),
+      ),
+    }))}
+    cta={{ label: `Vezi toate serviciile de ${lower}`, href: `/servicii?categorie=${speciality.id}` }}
+  />
+
+  <RelatedCards
+    id="afectiuni"
+    badge="Afecțiuni"
+    title={`Afecțiuni tratate în ${lower}`}
+    subtitle="Simptome, cauze, diagnostic și opțiuni de tratament, pentru fiecare afecțiune în parte."
+    items={afectiuni.map((item) => ({
+      href: `/afectiuni/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Afecțiune',
+    }))}
+    cta={{ label: `Vezi toate afecțiunile de ${lower}`, href: `/afectiuni?categorie=${speciality.id}` }}
+  />
+
+  <RelatedCards
+    id="interventii"
+    badge="Intervenții"
+    title={`Intervenții de ${lower}`}
+    subtitle="Pentru fiecare intervenție găsești indicațiile, pregătirea, pașii și recuperarea."
+    tone="alt"
+    items={interventii.map((item) => ({
+      href: `/servicii/${item.id}`,
+      title: item.data.title,
+      description: item.data.shortDescription,
+      eyebrow: 'Intervenție',
+      meta: [priceChip(item.data.price), item.data.admission, item.data.anesthesia].filter(
+        (value): value is string => Boolean(value),
+      ),
+    }))}
+    cta={{
+      label: `Vezi toate intervențiile de ${lower}`,
+      href: `/servicii?categorie=${speciality.id}&tip=interventie`,
+    }}
+  />
+
+  {
+    /* Cand specializarea are pagini de serviciu, ele inlocuiesc acordeonul -
+       altfel aceeasi lista ar aparea de doua ori pe pagina. */
+    servicii.length === 0 && <ServicesAccordion title={`Servicii ${lower}`} services={services} />
+  }
 
   <TeamGrid
+    id="medici"
     badge="Medici"
     title="Echipa noastră"
-    subtitle={`Medicii care asigură consultațiile de ${title.toLowerCase()} la Policlinica Bastion.`}
+    subtitle={`Medicii care asigură consultațiile de ${lower} la Policlinica Bastion.`}
     specialityId={speciality.id}
     tone="alt"
     count={12}

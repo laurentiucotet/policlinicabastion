@@ -1,0 +1,53 @@
+---
+/**
+ * Intrebari frecvente. Acordeon nativ (<details>), fara JavaScript.
+ * Schema.org FAQPage se emite din pagina, prin `faqSchema()` din lib/schema.ts.
+ */
+import SimpleHeading from '../ui/SimpleHeading.astro';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  id?: string;
+  title?: string;
+  intro?: string;
+  items: Array<{ question: string; answer: string }>;
+  tone?: 'white' | 'alt';
+}
+
+const { id = 'intrebari-frecvente', title = 'Întrebări frecvente', intro, items, tone = 'white' } = Astro.props;
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+---
+
+{
+  items.length > 0 && (
+    <section id={id} class:list={[tones[tone], 'py-12']}>
+      <div class="container-page">
+        <SimpleHeading title={title} />
+        {intro && <p class="text-ink-muted mt-4 max-w-3xl text-base leading-7">{intro}</p>}
+
+        <div class="border-stroke bg-surface shadow-card mt-8 divide-y divide-[color:var(--color-stroke)] overflow-hidden rounded-2xl border">
+          {items.map((item, index) => (
+            <details class="group" open={index === 0}>
+              <summary class="hover:bg-surface-alt text-ink flex cursor-pointer list-none items-start gap-3 px-4 py-4 text-base leading-6 font-semibold">
+                <span class="text-brand mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
+                  <span class="group-open:hidden">
+                    <Icon name="plus" size={16} />
+                  </span>
+                  <span class="hidden group-open:block">
+                    <Icon name="minus" size={16} />
+                  </span>
+                </span>
+                {item.question}
+              </summary>
+              <div class="prose-bastion px-4 pb-4 pl-12 text-sm">
+                {item.answer.split(/\n{2,}/).map((paragraph) => (
+                  <p>{paragraph}</p>
+                ))}
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

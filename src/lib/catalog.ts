@@ -1,0 +1,78 @@
+/* Tipurile folosite de catalogul cu categorii din stanga (/afectiuni,
+ * /servicii). Stau aici, nu in componenta, ca paginile sa le poata importa
+ * fara sa depinda de un fisier.astro. */
+
+export interface CatalogItem {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+  /** Categoria din stanga - la noi, id-ul specializarii. */
+  groupId: string;
+  /** Eticheta (tip de serviciu), folosita de randul de filtre de deasupra grilei. */
+  tagId?: string;
+  /** Proprietati care se pot comuta independent, ex. `cnas`. */
+  flags?: string[];
+  /** Termeni suplimentari dupa care se poate cauta intrarea. */
+  keywords?: string[];
+  /** Text ascuns, adaugat la cautare: simptome, indicatii, intrebari frecvente. */
+  searchText?: string;
+  /** Chip-uri afisate pe card (ex. "Ambulatoriu", "350 lei"). */
+  meta?: string[];
+  icon?: string;
+}
+
+export interface CatalogGroup {
+  id: string;
+  label: string;
+  icon?: string;
+  /** Link catre pagina categoriei, afisat la finalul listei. */
+  href?: string;
+}
+
+export interface CatalogTag {
+  id: string;
+  label: string;
+}
+
+/** Comutator independent din randul de filtre (ex. „Decontat CNAS”). */
+export interface CatalogFlag {
+  id: string;
+  label: string;
+}
+
+/**
+ * Etichetele serviciilor. Consultatia, investigatia si interventia sunt acelasi
+ * tip de entitate, ceva ce pacientul programeaza si difera doar prin
+ * eticheta de aici.
+ */
+export const serviceTypes = {
+  consultatie: 'Consultație',
+  investigatie: 'Investigație',
+  procedura: 'Procedură',
+  interventie: 'Intervenție',
+  analize: 'Analize',
+} as const;
+
+export type ServiceType = keyof typeof serviceTypes;
+
+/** Ordinea etichetelor in randul de filtre. */
+export const serviceTypeOrder: ServiceType[] = [
+  'consultatie',
+  'investigatie',
+  'analize',
+  'procedura',
+  'interventie',
+];
+
+/** Grupele din centrul de suport. Ordinea de aici e ordinea din pagina. */
+export const supportTopics = {
+  asigurare: { label: 'Asigurare și CNAS', icon: '🪪', description: 'Calitatea de asigurat, decontare, medic de familie.' },
+  programari: { label: 'Programări și bilete', icon: '📅', description: 'Bilete de trimitere, programări, anulări.' },
+  documente: { label: 'Documente și rezultate', icon: '📄', description: 'Buletine de analiză, rezultate, adeverințe.' },
+  clinica: { label: 'Despre clinică', icon: '🏥', description: 'Adresă, program, cum ajungi.' },
+} as const;
+
+export type SupportTopic = keyof typeof supportTopics;
+
+export const supportTopicOrder: SupportTopic[] = ['asigurare', 'programari', 'documente', 'clinica'];

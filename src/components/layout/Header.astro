@@ -1,6 +1,7 @@
 ---
 import Logo from './Logo.astro';
 import TopBar from './TopBar.astro';
+import SearchBox from './SearchBox.astro';
 import Icon from '../ui/Icon.astro';
 import Button from '../ui/Button.astro';
 import { navigation, site } from '../../lib/site';
@@ -9,22 +10,36 @@ import { getSpecializari } from '../../lib/content';
 const pathname = Astro.url.pathname;
 const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
-// Meniul "Specializari" se completeaza automat din colectia de specializari,
-// ca sa nu fie nevoie sa fie tinut manual in sincron din CMS.
+/* Submeniurile se completeaza automat din continut, ca sa nu fie nevoie sa fie
+ * tinute manual in sincron din CMS:
+ *   /specializari -> lista specializarilor
+ *   /afectiuni, /servicii -> catalogul filtrat pe specializare
+ * Daca in navigation.json exista deja copii scrisi de mana, ei au prioritate. */
 const specializari = await getSpecializari();
-const items = navigation.main.map((item) => {
-  if (item.href !== '/specializari') return item;
-  return {
-    ...item,
-    children: specializari.map((s) => ({ label: s.data.title, href: `/specializari/${s.id}` })),
-  };
-});
+
+const autoChildren: Record<string, { label: string; href: string }[]> = {
+  '/specializari': specializari.map((s) => ({ label: s.data.title, href: `/specializari/${s.id}` })),
+  '/afectiuni': specializari.map((s) => ({ label: s.data.title, href: `/afectiuni?categorie=${s.id}` })),
+  '/servicii': specializari.map((s) => ({ label: s.data.title, href: `/servicii?categorie=${s.id}` })),
+};
+
+const items = navigation.main.map((item) =>
+  item.children.length ? item : { ...item, children: autoChildren[item.href] ?? [] },
+);
 ---
 
-<header class="sticky top-0 z-50">
+{/*
+  Pe ecrane mici header-ul se retrage la derulare, vezi scriptul de mai jos.
+  Deplasarea se face printr-o variabila CSS, ca sub-navigatia paginilor de
+  catalog sa se poata alinia cu el (`AnchorNav` o adauga la propriul `top`).
+*/}
+<header
+  class="sticky top-0 z-50 translate-y-[var(--header-shift,0px)] transition-transform duration-300 motion-reduce:transition-none"
+  data-header
+>
   <TopBar />
 
-  <div class="border-stroke bg-surface/95 border-b backdrop-blur">
+  <div class="border-stroke bg-surface/95 relative border-b backdrop-blur">
     <div class="container-page flex h-[84px] items-center justify-between gap-6">
       <Logo />
 
@@ -72,14 +87,15 @@ const items = navigation.main.map((item) => {
             ),
           )
         }
-        <a href="/cautare" class="text-ink hover:text-brand flex items-center gap-1 text-sm font-semibold whitespace-nowrap 2xl:text-base">
-          Căutare
-          <Icon name="search" size={16} />
-        </a>
       </nav>
 
       <div class="flex items-center gap-2">
-        <Button href={site.booking.href} class="hidden whitespace-nowrap sm:inline-flex">{site.booking.label}</Button>
+        <SearchBox />
+        {/* Wrapper-ul ascunde butonul pe ecrane mici: `hidden` pus direct pe
+            Button ar pierde in fata lui `inline-flex` din stilul de baza. */}
+        <span class="hidden sm:block">
+          <Button href={site.booking.href} class="whitespace-nowrap">{site.booking.label}</Button>
+        </span>
         <button
           type="button"
           class="text-ink hover:bg-surface-alt rounded-lg p-2 xl:hidden"
@@ -88,7 +104,11 @@ const items = navigation.main.map((item) => {
           aria-controls="mobile-menu"
           data-menu-toggle
         >
-          <Icon name="menu" size={24} />
+          {/* Ambele iconite stau in pagina, iar butonul o ascunde pe cea
+              nepotrivita. Asa nu depinde de JavaScript ca sa arate corect si
+              nu se vede nicio clipire la comutare. */}
+          <span data-menu-icon="inchis"><Icon name="menu" size={24} /></span>
+          <span data-menu-icon="deschis" hidden><Icon name="close" size={24} /></span>
         </button>
       </div>
     </div>
@@ -131,13 +151,110 @@ const items = navigation.main.map((item) => {
 </header>
 
 <script>
+  /* Header-ul e sticky si isi schimba inaltimea in functie de latimea ecranului
+   * (bara de sus se desface pe doua randuri pe mobil). Publicam inaltimea reala
+   * ca variabila CSS, ca ancorele si sub-navigatia paginilor de catalog sa se
+   * alinieze sub el, fara valori magice. */
+  const header = document.querySelector('header');
+
+  if (header) {
+    const publishHeight = () =>
+      document.documentElement.style.setProperty('--header-h', `${header.offsetHeight}px`);
+
+    publishHeight();
+    new ResizeObserver(publishHeight).observe(header);
+  }
+
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   const menu = document.getElementById('mobile-menu');
+
+  /* --------------------------------------------------------------------- *
+   * Retragerea header-ului la derulare, pe ecrane mici
+   *
+   * Pe telefon, header-ul mananca aproape un sfert din ecran: bara albastra
+   * cu adresa si telefonul se rupe pe doua randuri, iar sub ea sta bara de
+   * navigatie. Sunt utile la aterizare, nu si dupa ce omul a inceput sa
+   * citeasca.
+   *
+   * Doua trepte, nu una:
+   *   - **derulare in jos** ascunde tot header-ul;
+   *   - **derulare in sus** aduce inapoi doar bara de navigatie (logo,
+   *     cautare, meniu), fara bara albastra. Cine deruleaza in sus cauta de
+   *     obicei meniul, nu programul clinicii.
+   *   - **sus de tot** readuce totul.
+   *
+   * Se misca prin `--header-shift`, nu prin `position`: `AnchorNav` adauga
+   * aceeasi variabila la propriul `top`, deci sub-navigatia paginilor de
+   * catalog urca odata cu header-ul, fara sa ramana o banda goala sub ea.
+   * --------------------------------------------------------------------- */
+  if (header) {
+    const topbar = header.querySelector<HTMLElement>('[data-topbar]');
+    const root = document.documentElement;
+    // Peste `xl` header-ul incape oricum: acolo ramane pe loc.
+    const compact = matchMedia('(max-width: 1279.98px)');
+
+    const setShift = (pixels: number) =>
+      root.style.setProperty('--header-shift', pixels === 0 ? '0px' : `-${pixels}px`);
+
+    let lastY = window.scrollY;
+    let navHidden = false;
+    let queued = false;
+
+    const apply = () => {
+      queued = false;
+      const y = window.scrollY;
+      const menuOpen = menu ? !menu.hidden : false;
+
+      // Cu meniul deschis header-ul nu se misca: meniul e in interiorul lui.
+      if (!compact.matches || menuOpen) {
+        navHidden = false;
+        setShift(0);
+        lastY = y;
+        return;
+      }
+
+      const topbarHeight = topbar?.offsetHeight ?? 0;
+
+      if (y <= topbarHeight) {
+        navHidden = false;
+        setShift(0);
+        lastY = y;
+        return;
+      }
+
+      // Pragul de 4px ignora tremuratul din derularea cu inertie.
+      if (y > lastY + 4) navHidden = true;
+      else if (y < lastY - 4) navHidden = false;
+
+      lastY = y;
+      setShift(navHidden ? header.offsetHeight : topbarHeight);
+    };
+
+    const schedule = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(apply);
+    };
+
+    apply();
+    addEventListener('scroll', schedule, { passive: true });
+    addEventListener('resize', schedule);
+    compact.addEventListener('change', apply);
+
+    toggle?.addEventListener('click', () => requestAnimationFrame(apply));
+  }
+
+  const closedIcon = toggle?.querySelector<HTMLElement>('[data-menu-icon="inchis"]');
+  const openIcon = toggle?.querySelector<HTMLElement>('[data-menu-icon="deschis"]');
 
   toggle?.addEventListener('click', () => {
     const open = toggle.getAttribute('aria-expanded') === 'true';
     toggle.setAttribute('aria-expanded', String(!open));
     toggle.setAttribute('aria-label', open ? 'Deschide meniul' : 'Închide meniul');
     if (menu) menu.hidden = open;
+
+    // Cu meniul deschis, butonul arata ce face acum: inchide.
+    if (closedIcon) closedIcon.hidden = !open;
+    if (openIcon) openIcon.hidden = open;
   });
 </script>

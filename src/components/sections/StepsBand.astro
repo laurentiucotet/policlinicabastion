@@ -1,0 +1,55 @@
+---
+/** Pasii de urmat, numerotati, pe orizontala. Alt ritm vizual decat grilele. */
+import SectionHeading from '../ui/SectionHeading.astro';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  badge?: string;
+  title: string;
+  subtitle?: string;
+  items: Array<{ title: string; text: string }>;
+  cta?: { label: string; href: string };
+  tone?: 'white' | 'alt';
+}
+
+const { badge, title, subtitle, items, cta, tone = 'alt' } = Astro.props;
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+---
+
+{
+  items.length > 0 && (
+    <section class:list={[tones[tone], 'py-12']}>
+      <div class="container-page flex flex-col items-center gap-8">
+        <SectionHeading badge={badge} title={title} subtitle={subtitle} />
+
+        {/* Numarul de coloane urmeaza numarul de pasi: patru pasi pe trei
+            coloane lasa unul singur pe randul al doilea, ca o scapare. */}
+        <ol class:list={['grid w-full gap-6', items.length % 4 === 0 ? 'sm:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3']}>
+          {items.map((item, index) => (
+            <li class="relative flex flex-col gap-3">
+              {index < items.length - 1 && (
+                <span
+                  class="bg-stroke absolute top-6 left-[calc(50%+2rem)] hidden h-px w-[calc(100%-4rem)] md:block"
+                  aria-hidden="true"
+                />
+              )}
+
+              <span class="bg-brand font-heading relative z-10 flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold text-white">
+                {index + 1}
+              </span>
+
+              <h3 class="text-ink text-base leading-6 font-semibold">{item.title}</h3>
+              <p class="text-ink-muted text-sm leading-6 text-pretty">{item.text}</p>
+            </li>
+          ))}
+        </ol>
+
+        {cta && (
+          <Button href={cta.href} variant="outline">
+            {cta.label}
+          </Button>
+        )}
+      </div>
+    </section>
+  )
+}

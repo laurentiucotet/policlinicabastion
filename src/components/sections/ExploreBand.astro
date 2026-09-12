@@ -1,0 +1,171 @@
+---
+/**
+ * Bento grid: intrarile in site, in patru dale de marimi diferite. Dala mare e
+ * inchisa la culoare si tine loc de accent vizual, restul sunt albe. Numarul de
+ * intrari vine din continut, nu e scris de mana, ca sa nu ramana in urma.
+ */
+import Icon from '../ui/Icon.astro';
+import { getAfectiuni, getMedici, getServicii } from '../../lib/content';
+import { isFeatureEnabled } from '../../lib/features';
+
+interface Props {
+  title?: string;
+  subtitle?: string;
+  /** Afecțiunile afișate ca scurtături în dala mare. */
+  shortcuts?: string[];
+  tone?: 'white' | 'alt';
+}
+
+const {
+  title = 'Caută după ce te interesează',
+  subtitle = 'Aceleași informații, organizate în mai multe feluri. Alege drumul care ți se potrivește.',
+  shortcuts = [
+    'adenom-de-prostata',
+    'litiaza-renala',
+    'boala-cronica-de-rinichi',
+    'diabetul-zaharat-tip-2',
+    'insomnia',
+  ],
+  tone = 'white',
+} = Astro.props;
+
+const [afectiuni, servicii, medici] = await Promise.all([getAfectiuni(), getServicii(), getMedici()]);
+
+const popular = shortcuts
+.map((slug) => afectiuni.find((item) => item.id === slug))
+.filter((item): item is (typeof afectiuni)[number] => Boolean(item));
+
+const interventii = servicii.filter((item) => item.data.type === 'interventie');
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+
+/**
+ * Dalele care raman dupa ce se sting sectiunile optionale din CMS. Dala mare
+ * (afectiunile) tine cele doua randuri ale grilei; fara ea, restul se aseaza pe
+ * un singur rand. Sub doua dale sectiunea nu mai are ce organiza, deci dispare.
+ */
+const showAfectiuni = isFeatureEnabled('afectiuni');
+const showServicii = isFeatureEnabled('servicii');
+const showSuport = isFeatureEnabled('suport');
+const tileCount = [showAfectiuni, showServicii, showSuport, true].filter(Boolean).length;
+
+const tile =
+  'card-surface group flex h-full flex-col rounded-2xl border border-stroke bg-surface p-6 shadow-card transition hover:border-brand/40 hover:shadow-md';
+---
+
+{
+  tileCount > 1 && (
+    <section class:list={[tones[tone], 'py-12']}>
+  <div class="container-page">
+    <header class="flex flex-col items-center gap-3 text-center">
+      <h2 class="font-heading text-ink text-2xl leading-8 font-bold text-balance sm:text-3xl">{title}</h2>
+      <p class="text-ink-muted max-w-2xl text-base leading-7 text-pretty">{subtitle}</p>
+    </header>
+
+    <div class:list={['mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4', showAfectiuni && 'lg:grid-rows-2']}>
+      {/* Dala mare: afecțiunile, cu scurtături către cele mai căutate */}
+      {showAfectiuni && (
+      <article
+        class="card-surface from-brand-dark to-brand group flex flex-col justify-between gap-6 rounded-2xl bg-gradient-to-br p-6 transition sm:col-span-2 lg:row-span-2 lg:p-8"
+      >
+        <div>
+          <p class="text-xs leading-4 font-semibold text-white/70">Punctul de plecare</p>
+          <h3 class="font-heading mt-2 text-2xl leading-8 font-bold text-white lg:text-3xl lg:leading-10">
+            <a href="/afectiuni" class="card-link">Afecțiuni tratate</a>
+          </h3>
+          <p class="mt-3 text-sm leading-6 text-white/80 text-pretty">
+            Pentru fiecare afecțiune: simptome, cauze, cum se pune diagnosticul, cum se tratează și medicii care se
+            ocupă de ea.
+          </p>
+        </div>
+
+        {
+          popular.length > 0 && (
+            <div>
+              <p class="text-xs leading-4 font-semibold text-white/70">Cele mai căutate</p>
+              <ul class="relative z-10 mt-3 flex flex-wrap gap-2">
+                {popular.map((item) => (
+                  <li>
+                    <a
+                      href={`/afectiuni/${item.id}`}
+                      class="inline-flex rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/25"
+                    >
+                      {item.data.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        <span class="inline-flex items-center gap-1 text-sm font-semibold text-white">
+          Vezi toate cele {afectiuni.length} afecțiuni
+          <Icon name="arrow-right" size={16} />
+        </span>
+      </article>
+      )}
+
+      {/* Servicii, dala lata */}
+      {showServicii && (
+      <article class:list={[tile, 'sm:col-span-2']}>
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="text-ink text-lg leading-7 font-semibold">
+              <a href="/servicii" class="group-hover:text-brand card-link">Servicii și intervenții</a>
+            </h3>
+            <p class="text-ink-muted mt-2 text-sm leading-6 text-pretty">
+              Ce poți programa, cu preț, durată și tot ce presupune fiecare.
+            </p>
+          </div>
+          <span class="text-3xl leading-none" aria-hidden="true">📋</span>
+        </div>
+
+        <dl class="border-stroke mt-auto grid grid-cols-2 gap-4 border-t pt-4">
+          <div>
+            <dt class="text-ink-subtle text-xs leading-4 font-semibold tracking-wide uppercase">Servicii</dt>
+            <dd class="text-ink font-heading text-xl font-bold">{servicii.length}</dd>
+          </div>
+          <div>
+            <dt class="text-ink-subtle text-xs leading-4 font-semibold tracking-wide uppercase">Intervenții</dt>
+            <dd class="text-ink font-heading text-xl font-bold">{interventii.length}</dd>
+          </div>
+        </dl>
+      </article>
+      )}
+
+      {/* Medici */}
+      <article class={tile}>
+        <span class="text-3xl leading-none" aria-hidden="true">👩‍⚕️</span>
+        <h3 class="text-ink mt-3 text-base leading-6 font-semibold">
+          <a href="/medici" class="group-hover:text-brand card-link">Medici</a>
+        </h3>
+        <p class="text-ink-muted mt-1 text-sm leading-5 text-pretty">
+          {medici.length} medici, cu specializările și intervențiile fiecăruia.
+        </p>
+        <span class="text-brand mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold">
+          Vezi echipa
+          <Icon name="arrow-right" size={16} />
+        </span>
+      </article>
+
+      {/* Suport */}
+      {showSuport && (
+      <article class:list={[tile, 'bg-brand-50 border-transparent']}>
+        <span class="text-3xl leading-none" aria-hidden="true">💬</span>
+        <h3 class="text-ink mt-3 text-base leading-6 font-semibold">
+          <a href="/suport" class="group-hover:text-brand card-link">Ai o întrebare?</a>
+        </h3>
+        <p class="text-ink-muted mt-1 text-sm leading-5 text-pretty">
+          Bilet de trimitere, asigurare CNAS, medic de familie, răspunsuri scurte, la obiect.
+        </p>
+        <span class="text-brand mt-auto inline-flex items-center gap-1 pt-3 text-sm font-semibold">
+          Centrul de suport
+          <Icon name="arrow-right" size={16} />
+        </span>
+      </article>
+      )}
+    </div>
+  </div>
+    </section>
+  )
+}

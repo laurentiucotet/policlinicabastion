@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import Badge from '../ui/Badge.astro';
+import Breadcrumbs from '../ui/Breadcrumbs.astro';
 
 interface Props {
   doctor: CollectionEntry<'medici'>;
@@ -9,16 +10,34 @@ interface Props {
 
 const { doctor } = Astro.props;
 const { name, role, academicTitle, badge, photo } = doctor.data;
+
+/** Vezi DoctorCard: initialele tin loc de fotografie cat timp una lipseste. */
+const TITLES = /^(prof|conf|sef|șef|lucr|asist|univ|as|dr|psih|drd)\.?$/i;
+const initials = name
+  .split(/[\s-]+/)
+  .filter((word) => word && !TITLES.test(word))
+  .slice(0, 2)
+  .map((word) => word[0]?.toUpperCase() ?? '')
+  .join('');
 ---
 
 <section class="bg-surface-alt border-stroke border-b">
-  <div class="container-page flex flex-col items-center gap-6 py-12 text-center sm:flex-row sm:text-left">
+  <div class="container-page pt-8">
+    <Breadcrumbs items={[{ label: 'Medici', href: '/medici' }, { label: name }]} />
+  </div>
+
+  <div class="container-page flex flex-col items-center gap-6 pt-6 pb-12 text-center sm:flex-row sm:text-left">
     <div class="border-stroke bg-surface h-[200px] w-[200px] shrink-0 overflow-hidden rounded-full border">
       {
         photo ? (
           <Image src={photo} alt={name} width={200} height={200} class="h-full w-full object-cover" />
         ) : (
-          <div class="text-ink-subtle flex h-full w-full items-center justify-center text-5xl">🩺</div>
+          <div
+            class="from-brand-50 to-surface-alt flex h-full w-full items-center justify-center bg-gradient-to-br"
+            aria-hidden="true"
+          >
+            <span class="font-heading text-brand/70 text-5xl leading-none font-bold tracking-wide">{initials}</span>
+          </div>
         )
       }
     </div>

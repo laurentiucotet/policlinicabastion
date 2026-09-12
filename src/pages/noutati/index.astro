@@ -1,46 +1,96 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
-import CategoryChips from '../../components/ui/CategoryChips.astro';
+import CategoryFilter from '../../components/blog/CategoryFilter.astro';
+import FeaturedPost from '../../components/blog/FeaturedPost.astro';
 import BlogCard from '../../components/cards/BlogCard.astro';
+import SimpleHeading from '../../components/ui/SimpleHeading.astro';
+import ExploreBand from '../../components/sections/ExploreBand.astro';
 import CtaBand from '../../components/sections/CtaBand.astro';
 import { getArticole, getCategorii } from '../../lib/content';
 import { home } from '../../lib/site';
+import { countOf } from '../../lib/utils';
 
 const [posts, categories] = await Promise.all([getArticole(), getCategorii()]);
 const categoryName = new Map(categories.map((category) => [category.id, category.data.name]));
+
+const withCount = categories
+  .map((category) => ({
+    id: category.id,
+    name: category.data.name,
+    count: posts.filter((post) => post.data.category?.id === category.id).length,
+  }))
+  .filter((category) => category.count > 0);
+
+/* Articolele sunt deja sortate descrescator dupa data. Primul promovat devine
+ * capul paginii, urmatoarele doua raman in "Recomandate", restul curg in lista. */
+const featured = posts.filter((post) => post.data.featured);
+const [lead, ...restFeatured] = featured;
+const recommended = restFeatured.slice(0, 3);
+const rest = posts.filter((post) => post.id !== lead?.id && !recommended.includes(post));
+
+const nameOf = (post: (typeof posts)[number]) =>
+  post.data.category ? categoryName.get(post.data.category.id) : undefined;
 ---
 
 <BaseLayout
   title="Noutăți"
-  description="Articole, noutăți și informații medicale de la echipa Policlinicii Bastion Timișoara."
+  description={`Articole, ghiduri și noutăți scrise de medicii Policlinicii Bastion din Timișoara: ${countOf(posts.length, 'text', 'texte')} despre afecțiuni, investigații și intervenții.`}
 >
   <PageTitleHeader
+    breadcrumbs={[{ label: 'Noutăți' }]}
     badge="Blog & Noutăți"
     title="Noutăți"
     subtitle="Informații noi despre Policlinica Bastion și sfaturi de la medicii noștri."
   />
 
+  {
+    lead && (
+      <section class="bg-surface py-12">
+        <div class="container-page">
+          <FeaturedPost post={lead} categoryName={nameOf(lead)} label="Cel mai nou articol recomandat" />
+        </div>
+      </section>
+    )
+  }
+
+  {
+    recommended.length > 0 && (
+      <section class="bg-surface-alt py-12">
+        <div class="container-page">
+          <SimpleHeading title="Recomandate de medicii noștri" />
+          <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {recommended.map((post) => (
+              <BlogCard post={post} categoryName={nameOf(post)} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   <section class="bg-surface py-12">
     <div class="container-page flex flex-col gap-8">
-      <CategoryChips categories={categories} />
+      <div class="flex flex-col gap-6">
+        <SimpleHeading title="Toate articolele" />
+        <CategoryFilter categories={withCount} total={posts.length} />
+      </div>
 
       {
-        posts.length > 0 ? (
+        rest.length > 0 ? (
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {posts.map((post) => (
-              <BlogCard
-                post={post}
-                categoryName={post.data.category ? categoryName.get(post.data.category.id) : undefined}
-              />
+            {rest.map((post) => (
+              <BlogCard post={post} categoryName={nameOf(post)} />
             ))}
           </div>
         ) : (
-          <p class="text-ink-muted text-center">Momentan nu există articole publicate.</p>
+          <p class="text-ink-muted text-center">Momentan nu există alte articole publicate.</p>
         )
       }
     </div>
   </section>
+
+  <ExploreBand />
 
   <CtaBand title={home.ctaSecondary.title} text={home.ctaSecondary.text} cta={home.ctaSecondary.cta} tone="alt" />
 </BaseLayout>

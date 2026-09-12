@@ -2,10 +2,15 @@
   "name": "Policlinica Bastion",
   "legalName": "Policlinica Bastion SRL",
   "tagline": "Policlinica medicală privată din Timișoara",
+  "features": {
+    "servicii": true,
+    "afectiuni": true,
+    "suport": true
+  },
   "defaultSeo": {
-    "title": "Policlinica Bastion Timișoara — servicii medicale de specialitate",
-    "description": "Policlinică medicală privată în Timișoara: nefrologie, urologie, neurologie, psihiatrie, diabet și nutriție, medicină de familie. Consultații decontate prin CNAS.",
-    "image": "/uploads/og-default.jpg"
+    "title": "Policlinica Bastion, policlinică privată în Timișoara",
+    "description": "Policlinică medicală privată în Timișoara: nefrologie, urologie, neurologie, psihiatrie, diabet, medicină de familie. Consultații decontate prin CNAS.",
+    "image": "/uploads/og-default.png"
   },
   "topBar": {
     "addressShort": "Str. Mircea cel Bătrân 122C, Timișoara",
@@ -25,13 +30,26 @@
     }
   ],
   "email": "receptie@policlinicabastion.ro",
+  "booking": {
+    "label": "Programează-te",
+    "href": "/programari",
+    "leadTimeHours": 24,
+    "demo": true
+  },
   "address": {
     "street": "Str. Mircea cel Bătrân nr. 122C",
     "city": "Timișoara",
     "county": "Timiș",
     "postalCode": "300600",
+    "latitude": "",
+    "longitude": "",
     "mapsUrl": "https://maps.google.com/?q=Policlinica+Bastion+Timisoara",
     "mapEmbedUrl": ""
+  },
+  "parking": {
+    "title": "Parcare în curtea policlinicii",
+    "description": "Pacienții pot parca în curtea policlinicii, în limita locurilor disponibile. Intrarea se face din Str. Mircea cel Bătrân nr. 122C.",
+    "note": ""
   },
   "schedule": [
     {
@@ -51,14 +69,10 @@
     "number": "+40738826587",
     "message": "Bună ziua! Aș dori o programare la Policlinica Bastion."
   },
-  "booking": {
-    "label": "Programează-te",
-    "href": "/contact"
-  },
   "social": {
     "facebook": "https://www.facebook.com/policlinicabastion/",
-    "instagram": "",
-    "linkedin": ""
+    "instagram": "https://www.instagram.com/policlinica.bastion/",
+    "linkedin": "https://www.linkedin.com/company/policlinica-bastion/"
   },
   "analytics": {
     "gtmId": ""

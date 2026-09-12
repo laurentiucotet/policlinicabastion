@@ -1,0 +1,22 @@
+{
+  "doctor": "prof-univ-dr-petrica-ligia",
+  "slotMinutes": 30,
+  "bookingWindowDays": 45,
+  "intervals": [
+    {
+      "day": 1,
+      "from": "14:00",
+      "to": "18:00",
+      "room": "Cabinet 1"
+    },
+    {
+      "day": 3,
+      "from": "09:00",
+      "to": "13:00",
+      "room": "Cabinet 1"
+    }
+  ],
+  "exceptions": [],
+  "services": [],
+  "draft": false
+}

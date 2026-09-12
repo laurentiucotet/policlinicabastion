@@ -1,0 +1,132 @@
+---
+/**
+ * Navigatie interna, lipita sub header. Face structura paginii vizibila dintr-o
+ * privire: aceleasi sectiuni, in aceeasi ordine, pe toate paginile de catalog.
+ *
+ * Elementul corespunzator sectiunii in care te afli este marcat activ, pe
+ * masura ce derulezi (`aria-current="true"`).
+ *
+ * `top` aduna `--header-shift`, variabila prin care header-ul se retrage la
+ * derulare pe mobil. Fiind negativa, sub-navigatia urca odata cu el, in loc sa
+ * lase o banda goala unde statea header-ul.
+ */
+interface Props {
+  items: Array<{ id: string; label: string }>;
+}
+
+const { items } = Astro.props;
+---
+
+{
+  items.length > 1 && (
+    <nav
+      class="border-stroke bg-surface/95 sticky z-30 border-b backdrop-blur"
+      style="top: calc(var(--header-h, 112px) + var(--header-shift, 0px))"
+      aria-label="Secțiunile paginii"
+      data-anchor-nav
+    >
+      <div class="container-page">
+        <ul class="flex gap-1 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {items.map((item) => (
+            <li>
+              <a
+                href={`#${item.id}`}
+                class="text-ink-muted hover:bg-surface-alt hover:text-brand aria-[current=true]:bg-brand-50 aria-[current=true]:text-brand block rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors aria-[current=true]:font-semibold"
+                data-anchor-link={item.id}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+  )
+}
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-anchor-nav]');
+
+  if (nav) {
+    /* Ancorele trebuie sa se opreasca sub header + sub-navigatie. Publicam
+     * inaltimea sub-navigatiei; `scroll-padding-top` din global.css o foloseste. */
+    const publishHeight = () =>
+      document.documentElement.style.setProperty('--subnav-h', `${nav.offsetHeight}px`);
+
+    publishHeight();
+    new ResizeObserver(publishHeight).observe(nav);
+
+    const list = nav.querySelector<HTMLElement>('ul');
+    const links = Array.from(nav.querySelectorAll<HTMLAnchorElement>('[data-anchor-link]'));
+    const sections = links
+      .map((link) => document.getElementById(link.dataset.anchorLink ?? ''))
+      .filter((section): section is HTMLElement => Boolean(section));
+
+    /** Marcheaza elementul activ si il aduce in vizor pe ecrane inguste. */
+    const activate = (id: string) => {
+      let changed = false;
+
+      for (const link of links) {
+        const isActive = link.dataset.anchorLink === id;
+        if ((link.getAttribute('aria-current') === 'true') === isActive) continue;
+
+        changed = true;
+        if (isActive) link.setAttribute('aria-current', 'true');
+        else link.removeAttribute('aria-current');
+      }
+
+      if (!changed) return;
+
+      /* Bara se defileaza pe orizontala prin `scrollLeft`, nu prin
+       * `scrollIntoView`: acela urca prin toti stramosii defilabili si tragea
+       * pagina inapoi cu cateva zeci de pixeli la fiecare schimbare de
+       * sectiune - exact senzatia de scroll "care se opune". */
+      const active = links.find((link) => link.dataset.anchorLink === id);
+      if (!active || !list || list.scrollWidth <= list.clientWidth) return;
+
+      const target = active.offsetLeft - (list.clientWidth - active.offsetWidth) / 2;
+      list.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+    };
+
+    /**
+     * Sectiunea curenta e ultima al carei inceput a trecut de linia de sub bara
+     * lipicioasa. Calculul se face din pozitii, nu din raportul de intersectie:
+     * sectiunile au inaltimi foarte diferite, iar o sectiune scurta ar pierde
+     * mereu in fata uneia lungi.
+     */
+    const sync = () => {
+      const line = nav.getBoundingClientRect().bottom + 8;
+      let current = sections[0];
+
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= line) current = section;
+      }
+
+      // La finalul paginii, ultima sectiune ramane activa chiar daca e scurta.
+      const atBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 2;
+      if (atBottom) current = sections[sections.length - 1]!;
+
+      if (current) activate(current.id);
+    };
+
+    let queued = false;
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        sync();
+      });
+    };
+
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll);
+
+    // Click-ul marcheaza imediat, fara sa astepte derularea lina.
+    for (const link of links) {
+      link.addEventListener('click', () => activate(link.dataset.anchorLink ?? ''));
+    }
+
+    sync();
+  }
+</script>

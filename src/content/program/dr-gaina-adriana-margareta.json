@@ -1,0 +1,22 @@
+{
+  "doctor": "dr-gaina-adriana-margareta",
+  "slotMinutes": 30,
+  "bookingWindowDays": 30,
+  "intervals": [
+    {
+      "day": 2,
+      "from": "15:00",
+      "to": "20:00",
+      "room": "Cabinet 4"
+    },
+    {
+      "day": 5,
+      "from": "10:00",
+      "to": "14:00",
+      "room": "Cabinet 4"
+    }
+  ],
+  "exceptions": [],
+  "services": [],
+  "draft": false
+}

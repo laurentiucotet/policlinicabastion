@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
+import Icon from '../ui/Icon.astro';
 
 interface Props {
   doctor: CollectionEntry<'medici'>;
@@ -8,10 +9,23 @@ interface Props {
 
 const { doctor } = Astro.props;
 const href = `/medici/${doctor.id}`;
+
+/**
+ * Initialele numelui, fara titluri. "Asist. Univ. Dr. Dema Vlad" -> "DV".
+ * Tine loc de fotografie cat timp una lipseste: un card gol repetat de 20 de ori
+ * arata a eroare, initialele arata a persoana pentru care inca nu avem poza.
+ */
+const TITLES = /^(prof|conf|sef|șef|lucr|asist|univ|as|dr|psih|drd)\.?$/i;
+const initials = doctor.data.name
+  .split(/[\s-]+/)
+  .filter((word) => word && !TITLES.test(word))
+  .slice(0, 2)
+  .map((word) => word[0]?.toUpperCase() ?? '')
+  .join('');
 ---
 
 <article
-  class="border-stroke bg-surface shadow-card group flex h-full flex-col overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
+  class="border-stroke bg-surface shadow-card card-surface hover:border-brand/40 group flex h-full flex-col overflow-hidden rounded-2xl border transition hover:shadow-md"
 >
   <div class="bg-surface-alt aspect-[4/5] overflow-hidden">
     {
@@ -24,15 +38,25 @@ const href = `/medici/${doctor.id}`;
           class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
         />
       ) : (
-        <div class="text-ink-subtle flex h-full w-full items-center justify-center text-4xl">🩺</div>
+        <div
+          class="from-brand-50 to-surface-alt flex h-full w-full items-center justify-center bg-gradient-to-br"
+          aria-hidden="true"
+        >
+          <span class="font-heading text-brand/70 text-4xl leading-none font-bold tracking-wide">{initials}</span>
+        </div>
       )
     }
   </div>
 
   <div class="flex flex-1 flex-col gap-1 p-4 text-center">
     <h3 class="text-sm leading-5 font-semibold">
-      <a href={href} class="hover:text-brand">{doctor.data.name}</a>
+      <a href={href} class="group-hover:text-brand card-link">{doctor.data.name}</a>
     </h3>
     <p class="text-ink-muted text-sm leading-5">{doctor.data.role}</p>
+
+    <span class="text-brand mt-auto inline-flex items-center justify-center gap-1 pt-2 text-xs font-semibold">
+      Vezi profilul
+      <Icon name="arrow-right" size={14} />
+    </span>
   </div>
 </article>

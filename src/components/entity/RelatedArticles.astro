@@ -1,0 +1,53 @@
+---
+/** Noutățile legate de o afecțiune / intervenție / serviciu. */
+import type { CollectionEntry } from 'astro:content';
+import SectionHeading from '../ui/SectionHeading.astro';
+import Button from '../ui/Button.astro';
+import BlogCard from '../cards/BlogCard.astro';
+import { getCategorii } from '../../lib/content';
+
+interface Props {
+  id?: string;
+  badge?: string;
+  title?: string;
+  subtitle?: string;
+  posts: CollectionEntry<'articole'>[];
+  tone?: 'white' | 'alt';
+}
+
+const {
+  id = 'noutati',
+  badge = 'Blog & Noutăți',
+  title = 'Noutăți pe această temă',
+  subtitle,
+  posts,
+  tone = 'alt',
+} = Astro.props;
+
+const categories = await getCategorii();
+const categoryName = new Map(categories.map((category) => [category.id, category.data.name]));
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+---
+
+{
+  posts.length > 0 && (
+    <section id={id} class:list={[tones[tone], 'py-12']}>
+      <div class="container-page flex flex-col items-center gap-8">
+        <SectionHeading badge={badge} title={title} subtitle={subtitle} />
+
+        <div class="grid w-full gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post) => (
+            <BlogCard
+              post={post}
+              categoryName={post.data.category ? categoryName.get(post.data.category.id) : undefined}
+            />
+          ))}
+        </div>
+
+        <Button href="/noutati" variant="outline">
+          Vezi toate noutățile
+        </Button>
+      </div>
+    </section>
+  )
+}

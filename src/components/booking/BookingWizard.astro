@@ -1,0 +1,988 @@
+---
+/**
+ * Modulul de programari: alegi specializarea, medicul si serviciul, apoi un
+ * slot din calendarul saptamanal, apoi iti lasi datele.
+ *
+ * Optiunile sunt randate toate in HTML si filtrate in browser - fara framework
+ * si fara request-uri. Sloturile, in schimb, se *calculeaza* in browser din
+ * regulile de program (vezi src/lib/booking.ts), pentru ca depind de "azi".
+ */
+import Icon from '../ui/Icon.astro';
+import Button from '../ui/Button.astro';
+import { getBookingData } from '../../lib/booking';
+import { site } from '../../lib/site';
+
+const data = await getBookingData({
+  leadTimeHours: site.booking.leadTimeHours ?? 24,
+  demo: site.booking.demo ?? true,
+});
+
+const steps = [
+  { id: 1, label: 'Serviciul' },
+  { id: 2, label: 'Data și ora' },
+  { id: 3, label: 'Datele tale' },
+];
+
+const option =
+  'block cursor-pointer rounded-xl border border-stroke bg-surface p-4 transition hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-50 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand';
+---
+
+<section class="bg-surface-alt py-12" data-booking>
+  <div class="container-page">
+    {
+      data.demo && (
+        <p class="border-star/40 bg-star/10 text-ink mb-6 flex items-start gap-3 rounded-xl border p-4 text-sm leading-6">
+          <span class="text-star mt-0.5 shrink-0">
+            <Icon name="alert" size={18} />
+          </span>
+          <span>
+            <strong class="font-semibold">Modul demonstrativ.</strong> Calendarul arată disponibilitate simulată, iar
+            programarea nu ajunge încă în sistemul clinicii. Pentru o programare reală, sună la{' '}
+            <a href={site.phones[0]?.href} class="text-brand font-semibold underline underline-offset-2">
+              {site.phones[0]?.value}
+            </a>
+.
+          </span>
+        </p>
+      )
+    }
+
+    <ol class="mb-8 flex flex-wrap items-center gap-x-2 gap-y-3 text-sm">
+      {
+        steps.map((step, index) => (
+          <li class="flex items-center gap-2">
+            {index > 0 && (
+              <span class="text-ink-subtle/50" aria-hidden="true">
+                <Icon name="chevron-right" size={14} />
+              </span>
+            )}
+            <span
+              class="text-ink-subtle flex items-center gap-2 font-medium aria-[current=step]:text-brand aria-[current=step]:font-semibold"
+              data-step-label={step.id}
+            >
+              <span class="border-stroke bg-surface text-ink-subtle flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold">
+                {step.id}
+              </span>
+              {step.label}
+            </span>
+          </li>
+        ))
+      }
+    </ol>
+
+    {
+      data.specialities.length === 0 ? (
+        <p class="border-stroke bg-surface rounded-2xl border p-8 text-center text-base">
+          Programarea online nu este disponibilă momentan. Sună-ne la recepție și îți găsim un interval.
+        </p>
+      ): (
+        <div class="border-stroke bg-surface shadow-card rounded-2xl border p-6 lg:p-8">
+          {/* ------------------------------- PASUL 1 ------------------------------ */}
+          <div data-step="1">
+            <h2 class="font-heading text-ink text-xl leading-7 font-bold">Ce vrei să programezi?</h2>
+
+            <fieldset class="mt-6">
+              <legend class="text-ink text-sm leading-5 font-semibold">1. Specializarea</legend>
+              <div class="mt-3 flex flex-wrap gap-2">
+                {data.specialities.map((speciality) => (
+                  <div>
+                    <input
+                      type="radio"
+                      name="specializare"
+                      id={`spec-${speciality.id}`}
+                      value={speciality.id}
+                      class="peer sr-only"
+                      data-speciality-input
+                    />
+                    <label
+                      for={`spec-${speciality.id}`}
+                      class="border-stroke bg-surface hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand peer-focus-visible:outline-brand flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2"
+                    >
+                      <span aria-hidden="true">{speciality.icon}</span>
+                      {speciality.title}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset class="mt-8" data-doctor-field hidden>
+              <legend class="text-ink text-sm leading-5 font-semibold">2. Medicul</legend>
+              <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {data.doctors.map((doctor) => (
+                  <div data-doctor-option={doctor.id} data-specialities={doctor.specialities.join(' ')} hidden>
+                    <input
+                      type="radio"
+                      name="medic"
+                      id={`doc-${doctor.id}`}
+                      value={doctor.id}
+                      class="peer sr-only"
+                      data-doctor-input
+                    />
+                    <label for={`doc-${doctor.id}`} class={option}>
+                      <span class="text-ink block text-sm leading-5 font-semibold">{doctor.name}</span>
+                      <span class="text-ink-muted mt-1 block text-xs leading-4">{doctor.role}</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset class="mt-8" data-service-field hidden>
+              <legend class="text-ink text-sm leading-5 font-semibold">3. Serviciul</legend>
+              <div class="mt-3 grid gap-3 lg:grid-cols-2">
+                {data.services.map((service) => (
+                  <div
+                    data-service-option={service.id}
+                    data-speciality={service.specialityId}
+                    data-doctors={service.doctorIds.join(' ')}
+                    hidden
+                  >
+                    <input
+                      type="radio"
+                      name="serviciu"
+                      id={`srv-${service.id}`}
+                      value={service.id}
+                      class="peer sr-only"
+                      data-service-input
+                    />
+                    <label for={`srv-${service.id}`} class={option}>
+                      <span class="flex items-start justify-between gap-3">
+                        <span class="text-ink text-sm leading-5 font-semibold">{service.title}</span>
+                        <span class="bg-surface-alt text-ink-muted shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold">
+                          {service.typeLabel}
+                        </span>
+                      </span>
+                      <span class="text-ink-muted mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                        <span class="inline-flex items-center gap-1">
+                          <Icon name="clock" size={14} />
+                          {service.durationMinutes} de minute
+                        </span>
+                        <span class="font-semibold">{service.priceLabel}</span>
+                        {service.cnas && <span class="text-whatsapp font-semibold">Decontat CNAS</span>}
+                      </span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+
+            <div class="mt-8 flex justify-end">
+              <Button type="button" data-next="2" disabled>
+                Alege data și ora
+                <Icon name="arrow-right" size={16} />
+              </Button>
+            </div>
+          </div>
+
+          {/* ------------------------------- PASUL 2 ------------------------------ */}
+          <div data-step="2" hidden>
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 class="font-heading text-ink text-xl leading-7 font-bold">Alege un interval liber</h2>
+                <p class="text-ink-muted mt-1 text-sm leading-6" data-selection-summary />
+              </div>
+              <button type="button" class="text-brand text-sm font-semibold hover:underline" data-back="1">
+                Schimbă serviciul
+              </button>
+            </div>
+
+            <div class="mt-6 flex items-center justify-between gap-4">
+              <button
+                type="button"
+                class="border-stroke text-ink hover:border-brand/40 inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-semibold disabled:opacity-40"
+                data-week="-1"
+              >
+                <span class="rotate-180"><Icon name="chevron-right" size={16} /></span>
+                Săptămâna trecută
+              </button>
+
+              <p class="text-ink text-sm font-semibold" data-week-label />
+
+              <button
+                type="button"
+                class="border-stroke text-ink hover:border-brand/40 inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-semibold disabled:opacity-40"
+                data-week="1"
+              >
+                Săptămâna viitoare
+                <Icon name="chevron-right" size={16} />
+              </button>
+            </div>
+
+            <div class="mt-4 grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-7" data-calendar />
+
+            <p class="text-ink-subtle mt-4 text-xs" data-calendar-note />
+
+            <div class="mt-8 flex justify-end">
+              <Button type="button" data-next="3" disabled>
+                Continuă
+                <Icon name="arrow-right" size={16} />
+              </Button>
+            </div>
+          </div>
+
+          {/* ------------------------------- PASUL 3 ------------------------------ */}
+          <div data-step="3" hidden>
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <h2 class="font-heading text-ink text-xl leading-7 font-bold">Datele tale de contact</h2>
+              <button type="button" class="text-brand text-sm font-semibold hover:underline" data-back="2">
+                Schimbă intervalul
+              </button>
+            </div>
+
+            <div class="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <form class="flex flex-col gap-4" data-booking-form novalidate>
+                <div class="grid gap-4 sm:grid-cols-2">
+                  <label class="flex flex-col gap-1.5 text-sm">
+                    <span class="text-ink font-semibold">Nume și prenume *</span>
+                    <input
+                      type="text"
+                      name="nume"
+                      required
+                      autocomplete="name"
+                      class="border-stroke focus:border-brand rounded-lg border px-3 py-2.5 text-base focus:outline-none"
+                    />
+                  </label>
+
+                  <label class="flex flex-col gap-1.5 text-sm">
+                    <span class="text-ink font-semibold">Telefon *</span>
+                    <input
+                      type="tel"
+                      name="telefon"
+                      required
+                      inputmode="tel"
+                      autocomplete="tel"
+                      placeholder="07xx xxx xxx"
+                      class="border-stroke focus:border-brand rounded-lg border px-3 py-2.5 text-base focus:outline-none"
+                    />
+                  </label>
+                </div>
+
+                <label class="flex flex-col gap-1.5 text-sm">
+                  <span class="text-ink font-semibold">Email *</span>
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    autocomplete="email"
+                    class="border-stroke focus:border-brand rounded-lg border px-3 py-2.5 text-base focus:outline-none"
+                  />
+                </label>
+
+                <fieldset>
+                  <legend class="text-ink text-sm font-semibold">Cum plătești consultația?</legend>
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    {[
+                      { value: 'cnas', label: 'Cu bilet de trimitere (CNAS)' },
+                      { value: 'plata', label: 'Cu plată' },
+                    ].map((item, index) => (
+                      <div>
+                        <input
+                          type="radio"
+                          name="plata"
+                          id={`plata-${item.value}`}
+                          value={item.value}
+                          checked={index === 0}
+                          class="peer sr-only"
+                        />
+                        <label
+                          for={`plata-${item.value}`}
+                          class="border-stroke hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-50 peer-checked:text-brand cursor-pointer rounded-full border px-4 py-2 text-sm font-semibold"
+                        >
+                          {item.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <label class="flex flex-col gap-1.5 text-sm">
+                  <span class="text-ink font-semibold">Mesaj pentru medic (opțional)</span>
+                  <textarea
+                    name="mesaj"
+                    rows="3"
+                    class="border-stroke focus:border-brand rounded-lg border px-3 py-2.5 text-base focus:outline-none"
+                  />
+                </label>
+
+                <label class="text-ink-muted flex items-start gap-3 text-sm leading-6">
+                  <input type="checkbox" name="acord" required class="border-stroke mt-1 h-4 w-4 shrink-0 rounded" />
+                  <span>
+                    Sunt de acord cu prelucrarea datelor mele în scopul programării, conform
+                    <a href="/politica-de-confidentialitate" class="text-brand underline underline-offset-2">
+                      politicii de confidențialitate
+                    </a>
+. *
+                  </span>
+                </label>
+
+                <p class="text-star hidden text-sm font-semibold" role="alert" data-form-error />
+
+                <div class="flex justify-end">
+                  <Button type="submit">
+                    Confirmă programarea
+                    <Icon name="arrow-right" size={16} />
+                  </Button>
+                </div>
+              </form>
+
+              <aside class="border-stroke bg-surface-alt h-fit rounded-2xl border p-5">
+                <h3 class="text-ink text-sm leading-5 font-semibold">Rezumatul programării</h3>
+                <dl class="mt-4 flex flex-col gap-3 text-sm" data-summary />
+              </aside>
+            </div>
+          </div>
+
+          {/* ------------------------- PASUL 4: CODUL SMS ------------------------- */}
+          <div data-step="4" hidden>
+            <div data-otp-stage="pending">
+              <div class="flex flex-col items-center gap-3 text-center">
+                <span class="bg-brand-50 text-brand flex h-14 w-14 items-center justify-center rounded-full">
+                  <Icon name="send" size={26} />
+                </span>
+                <h2 class="font-heading text-ink text-2xl leading-8 font-bold">Confirmă programarea</h2>
+                <p class="text-ink-muted max-w-xl text-base leading-7 text-pretty">
+                  Ți-am trimis un cod din 6 cifre prin SMS, la numărul introdus. Introdu-l mai jos ca să încheiem
+                  programarea.
+                </p>
+              </div>
+
+              <div class="mt-8 grid gap-4 lg:grid-cols-2">
+                <div class="border-stroke bg-surface-alt rounded-2xl border p-6">
+                  <h3 class="text-ink text-sm leading-5 font-semibold">Detaliile programării</h3>
+                  <dl class="mt-4 flex flex-col gap-3 text-sm" data-confirmation-summary />
+                </div>
+
+                <div class="border-brand/30 bg-brand-50 flex flex-col items-center justify-center gap-4 rounded-2xl border p-6 text-center">
+                  <form class="flex w-full flex-col items-center gap-4" data-otp-form novalidate>
+                    <label class="flex w-full flex-col items-center gap-2" for="otp-input">
+                      <span class="text-chip-ink text-xs leading-4 font-semibold">Codul primit prin SMS</span>
+                      <input
+                        id="otp-input"
+                        type="text"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        maxlength="6"
+                        placeholder="······"
+                        aria-describedby="otp-hint"
+                        class="border-stroke focus:border-brand font-heading text-ink w-full max-w-[260px] rounded-xl border bg-white py-3 text-center text-3xl leading-none font-bold tracking-[0.3em] focus:outline-none"
+                        data-otp-input
+                      />
+                    </label>
+
+                    <p class="text-star hidden text-sm font-semibold" role="alert" data-otp-error />
+
+                    <Button type="submit">Confirmă codul</Button>
+                  </form>
+
+                  <p id="otp-hint" class="text-ink-muted text-xs leading-5">
+                    {data.demo ? 'Cod demonstrativ, afișat aici pentru prezentare:': 'Nu ai primit codul?'}
+                    {data.demo && <strong class="text-brand ml-1 tracking-[0.2em]" data-otp />}
+                  </p>
+
+                  <button type="button" class="text-brand text-xs font-semibold hover:underline" data-otp-resend>
+                    Retrimite codul
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-6 flex justify-center">
+                <button type="button" class="text-ink-subtle text-sm hover:underline" data-back="3">
+                  Modifică datele de contact
+                </button>
+              </div>
+            </div>
+
+            {/* --------------------- PASUL 5: PROGRAMARE CONFIRMATA -------------------- */}
+            <div data-otp-stage="done" hidden>
+              <div class="flex flex-col items-center gap-3 text-center">
+                <span class="bg-whatsapp/15 text-whatsapp flex h-14 w-14 items-center justify-center rounded-full">
+                  <Icon name="check" size={28} />
+                </span>
+                <h2 class="font-heading text-ink text-2xl leading-8 font-bold">Programare confirmată</h2>
+                <p class="text-ink-muted max-w-xl text-base leading-7 text-pretty">
+                  Îți mulțumim! Am trimis detaliile și pe email. Dacă nu mai poți ajunge, sună la recepție cât mai
+                  devreme, intervalul ajunge la alt pacient care așteaptă.
+                </p>
+                <p class="border-stroke bg-surface-alt text-ink-muted rounded-full border px-4 py-1.5 text-xs">
+                  Cod de confirmare: <strong class="text-ink tracking-[0.2em]" data-otp-used />
+                </p>
+              </div>
+
+              <div class="mt-8 grid gap-4 lg:grid-cols-2">
+                <div class="border-stroke bg-surface-alt rounded-2xl border p-6">
+                  <h3 class="text-ink text-sm leading-5 font-semibold">Detaliile programării</h3>
+                  <dl class="mt-4 flex flex-col gap-3 text-sm" data-confirmation-summary />
+                </div>
+
+                <div class="border-stroke bg-surface flex flex-col gap-3 rounded-2xl border p-6">
+                  <h3 class="text-ink text-sm leading-5 font-semibold">Ce aduci cu tine</h3>
+                  <ul class="text-ink-muted flex flex-col gap-2 text-sm leading-6">
+                    {[
+                      'Act de identitate și cardul de sănătate',
+                      'Biletul de trimitere, dacă vrei decontare CNAS',
+                      'Analizele și investigațiile anterioare',
+                      'Lista medicamentelor pe care le iei',
+                    ].map((item) => (
+                      <li class="flex gap-2">
+                        <span class="text-whatsapp mt-0.5 shrink-0">
+                          <Icon name="check" size={16} />
+                        </span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <a href="/suport/ce-aduc-la-prima-consultatie" class="text-brand mt-auto pt-2 text-sm font-semibold hover:underline">
+                    Vezi lista completă
+                  </a>
+                </div>
+              </div>
+
+              <div class="mt-8 flex flex-wrap justify-center gap-3">
+                <Button href="/" variant="outline">Înapoi la prima pagină</Button>
+                <Button type="button" data-restart>Fă o altă programare</Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<script type="application/json" data-booking-payload set:html={JSON.stringify(data)} is:inline />
+
+<script>
+  type Service = {
+    id: string;
+    title: string;
+    typeLabel: string;
+    specialityId: string;
+    durationMinutes: number;
+    priceLabel: string;
+    cnas: boolean;
+    doctorIds: string[];
+    url: string;
+  };
+  type Interval = { day: number; from: string; to: string; room?: string };
+  type Schedule = {
+    doctorId: string;
+    slotMinutes: number;
+    bookingWindowDays: number;
+    intervals: Interval[];
+    exceptions: Array<{ date: string; reason?: string; from?: string; to?: string }>;
+    serviceIds: string[];
+  };
+  type Payload = {
+    specialities: Array<{ id: string; title: string; icon: string }>;
+    doctors: Array<{ id: string; name: string; role: string; specialities: string[] }>;
+    services: Service[];
+    schedules: Schedule[];
+    leadTimeHours: number;
+    demo: boolean;
+  };
+
+  const root = document.querySelector<HTMLElement>('[data-booking]');
+  const payloadEl = document.querySelector<HTMLScriptElement>('[data-booking-payload]');
+
+  if (root && payloadEl) {
+    const data: Payload = JSON.parse(payloadEl.textContent ?? '{}');
+
+    /* --------------------------------------------------------------------- *
+     * Ajutoare de timp. Lucram cu minute de la miezul noptii si cu date
+     * locale - fara biblioteci si fara UTC, ca sa nu apara decalaje de o ora
+     * la schimbarea orei de vara.
+     * --------------------------------------------------------------------- */
+    const MINUTE = 60_000;
+    const DAY = 24 * 60 * MINUTE;
+
+    const toMinutes = (time: string) => {
+      const [hours, minutes] = time.split(':').map(Number);
+      return hours * 60 + minutes;
+    };
+
+    const hhmm = (minutes: number) =>
+      `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+
+    const ymd = (date: Date) =>
+      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    /** Luni = 1... duminica = 7, ca in datele de program. */
+    const isoDay = (date: Date) => ((date.getDay() + 6) % 7) + 1;
+
+    const startOfWeek = (date: Date) => {
+      const result = new Date(date);
+      result.setHours(0, 0, 0, 0);
+      result.setDate(result.getDate() - (isoDay(result) - 1));
+      return result;
+    };
+
+    const addDays = (date: Date, days: number) => {
+      const result = new Date(date);
+      result.setDate(result.getDate() + days);
+      return result;
+    };
+
+    const dayNames = ['luni', 'marți', 'miercuri', 'joi', 'vineri', 'sâmbătă', 'duminică'];
+    const monthFormatter = new Intl.DateTimeFormat('ro-RO', { day: 'numeric', month: 'long' });
+    const longFormatter = new Intl.DateTimeFormat('ro-RO', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    /* --------------------------------------------------------------------- *
+     * Starea
+     * --------------------------------------------------------------------- */
+    const state = {
+      step: 1,
+      specialityId: '',
+      doctorId: '',
+      serviceId: '',
+      slot: null as null | { date: string; start: number; end: number; room?: string },
+      weekStart: startOfWeek(new Date()),
+    };
+
+    const service = () => data.services.find((item) => item.id === state.serviceId);
+    const doctor = () => data.doctors.find((item) => item.id === state.doctorId);
+    const schedule = () => data.schedules.find((item) => item.doctorId === state.doctorId);
+
+    /* --------------------------------------------------------------------- *
+     * Generarea sloturilor
+     *
+     * Un slot e valid doar daca serviciul incape integral inainte de finalul
+     * intervalului de lucru: de asta o interventie de 60 de minute are mai
+     * putine sloturi decat o consultatie de 20, pe acelasi program.
+     * --------------------------------------------------------------------- */
+    const earliest = () => new Date(Date.now() + data.leadTimeHours * 60 * MINUTE);
+
+    /** Ocupare simulata, stabila pentru aceeasi zi si ora (doar in modul demo). */
+    const looksBusy = (key: string) => {
+      let hash = 7;
+      for (const char of key) hash = (hash * 31 + char.charCodeAt(0)) % 100_000;
+      return hash % 100 < 35;
+    };
+
+    const slotsFor = (date: Date) => {
+      const current = service();
+      const rules = schedule();
+      if (!current || !rules) return [];
+
+      const iso = ymd(date);
+      const exception = rules.exceptions.find((item) => item.date === iso);
+      if (exception && !exception.from) return [];
+
+      const intervals: Interval[] = exception?.from
+        ? [{ day: isoDay(date), from: exception.from, to: exception.to ?? exception.from }]
+: rules.intervals.filter((interval) => interval.day === isoDay(date));
+
+      const limit = earliest().getTime();
+      const windowEnd = Date.now() + rules.bookingWindowDays * DAY;
+      const slots: Array<{ date: string; start: number; end: number; room?: string; busy: boolean }> = [];
+
+      for (const interval of intervals) {
+        const open = toMinutes(interval.from);
+        const close = toMinutes(interval.to);
+
+        for (let start = open; start + current.durationMinutes <= close; start += rules.slotMinutes) {
+          const at = new Date(date);
+          at.setHours(0, start, 0, 0);
+          if (at.getTime() < limit || at.getTime() > windowEnd) continue;
+
+          slots.push({
+            date: iso,
+            start,
+            end: start + current.durationMinutes,
+            room: interval.room,
+            busy: data.demo && looksBusy(`${rules.doctorId}-${iso}-${start}`),
+          });
+        }
+      }
+
+      return slots;
+    };
+
+    /* --------------------------------------------------------------------- *
+     * Pasul 1, cascada specializare → medic → serviciu
+     * --------------------------------------------------------------------- */
+    const doctorField = root.querySelector<HTMLElement>('[data-doctor-field]');
+    const serviceField = root.querySelector<HTMLElement>('[data-service-field]');
+    const doctorOptions = Array.from(root.querySelectorAll<HTMLElement>('[data-doctor-option]'));
+    const serviceOptions = Array.from(root.querySelectorAll<HTMLElement>('[data-service-option]'));
+
+    const refreshOptions = () => {
+      let visibleDoctors = 0;
+
+      for (const option of doctorOptions) {
+        const show = (option.dataset.specialities ?? '').split(' ').includes(state.specialityId);
+        option.hidden = !show;
+        if (show) visibleDoctors += 1;
+        if (!show) {
+          const input = option.querySelector<HTMLInputElement>('input');
+          if (input?.checked) {
+            input.checked = false;
+            state.doctorId = '';
+          }
+        }
+      }
+
+      if (doctorField) doctorField.hidden = visibleDoctors === 0;
+
+      let visibleServices = 0;
+      for (const option of serviceOptions) {
+        const matchesSpeciality = option.dataset.speciality === state.specialityId;
+        const matchesDoctor = !state.doctorId || (option.dataset.doctors ?? '').split(' ').includes(state.doctorId);
+        const show = Boolean(state.doctorId) && matchesSpeciality && matchesDoctor;
+
+        option.hidden = !show;
+        if (show) visibleServices += 1;
+        if (!show) {
+          const input = option.querySelector<HTMLInputElement>('input');
+          if (input?.checked) {
+            input.checked = false;
+            state.serviceId = '';
+          }
+        }
+      }
+
+      if (serviceField) serviceField.hidden = visibleServices === 0;
+      syncButtons();
+    };
+
+    /* --------------------------------------------------------------------- *
+     * Pasul 2, calendarul saptamanal
+     * --------------------------------------------------------------------- */
+    const calendar = root.querySelector<HTMLElement>('[data-calendar]');
+    const weekLabel = root.querySelector<HTMLElement>('[data-week-label]');
+    const calendarNote = root.querySelector<HTMLElement>('[data-calendar-note]');
+    const weekButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-week]'));
+
+    const renderCalendar = () => {
+      if (!calendar) return;
+
+      const current = service();
+      const rules = schedule();
+      calendar.innerHTML = '';
+
+      const days = Array.from({ length: 7 }, (_, index) => addDays(state.weekStart, index));
+      let total = 0;
+
+      for (const day of days) {
+        const slots = slotsFor(day);
+        total += slots.filter((slot) => !slot.busy).length;
+
+        const column = document.createElement('div');
+        column.className = 'rounded-xl border border-stroke bg-surface p-3';
+
+        const isToday = ymd(day) === ymd(new Date());
+        column.innerHTML = `
+          <p class="text-xs font-semibold ${isToday ? 'text-brand': 'text-ink'}">${dayNames[isoDay(day) - 1]}</p>
+          <p class="text-ink-subtle text-xs">${monthFormatter.format(day)}</p>
+          <div class="mt-3 flex flex-col gap-1.5" data-day="${ymd(day)}"></div>`;
+
+        const list = column.querySelector<HTMLElement>('[data-day]')!;
+
+        if (slots.length === 0) {
+          list.innerHTML = '<p class="text-ink-subtle text-xs">, </p>';
+        } else {
+          for (const slot of slots) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.disabled = slot.busy;
+            button.dataset.slot = `${slot.date}|${slot.start}|${slot.end}|${slot.room ?? ''}`;
+            button.className = slot.busy
+              ? 'rounded-lg border border-stroke px-2 py-1.5 text-xs text-ink-subtle line-through opacity-60'
+: 'rounded-lg border border-stroke px-2 py-1.5 text-xs font-semibold text-ink transition hover:border-brand hover:bg-brand-50 hover:text-brand aria-[pressed=true]:border-brand aria-[pressed=true]:bg-brand aria-[pressed=true]:text-white';
+            button.setAttribute('aria-pressed', String(
+              state.slot?.date === slot.date && state.slot?.start === slot.start,
+            ));
+            button.textContent = hhmm(slot.start);
+            if (slot.busy) button.title = 'Interval ocupat';
+            list.append(button);
+          }
+        }
+
+        calendar.append(column);
+      }
+
+      if (weekLabel) {
+        const end = addDays(state.weekStart, 6);
+        weekLabel.textContent = `${monthFormatter.format(state.weekStart)} – ${monthFormatter.format(end)}`;
+      }
+
+      if (calendarNote) {
+        const parts = [
+          current ? `Sloturi de ${current.durationMinutes} de minute`: '',
+          rules ? `programabile cu până la ${rules.bookingWindowDays} de zile înainte`: '',
+          `cel mai devreme peste ${data.leadTimeHours} de ore`,
+        ].filter(Boolean);
+        calendarNote.textContent = total === 0
+          ? 'Nu sunt intervale libere în această săptămână. Încearcă săptămâna următoare.'
+: `${parts.join(', ')}.`;
+      }
+
+      const thisWeek = startOfWeek(new Date()).getTime();
+      const maxWeek = startOfWeek(new Date(Date.now() + (rules?.bookingWindowDays ?? 30) * DAY)).getTime();
+      for (const button of weekButtons) {
+        const direction = Number(button.dataset.week);
+        const target = addDays(state.weekStart, direction * 7).getTime();
+        button.disabled = direction < 0 ? target < thisWeek: target > maxWeek;
+      }
+    };
+
+    /**
+     * Prima zi cu interval liber, in fereastra de programare. Calendarul
+     * porneste de acolo: un medic care lucreaza marti si joi ar arata altfel o
+     * saptamana aproape goala, doar pentru ca zilele lui au trecut deja.
+     */
+    const firstAvailableWeek = () => {
+      const rules = schedule();
+      if (!rules) return startOfWeek(new Date());
+
+      for (let day = 0; day <= rules.bookingWindowDays; day += 1) {
+        const date = addDays(new Date(), day);
+        if (slotsFor(date).some((slot) => !slot.busy)) return startOfWeek(date);
+      }
+
+      return startOfWeek(new Date());
+    };
+
+    /* --------------------------------------------------------------------- *
+     * Rezumate
+     * --------------------------------------------------------------------- */
+    const slotLabel = () => {
+      if (!state.slot) return '';
+      const [year, month, day] = state.slot.date.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      return `${longFormatter.format(date)}, ${hhmm(state.slot.start)}–${hhmm(state.slot.end)}`;
+    };
+
+    const summaryRows = () => {
+      const current = service();
+      const chosen = doctor();
+      const speciality = data.specialities.find((item) => item.id === state.specialityId);
+
+      return [
+        ['Serviciu', current?.title ?? '-'],
+        ['Specializare', speciality?.title ?? '-'],
+        ['Medic', chosen?.name ?? '-'],
+        ['Data și ora', slotLabel() || '-'],
+        ['Durată', current ? `${current.durationMinutes} de minute`: '-'],
+        ['Preț', current?.cnas ? `${current.priceLabel} · decontat CNAS cu bilet`: (current?.priceLabel ?? '-')],
+        state.slot?.room ? ['Locație', state.slot.room]: null,
+      ].filter(Boolean) as Array<[string, string]>;
+    };
+
+    const renderSummaries = () => {
+      const rows = summaryRows()
+.map(
+          ([label, value]) => `
+            <div class="flex flex-col gap-0.5">
+              <dt class="text-ink-subtle text-xs font-semibold tracking-wide uppercase">${label}</dt>
+              <dd class="text-ink font-medium">${value}</dd>
+            </div>`,
+        )
+.join('');
+
+      for (const node of root.querySelectorAll<HTMLElement>('[data-summary], [data-confirmation-summary]')) {
+        node.innerHTML = rows;
+      }
+
+      const selection = root.querySelector<HTMLElement>('[data-selection-summary]');
+      const current = service();
+      const chosen = doctor();
+      if (selection && current && chosen) {
+        selection.textContent = `${current.title} · ${chosen.name} · ${current.durationMinutes} de minute`;
+      }
+    };
+
+    /* --------------------------------------------------------------------- *
+     * Navigarea intre pasi
+     * --------------------------------------------------------------------- */
+    const showStep = (step: number) => {
+      state.step = step;
+
+      for (const panel of root.querySelectorAll<HTMLElement>('[data-step]')) {
+        panel.hidden = Number(panel.dataset.step) !== step;
+      }
+      for (const label of root.querySelectorAll<HTMLElement>('[data-step-label]')) {
+        const id = Number(label.dataset.stepLabel);
+        if (id === step) label.setAttribute('aria-current', 'step');
+        else label.removeAttribute('aria-current');
+      }
+
+      if (step === 2) {
+        if (!state.slot) state.weekStart = firstAvailableWeek();
+        renderCalendar();
+      }
+      if (step >= 2) renderSummaries();
+
+      const heading = root.querySelector<HTMLElement>(`[data-step="${step}"] h2`);
+      heading?.scrollIntoView({ block: 'nearest' });
+      syncButtons();
+    };
+
+    function syncButtons() {
+      const next1 = root!.querySelector<HTMLButtonElement>('[data-next="2"]');
+      if (next1) next1.disabled = !(state.specialityId && state.doctorId && state.serviceId);
+
+      const next2 = root!.querySelector<HTMLButtonElement>('[data-next="3"]');
+      if (next2) next2.disabled = !state.slot;
+    }
+
+    /* --------------------------------------------------------------------- *
+     * Evenimente
+     * --------------------------------------------------------------------- */
+    root.addEventListener('change', (event) => {
+      const target = event.target as HTMLInputElement;
+
+      if (target.matches('[data-speciality-input]')) {
+        state.specialityId = target.value;
+        state.doctorId = '';
+        state.serviceId = '';
+        state.slot = null;
+        refreshOptions();
+      } else if (target.matches('[data-doctor-input]')) {
+        state.doctorId = target.value;
+        state.slot = null;
+        refreshOptions();
+      } else if (target.matches('[data-service-input]')) {
+        state.serviceId = target.value;
+        state.slot = null;
+        syncButtons();
+      }
+    });
+
+    root.addEventListener('click', (event) => {
+      const target = (event.target as HTMLElement).closest<HTMLElement>(
+        '[data-next], [data-back], [data-week], [data-slot], [data-restart]',
+      );
+      if (!target) return;
+
+      if (target.dataset.next) showStep(Number(target.dataset.next));
+      else if (target.dataset.back) showStep(Number(target.dataset.back));
+      else if (target.dataset.week) {
+        state.weekStart = addDays(state.weekStart, Number(target.dataset.week) * 7);
+        renderCalendar();
+      } else if (target.dataset.slot) {
+        const [date, start, end, room] = target.dataset.slot.split('|');
+        state.slot = { date, start: Number(start), end: Number(end), room: room || undefined };
+        renderCalendar();
+        renderSummaries();
+        syncButtons();
+      } else if (target.dataset.restart !== undefined) {
+        location.href = location.pathname;
+      }
+    });
+
+    /* --------------------------------------------------------------------- *
+     * Trimiterea si confirmarea prin cod
+     *
+     * Codul e generat local si comparat local: e un flux demonstrativ. Intr-o
+     * implementare reala, codul se genereaza pe server, se trimite prin SMS si
+     * se verifica tot pe server - niciodata in browser.
+     * --------------------------------------------------------------------- */
+    const form = root.querySelector<HTMLFormElement>('[data-booking-form]');
+    const formError = root.querySelector<HTMLElement>('[data-form-error]');
+    const otpForm = root.querySelector<HTMLFormElement>('[data-otp-form]');
+    const otpInput = root.querySelector<HTMLInputElement>('[data-otp-input]');
+    const otpError = root.querySelector<HTMLElement>('[data-otp-error]');
+
+    let expectedCode = '';
+
+    const issueCode = () => {
+      expectedCode = String(Math.floor(100_000 + Math.random() * 900_000));
+      const shown = root!.querySelector<HTMLElement>('[data-otp]');
+      if (shown) shown.textContent = expectedCode;
+      if (otpInput) otpInput.value = '';
+      otpError?.classList.add('hidden');
+    };
+
+    const showOtpStage = (stage: 'pending' | 'done') => {
+      for (const panel of root!.querySelectorAll<HTMLElement>('[data-otp-stage]')) {
+        panel.hidden = panel.dataset.otpStage !== stage;
+      }
+    };
+
+    form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      if (!form.checkValidity()) {
+        formError?.classList.remove('hidden');
+        if (formError) formError.textContent = 'Completează câmpurile obligatorii, marcate cu *.';
+        form.reportValidity();
+        return;
+      }
+
+      formError?.classList.add('hidden');
+      issueCode();
+      showOtpStage('pending');
+      showStep(4);
+      root!.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      otpInput?.focus();
+    });
+
+    // Doar cifre, maximum sase.
+    otpInput?.addEventListener('input', () => {
+      otpInput.value = otpInput.value.replace(/\D/g, '').slice(0, 6);
+      if (otpInput.value.length === 6) otpError?.classList.add('hidden');
+    });
+
+    otpForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const code = otpInput?.value ?? '';
+
+      if (code.length !== 6) {
+        otpError?.classList.remove('hidden');
+        if (otpError) otpError.textContent = 'Introdu codul din 6 cifre primit prin SMS.';
+        otpInput?.focus();
+        return;
+      }
+
+      if (code !== expectedCode) {
+        otpError?.classList.remove('hidden');
+        if (otpError) otpError.textContent = 'Codul nu este corect. Verifică SMS-ul sau cere unul nou.';
+        otpInput?.select();
+        return;
+      }
+
+      otpError?.classList.add('hidden');
+      const used = root!.querySelector<HTMLElement>('[data-otp-used]');
+      if (used) used.textContent = code;
+
+      showOtpStage('done');
+      renderSummaries();
+      root!.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    root.querySelector<HTMLButtonElement>('[data-otp-resend]')?.addEventListener('click', () => {
+      issueCode();
+      otpInput?.focus();
+    });
+
+    /* --------------------------------------------------------------------- *
+     * Pornire: acceptam preselectie din URL (linkurile de pe paginile de serviciu)
+     * --------------------------------------------------------------------- */
+    const params = new URLSearchParams(location.search);
+    const preselected = data.services.find((item) => item.id === params.get('serviciu'));
+
+    if (preselected) {
+      state.specialityId = preselected.specialityId;
+      const preferred = params.get('medic');
+      state.doctorId = preselected.doctorIds.includes(preferred ?? '') ? preferred!: preselected.doctorIds[0] ?? '';
+      state.serviceId = preselected.id;
+    } else if (params.get('specializare')) {
+      state.specialityId = params.get('specializare') ?? '';
+    }
+
+    for (const input of root.querySelectorAll<HTMLInputElement>('input[type="radio"]')) {
+      if (input.matches('[data-speciality-input]')) input.checked = input.value === state.specialityId;
+      if (input.matches('[data-doctor-input]')) input.checked = input.value === state.doctorId;
+      if (input.matches('[data-service-input]')) input.checked = input.value === state.serviceId;
+    }
+
+    refreshOptions();
+    showStep(1);
+  }
+</script>

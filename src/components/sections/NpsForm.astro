@@ -1,0 +1,154 @@
+---
+/**
+ * Formularul NPS (Net Promoter Score).
+ *
+ * O singură întrebare cu notă de la 0 la 10, plus una deschisă. Atât: fiecare
+ * câmp în plus scade numărul de răspunsuri, iar un formular de feedback trăiește
+ * din câți oameni îl termină, nu din câte lucruri întreabă.
+ *
+ * Trei decizii:
+ *
+ * 1. **Notele nu sunt colorate.** Roșu la stânga și verde la dreapta ar spune
+ *    omului ce se așteaptă de la el înainte să aleagă.
+ * 2. **Întrebarea deschisă se schimbă după notă.** „Ce ar trebui să schimbăm?"
+ *    și „Ce ți-a plăcut cel mai mult?" sunt întrebări diferite, iar răspunsul
+ *    la cea potrivită e de folos. Fără JavaScript rămâne varianta neutră.
+ * 3. **Numele și contactul sunt opționale.** Un 3 se dă cel mai ușor anonim,
+ *    și tocmai acela merită citit.
+ *
+ * Se trimite la `/api/feedback`, care îl pune pe email. Nimic nu se stochează.
+ */
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+import { getSpecializari } from '../../lib/content';
+
+const specializari = await getSpecializari();
+
+const scores = Array.from({ length: 11 }, (_, index) => index);
+
+const field =
+  'w-full rounded-lg border border-stroke bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-subtle focus:border-brand focus:outline-none';
+const label = 'text-sm font-semibold text-ink';
+---
+
+<div id="formular" class="border-stroke bg-surface shadow-card rounded-2xl border p-6 sm:p-8">
+  <form method="POST" action="/api/feedback" class="grid gap-6">
+    {/* honeypot anti-spam: campul trebuie sa ramana gol */}
+    <p class="hidden" aria-hidden="true">
+      <label for="fb-website">Nu completa acest câmp</label>
+      <input id="fb-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+    </p>
+
+    <fieldset>
+      <legend class="font-heading text-ink text-xl leading-7 font-bold">
+        Cât de probabil este să recomanzi Policlinica Bastion unui prieten sau unei rude?
+      </legend>
+      <p class="text-ink-muted mt-1 text-sm leading-5">0 înseamnă deloc probabil, 10 înseamnă foarte probabil.</p>
+
+      <div class="mt-4 grid grid-cols-6 gap-1.5 sm:grid-cols-11" data-nps-scale>
+        {
+          scores.map((score) => (
+            <div>
+              <input
+                class="peer sr-only"
+                type="radio"
+                id={`nps-${score}`}
+                name="score"
+                value={score}
+                required
+              />
+              <label
+                for={`nps-${score}`}
+                class="border-stroke text-ink-muted hover:border-brand/50 hover:text-brand peer-checked:border-brand peer-checked:bg-brand peer-focus-visible:ring-brand/40 flex h-11 cursor-pointer items-center justify-center rounded-lg border text-sm font-semibold transition peer-checked:text-white peer-focus-visible:ring-2"
+              >
+                {score}
+              </label>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="text-ink-subtle mt-2 flex justify-between text-xs">
+        <span>Deloc probabil</span>
+        <span>Foarte probabil</span>
+      </div>
+    </fieldset>
+
+    <div class="flex flex-col gap-1.5">
+      <label class={label} for="comment" data-nps-question>Ce ne-ai spune despre experiența ta?</label>
+      <textarea
+        class={field}
+        id="comment"
+        name="comment"
+        rows="4"
+        placeholder="Scrie liber. Ne ajută și un rând."></textarea>
+      <p class="text-ink-subtle text-xs leading-[18px]">
+        Te rugăm să nu scrii aici diagnostice, rezultate sau alte date medicale.
+      </p>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="flex flex-col gap-1.5 sm:col-span-2">
+        <label class={label} for="fb-speciality">La ce specializare ai fost? (opțional)</label>
+        <select class={field} id="fb-speciality" name="speciality">
+          <option value="">Preferă să nu spună</option>
+          {specializari.map((item) => <option value={item.data.title}>{item.data.title}</option>)}
+        </select>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class={label} for="fb-name">Numele tău (opțional)</label>
+        <input class={field} id="fb-name" name="name" type="text" autocomplete="name" />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label class={label} for="fb-contact">Telefon sau email (opțional)</label>
+        <input class={field} id="fb-contact" name="contact" type="text" autocomplete="email" />
+      </div>
+
+      <p class="text-ink-subtle text-xs leading-[18px] sm:col-span-2">
+        Completează-le doar dacă vrei să te căutăm. Fără ele, răspunsul rămâne anonim.
+      </p>
+    </div>
+
+    <div class="flex items-start gap-2">
+      <input id="fb-gdpr" name="gdpr" type="checkbox" required class="border-stroke mt-1 h-4 w-4 rounded" />
+      <label for="fb-gdpr" class="text-ink-muted text-xs leading-[18px]">
+        Sunt de acord cu prelucrarea datelor trimise prin acest formular, conform{' '}
+        <a href="/politica-de-confidentialitate" class="text-brand underline">politicii de confidențialitate</a>.
+      </label>
+    </div>
+
+    <div>
+      <Button type="submit">
+        <Icon name="send" size={16} />
+        Trimite răspunsul
+      </Button>
+    </div>
+  </form>
+</div>
+
+<script>
+  /* Întrebarea deschisă se potrivește după notă: cine a dat 4 și cine a dat 10
+   * n-au ce să-ți spună la aceeași întrebare. Textul inițial rămâne neutru,
+   * deci formularul e complet și fără scriptul acesta. */
+  const scale = document.querySelector<HTMLElement>('[data-nps-scale]');
+  const question = document.querySelector<HTMLElement>('[data-nps-question]');
+
+  if (scale && question) {
+    const questions = [
+      { max: 6, text: 'Ce nu a mers bine și ce ar trebui să schimbăm?' },
+      { max: 8, text: 'Ce ne-ar mai fi lipsit ca să pui 9 sau 10?' },
+      { max: 10, text: 'Ce ți-a plăcut cel mai mult?' },
+    ];
+
+    scale.addEventListener('change', (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement)) return;
+
+      const score = Number(input.value);
+      const match = questions.find((item) => score <= item.max);
+      if (match) question.textContent = match.text;
+    });
+  }
+</script>

@@ -1,0 +1,57 @@
+---
+/**
+ * Sectiune standard "listă de puncte" (simptome, indicații, riscuri...).
+ * Toate paginile de afecțiune și de intervenție sunt construite din aceste
+ * blocuri, in aceeasi ordine, ca structura sa fie identica peste tot.
+ */
+import SimpleHeading from '../ui/SimpleHeading.astro';
+import Icon from '../ui/Icon.astro';
+
+type Variant = 'dot' | 'check' | 'alert' | 'info';
+
+interface Props {
+  id: string;
+  title: string;
+  intro?: string;
+  items: string[];
+  variant?: Variant;
+  tone?: 'white' | 'alt';
+  columns?: 1 | 2;
+}
+
+const { id, title, intro, items, variant = 'dot', tone = 'white', columns = 2 } = Astro.props;
+
+const tones = { white: 'bg-surface', alt: 'bg-surface-alt' };
+const marks: Record<Variant, string> = {
+  dot: 'text-brand',
+  check: 'text-whatsapp',
+  alert: 'text-star',
+  info: 'text-chip-ink',
+};
+---
+
+{
+  items.length > 0 && (
+    <section id={id} class:list={[tones[tone], 'py-12']}>
+      <div class="container-page">
+        <SimpleHeading title={title} />
+        {intro && <p class="text-ink-muted mt-4 max-w-3xl text-base leading-7">{intro}</p>}
+
+        <ul class:list={['mt-8 grid gap-x-8 gap-y-3', columns === 2 && 'md:grid-cols-2']}>
+          {items.map((item) => (
+            <li class="flex gap-3">
+              <span class:list={['mt-0.5 shrink-0', marks[variant]]}>
+                {variant === 'dot' ? (
+                  <span class="bg-brand mt-2 block h-1.5 w-1.5 rounded-full" aria-hidden="true" />
+                ) : (
+                  <Icon name={variant === 'check' ? 'check' : variant === 'alert' ? 'alert' : 'info'} size={18} />
+                )}
+              </span>
+              <span class="text-ink-muted text-base leading-7">{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}

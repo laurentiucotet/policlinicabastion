@@ -4,6 +4,22 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import vercel from '@astrojs/vercel';
 import tailwindcss from '@tailwindcss/vite';
+import site from './src/content/settings/site.json' with { type: 'json' };
+
+/**
+ * Sectiunile optionale (servicii, afectiuni, centrul de suport) se sting din
+ * CMS, din `settings/site.json` -> `features`.
+ *
+ * Stingerea se face la nivel de ruta: paginile lor sunt rute dinamice al caror
+ * `getStaticPaths` returneaza gol cand sectiunea e stinsa, deci nu se genereaza
+ * si nu ajung nici in sitemap. Aici raman doar redirectarile vechi, care nu pot
+ * arata spre o ruta inexistenta, Astro respinge build-ul daca o fac.
+ *
+ * Perechea din partea de continut e `src/lib/features.ts`.
+ */
+const features = /** @type {Record<string, boolean>} */ (site.features ?? {});
+/** @param {string} name */
+const enabled = (name) => features[name] !== false;
 
 // https://astro.build/config
 export default defineConfig({
@@ -17,6 +33,21 @@ export default defineConfig({
     imageService: true,
     webAnalytics: { enabled: false },
   }),
+
+  // /cautare nu mai e o pagina de sine statatoare: cautarea e o functie in
+  // header, iar rezultatele au pagina lor. Pastram vechiul URL functional.
+  redirects: {
+    '/cautare': '/rezultate-cautare',
+    // Astro numeste harta site-ului `sitemap-index.xml`, dar aproape toate
+    // uneltele (si o parte din crawlere) o cauta intai la adresa conventionala.
+    // Un audit care nu o gaseste raporteaza ca site-ul nu are sitemap.
+    '/sitemap.xml': '/sitemap-index.xml',
+    // Intervențiile au fost unificate cu serviciile: sunt acelasi tip de
+    // entitate, diferentiat printr-o eticheta. Slug-urile s-au pastrat.
+...(enabled('servicii')
+      ? { '/interventii': '/servicii', '/interventii/[slug]': '/servicii/[slug]' }
+: {}),
+  },
 
   integrations: [
     mdx(),

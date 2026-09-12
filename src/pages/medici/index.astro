@@ -4,10 +4,29 @@ import PageTitleHeader from '../../components/sections/PageTitleHeader.astro';
 import TeamGrid from '../../components/sections/TeamGrid.astro';
 import CtaBand from '../../components/sections/CtaBand.astro';
 import { home } from '../../lib/site';
+import { collectionSchema } from '../../lib/schema';
+import { getMedici } from '../../lib/content';
+import { countOf } from '../../lib/utils';
+
+const origin = (Astro.site ?? new URL(Astro.url.origin)).toString();
+const medici = await getMedici();
+/* Descrierea din rezultatele cautarii se compune din numere reale, calculate
+ * la build: cate cadre didactice si cati medici, in cate specializari. E ce
+ * cauta cineva care alege o clinica, si nu se poate invechi. */
+const specialitiesCount = new Set(medici.flatMap((medic) => medic.data.specialities.map((ref) => ref.id))).size;
+const description = `Echipa Policlinicii Bastion din Timișoara: ${countOf(medici.length, 'medic', 'medici')} în ${countOf(specialitiesCount, 'specializare', 'specializări')}. Vezi profilul fiecăruia, serviciile pe care le acoperă și cum faci o programare.`;
+
+const schema = collectionSchema({
+  origin,
+  name: 'Echipa medicală',
+  description,
+  items: medici.map((medic) => ({ name: medic.data.name, url: `/medici/${medic.id}` })),
+});
 ---
 
-<BaseLayout title="Echipa noastră" description="Medicii Policlinicii Bastion din Timișoara.">
+<BaseLayout schema={schema} title="Echipa noastră" {description}>
   <PageTitleHeader
+    breadcrumbs={[{ label: 'Medici' }]}
     badge="Medici"
     title="Echipa noastră"
     subtitle="Profesori universitari, conferențiari și medici primari cu experiență clinică și de cercetare."

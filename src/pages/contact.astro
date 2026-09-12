@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PageTitleHeader from '../components/sections/PageTitleHeader.astro';
 import ContactForm from '../components/sections/ContactForm.astro';
 import Orar from '../components/sections/Orar.astro';
+import Parcare from '../components/sections/Parcare.astro';
 import Icon from '../components/ui/Icon.astro';
 import { site, whatsappHref } from '../lib/site';
 
@@ -36,6 +37,7 @@ const contactCards = [
   description={`Contact Policlinica Bastion Timișoara: ${site.address.street}, ${site.address.city}. Telefon ${site.phones[0]?.value}.`}
 >
   <PageTitleHeader
+    breadcrumbs={[{ label: 'Contact' }]}
     badge="Contact"
     title="Contactează-ne"
     subtitle="Suntem aici să te ajutăm. Sună-ne sau trimite-ne un mesaj și revenim cu confirmarea programării."
@@ -69,6 +71,8 @@ const contactCards = [
             )
           }
         </div>
+
+        <Parcare />
 
         <Orar />
       </div>

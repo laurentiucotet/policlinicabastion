@@ -1,0 +1,45 @@
+---
+/**
+ * Banda inchisa la culoare de pe prima pagina. Rolul ei e sa rupa sirul de
+ * sectiuni albe si gri cu grile de carduri - de aceea nu contine carduri, ci
+ * doar iconita + text, pe fundal brand.
+ */
+interface Props {
+  badge?: string;
+  title: string;
+  subtitle?: string;
+  items: Array<{ icon: string; title: string; text: string }>;
+}
+
+const { badge, title, subtitle, items } = Astro.props;
+---
+
+{
+  items.length > 0 && (
+    <section class="bg-brand-dark py-14">
+      <div class="container-page flex flex-col items-center gap-8">
+        <header class="flex flex-col items-center gap-3 text-center">
+          {badge && (
+            <span class="inline-flex items-center rounded-full bg-white/15 px-3 py-1.5 text-xs leading-[18px] font-semibold text-white">
+              {badge}
+            </span>
+          )}
+          <h2 class="font-heading text-3xl leading-tight font-bold text-balance text-white sm:text-4xl">{title}</h2>
+          {subtitle && <p class="max-w-2xl text-base leading-7 text-white/80 text-pretty">{subtitle}</p>}
+        </header>
+
+        <ul class="grid w-full gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+          {items.map((item) => (
+            <li class="flex flex-col gap-2">
+              <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-2xl" aria-hidden="true">
+                {item.icon}
+              </span>
+              <h3 class="mt-1 text-base leading-6 font-semibold text-white">{item.title}</h3>
+              <p class="text-sm leading-6 text-white/75 text-pretty">{item.text}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}

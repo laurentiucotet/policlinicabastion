@@ -1,0 +1,201 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageTitleHeader from '../components/sections/PageTitleHeader.astro';
+import CtaBand from '../components/sections/CtaBand.astro';
+import { home } from '../lib/site';
+
+/**
+ * Pagina de rezultate. Cautarea in sine este o functie disponibila in header
+ * (vezi components/layout/SearchBox.astro) - aici ajungi doar cu ?q=termen,
+ * ca sa vezi toate rezultatele, grupate pe tipuri.
+ */
+const types = [
+  'Specializare',
+  'Afecțiune',
+  'Intervenție',
+  'Serviciu',
+  'Medic',
+  'Articol',
+  'Suport',
+  'Proiect european',
+  'Pagină',
+];
+---
+
+<BaseLayout title="Rezultatele căutării" noindex>
+  <PageTitleHeader
+    breadcrumbs={[{ label: 'Rezultatele căutării' }]}
+    badge="Căutare"
+    title="Rezultatele căutării"
+    subtitle="Caută printre specializări, afecțiuni, intervenții, servicii, medici și articole."
+  />
+
+  <section class="bg-surface py-12">
+    <div class="container-page max-w-3xl">
+      <form role="search" data-results-form>
+        <label class="sr-only" for="q">Caută</label>
+        <input
+          id="q"
+          type="search"
+          name="q"
+          placeholder="Ex: prostată, biopsie fusion, dr. Lațcu..."
+          autocomplete="off"
+          class="border-stroke text-ink placeholder:text-ink-subtle focus:border-brand w-full rounded-lg border px-4 py-3 text-base focus:outline-none"
+          data-results-input
+        />
+      </form>
+
+      <div class="mt-4 flex flex-wrap gap-2" data-results-filters>
+        <button
+          type="button"
+          class="bg-chip text-chip-ink aria-pressed:bg-brand rounded-full px-3 py-1.5 text-xs font-semibold aria-pressed:text-white"
+          aria-pressed="true"
+          data-results-filter="">Toate</button
+        >
+        {
+          types.map((type) => (
+            <button
+              type="button"
+              class="bg-chip text-chip-ink aria-pressed:bg-brand rounded-full px-3 py-1.5 text-xs font-semibold aria-pressed:text-white"
+              aria-pressed="false"
+              data-results-filter={type}
+              hidden
+            >
+              {type}
+            </button>
+          ))
+        }
+      </div>
+
+      <p id="cautare-stare" class="text-ink-subtle mt-6 text-sm" aria-live="polite">
+        Scrie cel puțin 2 caractere.
+      </p>
+      <ul id="cautare-rezultate" class="divide-stroke mt-2 divide-y"></ul>
+    </div>
+  </section>
+
+  <CtaBand title={home.ctaSecondary.title} text={home.ctaSecondary.text} cta={home.ctaSecondary.cta} tone="alt" />
+</BaseLayout>
+
+<script>
+  type Entry = { type: string; title: string; description: string; url: string; keywords?: string[] };
+
+  const input = document.querySelector<HTMLInputElement>('[data-results-input]');
+  const form = document.querySelector<HTMLFormElement>('[data-results-form]');
+  const list = document.getElementById('cautare-rezultate');
+  const state = document.getElementById('cautare-stare');
+  const filters = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-results-filter]'));
+
+  const normalize = (value: string) =>
+    value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+  const escapeHtml = (value: string) =>
+    value.replace(/[&<>"']/g, (char) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char,
+    );
+
+  /**
+   * Potrivirile din titlu conteaza mai mult decat cele din descriere sau din
+   * cuvinte-cheie. Comparam si o radacina de 6 litere, ca „biopsie" sa
+   * gaseasca „Biopsia de prostata" - flexiunea din romana ar rata altfel exact
+   * rezultatul cel mai relevant.
+   */
+  const score = (entry: Entry, query: string) => {
+    const title = normalize(entry.title);
+    const stem = query.length > 6 ? query.slice(0, 6) : query;
+    if (title.startsWith(query) || title.startsWith(stem)) return 3;
+    if (title.includes(query) || title.includes(stem)) return 2;
+    if (normalize(entry.description).includes(query)) return 1;
+    return 0;
+  };
+
+  let entries: Entry[] = [];
+  let activeType = '';
+
+  const load = async () => {
+    if (entries.length) return;
+    const response = await fetch('/cautare-index.json');
+    entries = await response.json();
+  };
+
+  const render = (matches: Entry[]) => {
+    if (!list || !state) return;
+
+    const counts = new Map<string, number>();
+    for (const entry of matches) counts.set(entry.type, (counts.get(entry.type) ?? 0) + 1);
+
+    for (const button of filters) {
+      const type = button.dataset.resultsFilter ?? '';
+      button.hidden = type !== '' && !counts.has(type);
+      button.setAttribute('aria-pressed', String(type === activeType));
+      if (type && counts.has(type)) button.textContent = `${type} (${counts.get(type)})`;
+    }
+
+    const visible = activeType ? matches.filter((entry) => entry.type === activeType) : matches;
+
+    list.innerHTML = visible
+      .map(
+        (entry) => `
+          <li class="py-3">
+            <a href="${entry.url}" class="group block">
+              <span class="text-chip-ink text-xs font-semibold">${escapeHtml(entry.type)}</span>
+              <span class="text-ink group-hover:text-brand block text-base font-semibold">${escapeHtml(entry.title)}</span>
+              <span class="text-ink-muted block text-sm">${escapeHtml(entry.description)}</span>
+            </a>
+          </li>`,
+      )
+      .join('');
+
+    state.textContent = visible.length
+      ? `${visible.length} ${visible.length === 1 ? 'rezultat' : 'rezultate'}`
+      : 'Niciun rezultat. Încearcă alt termen.';
+  };
+
+  const search = async () => {
+    const query = normalize(input?.value.trim() ?? '');
+
+    if (query.length < 2) {
+      if (list) list.innerHTML = '';
+      if (state) state.textContent = 'Scrie cel puțin 2 caractere.';
+      for (const button of filters) button.hidden = (button.dataset.resultsFilter ?? '') !== '';
+      return;
+    }
+
+    await load();
+    render(
+      entries
+        .filter((entry) =>
+          normalize(
+            `${entry.title} ${entry.description} ${entry.type} ${(entry.keywords ?? []).join(' ')}`,
+          ).includes(query),
+        )
+        .sort((a, b) => score(b, query) - score(a, query)),
+    );
+
+    const url = new URL(location.href);
+    url.searchParams.set('q', input?.value.trim() ?? '');
+    history.replaceState(null, '', url);
+  };
+
+  input?.addEventListener('input', () => void search());
+  form?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    void search();
+  });
+
+  for (const button of filters) {
+    button.addEventListener('click', () => {
+      activeType = button.dataset.resultsFilter ?? '';
+      void search();
+    });
+  }
+
+  const initial = new URLSearchParams(location.search).get('q');
+  if (initial && input) {
+    input.value = initial;
+    void search();
+  }
+</script>

@@ -13,7 +13,7 @@ const href = `/noutati/${post.id}`;
 ---
 
 <article
-  class="border-stroke bg-surface shadow-card group flex h-full flex-col overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
+  class="border-stroke bg-surface shadow-card card-surface group flex h-full flex-col overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
 >
   <a href={href} class="block aspect-[16/9] overflow-hidden" tabindex="-1" aria-hidden="true">
     {
@@ -37,7 +37,7 @@ const href = `/noutati/${post.id}`;
       {categoryName && <><span aria-hidden="true">·</span><span>{categoryName}</span></>}
     </p>
     <h3 class="text-base leading-6 font-semibold">
-      <a href={href} class="hover:text-brand after:absolute after:inset-0 after:content-['']">
+      <a href={href} class="hover:text-brand card-link">
         {post.data.title}
       </a>
     </h3>

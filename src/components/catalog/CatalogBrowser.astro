@@ -1,0 +1,355 @@
+---
+/**
+ * Catalog cu categorii in stanga (expandabile) si cautare dupa cuvinte-cheie.
+ * Folosit identic de /afectiuni si /servicii - difera doar datele primite.
+ * Filtrarea se face in browser, fara request suplimentar: toate intrarile sunt
+ * deja randate in HTML, scriptul doar le ascunde.
+ */
+import Icon from '../ui/Icon.astro';
+import EntityCard from '../cards/EntityCard.astro';
+import { normalizeText } from '../../lib/utils';
+import type { CatalogFlag, CatalogGroup, CatalogItem, CatalogTag } from '../../lib/catalog';
+
+interface Props {
+  items: CatalogItem[];
+  groups: CatalogGroup[];
+  /** Randul de etichete de deasupra grilei. Gol = fara filtru pe eticheta. */
+  tags?: CatalogTag[];
+  /** Comutatoare independente (ex. „Decontat CNAS”), care se adauga peste restul. */
+  flags?: CatalogFlag[];
+  /** Eticheta pentru numarul de rezultate: "afecțiuni", "servicii"... */
+  noun: string;
+  searchPlaceholder: string;
+  allLabel?: string;
+  emptyText?: string;
+}
+
+const {
+  items,
+  groups,
+  tags = [],
+  flags = [],
+  noun,
+  searchPlaceholder,
+  allLabel = 'Toate',
+  emptyText = 'Niciun rezultat pentru căutarea ta.',
+} = Astro.props;
+
+const usedGroups = groups
+  .map((group) => ({ ...group, items: items.filter((item) => item.groupId === group.id) }))
+  .filter((group) => group.items.length > 0);
+
+/* Cardurile respecta ordinea categoriilor din stanga, ca lista sa fie citita la
+ * fel din ambele parti. In interiorul unei categorii, ordinea primita. */
+const orderedItems = usedGroups.flatMap((group) => group.items);
+
+const usedTags = tags.filter((tag) => items.some((item) => item.tagId === tag.id));
+const usedFlags = flags.filter((flag) => items.some((item) => item.flags?.includes(flag.id)));
+
+/** Textul dupa care filtreaza cautarea. Include si continut care nu apare pe card. */
+const haystack = (item: CatalogItem) =>
+  normalizeText(
+    [item.title, item.description, item.searchText ?? '', ...(item.keywords ?? []), ...(item.meta ?? [])].join(' '),
+  );
+---
+
+<div class="bg-surface py-12">
+  <div class="container-page grid items-start gap-8 lg:grid-cols-[280px_minmax(0,1fr)]" data-catalog>
+    <aside class="lg:sticky lg:top-40">
+      <form class="mb-4" role="search" data-catalog-form>
+        <label class="sr-only" for="catalog-q">Caută în catalog</label>
+        <div class="relative">
+          <span class="text-ink-subtle pointer-events-none absolute top-1/2 left-3 -translate-y-1/2">
+            <Icon name="search" size={18} />
+          </span>
+          <input
+            id="catalog-q"
+            type="search"
+            name="q"
+            placeholder={searchPlaceholder}
+            autocomplete="off"
+            class="border-stroke text-ink placeholder:text-ink-subtle focus:border-brand w-full rounded-lg border py-2.5 pr-3 pl-10 text-sm focus:outline-none"
+            data-catalog-search
+          />
+        </div>
+      </form>
+
+      <nav aria-label="Categorii">
+        <button
+          type="button"
+          class="border-stroke text-ink hover:border-brand/40 aria-pressed:border-brand aria-pressed:bg-brand aria-pressed:text-white flex w-full items-center justify-between rounded-lg border px-3 py-2.5 text-sm font-semibold"
+          aria-pressed="true"
+          data-catalog-all
+        >
+          {allLabel}
+          <span class="text-xs font-normal opacity-70">{items.length}</span>
+        </button>
+
+        <ul class="mt-2 space-y-1">
+          {
+            usedGroups.map((group) => (
+              <li>
+                <details class="group border-stroke overflow-hidden rounded-lg border" data-catalog-group={group.id}>
+                  <summary class="text-ink hover:bg-surface-alt flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-sm font-semibold">
+                    {group.icon && <span aria-hidden="true">{group.icon}</span>}
+                    <span class="flex-1">{group.label}</span>
+                    <span class="text-ink-subtle text-xs font-normal" data-catalog-count={group.id}>
+                      {group.items.length}
+                    </span>
+                    <span class="text-ink-subtle transition-transform group-open:rotate-180">
+                      <Icon name="chevron-down" size={16} />
+                    </span>
+                  </summary>
+
+                  <ul class="border-stroke bg-surface-alt/60 border-t px-3 py-2">
+                    {group.items.map((item) => (
+                      <li data-catalog-link={item.id}>
+                        <a href={item.href} class="text-ink-muted hover:text-brand block py-1.5 text-sm leading-5">
+                          {item.title}
+                        </a>
+                      </li>
+                    ))}
+                    {group.href && (
+                      <li class="border-stroke mt-1 border-t pt-2">
+                        <a href={group.href} class="text-brand hover:text-brand-dark inline-flex items-center gap-1 text-xs font-semibold">
+                          Vezi specializarea
+                          <Icon name="arrow-right" size={14} />
+                        </a>
+                      </li>
+                    )}
+                  </ul>
+                </details>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </aside>
+
+    <div>
+      {
+        (usedTags.length > 0 || usedFlags.length > 0) && (
+          <div class="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Filtre">
+            <button
+              type="button"
+              class="bg-chip text-chip-ink hover:bg-brand-100 aria-pressed:bg-brand rounded-full px-3 py-1.5 text-xs font-semibold aria-pressed:text-white"
+              aria-pressed="true"
+              data-catalog-tag=""
+            >
+              Toate
+            </button>
+            {usedTags.map((tag) => (
+              <button
+                type="button"
+                class="bg-chip text-chip-ink hover:bg-brand-100 aria-pressed:bg-brand rounded-full px-3 py-1.5 text-xs font-semibold aria-pressed:text-white"
+                aria-pressed="false"
+                data-catalog-tag={tag.id}
+              >
+                {tag.label}
+              </button>
+            ))}
+
+            {usedFlags.length > 0 && <span class="bg-stroke mx-1 h-5 w-px" aria-hidden="true" />}
+
+            {usedFlags.map((flag) => (
+              <button
+                type="button"
+                class="border-stroke text-ink-muted hover:border-brand/40 aria-pressed:border-brand aria-pressed:bg-brand-50 aria-pressed:text-brand inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold"
+                aria-pressed="false"
+                data-catalog-flag={flag.id}
+              >
+                <span class="border-current inline-block h-3 w-3 rounded-[4px] border" aria-hidden="true" />
+                {flag.label}
+              </button>
+            ))}
+          </div>
+        )
+      }
+
+      <p class="text-ink-subtle mb-4 text-sm" aria-live="polite" data-catalog-status data-noun={noun}>
+        {items.length} {noun}
+      </p>
+
+      <ul class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {
+          orderedItems.map((item) => (
+            <li
+              data-catalog-item={item.id}
+              data-group={item.groupId}
+              data-tag={item.tagId ?? ''}
+              data-flags={(item.flags ?? []).join(' ')}
+              data-haystack={haystack(item)}
+            >
+              <EntityCard
+                href={item.href}
+                title={item.title}
+                description={item.description}
+                eyebrow={usedGroups.find((group) => group.id === item.groupId)?.label}
+                icon={item.icon}
+                meta={item.meta}
+              />
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="text-ink-muted hidden py-12 text-center text-sm" data-catalog-empty>{emptyText}</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-catalog]');
+
+  if (root) {
+    const search = root.querySelector<HTMLInputElement>('[data-catalog-search]');
+    const form = root.querySelector<HTMLFormElement>('[data-catalog-form]');
+    const allButton = root.querySelector<HTMLButtonElement>('[data-catalog-all]');
+    const status = root.querySelector<HTMLElement>('[data-catalog-status]');
+    const empty = root.querySelector<HTMLElement>('[data-catalog-empty]');
+    const groups = Array.from(root.querySelectorAll<HTMLDetailsElement>('[data-catalog-group]'));
+    const cards = Array.from(root.querySelectorAll<HTMLElement>('[data-catalog-item]'));
+    const links = Array.from(root.querySelectorAll<HTMLElement>('[data-catalog-link]'));
+    const tagButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-catalog-tag]'));
+    const flagButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-catalog-flag]'));
+
+    const noun = status?.dataset.noun ?? '';
+    const total = cards.length;
+
+    /** Categoria selectata (null = toate) si eticheta selectata ('' = toate). */
+    let activeGroup: string | null = null;
+    let activeTag = '';
+    /** Comutatoarele active se aduna: un card trebuie sa le aiba pe toate. */
+    const activeFlags = new Set<string>();
+
+    const normalize = (value: string) =>
+      value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+
+    const apply = () => {
+      const query = normalize(search?.value.trim() ?? '');
+      let visible = 0;
+      const perGroup = new Map<string, number>();
+
+      for (const card of cards) {
+        const matchesQuery = query.length < 2 || (card.dataset.haystack ?? '').includes(query);
+        const cardFlags = (card.dataset.flags ?? '').split(' ');
+        const matchesTag = !activeTag || card.dataset.tag === activeTag;
+        const matchesFlags = [...activeFlags].every((flag) => cardFlags.includes(flag));
+        const group = card.dataset.group ?? '';
+        const matchesGroup = !activeGroup || group === activeGroup;
+        const show = matchesQuery && matchesTag && matchesFlags && matchesGroup;
+
+        card.hidden = !show;
+        if (show) visible += 1;
+        const inFilters = matchesQuery && matchesTag && matchesFlags;
+        if (inFilters) perGroup.set(group, (perGroup.get(group) ?? 0) + 1);
+
+        const link = links.find((item) => item.dataset.catalogLink === card.dataset.catalogItem);
+        if (link) link.hidden = !inFilters;
+      }
+
+      for (const group of groups) {
+        const id = group.dataset.catalogGroup ?? '';
+        const count = perGroup.get(id) ?? 0;
+        group.parentElement!.hidden = count === 0;
+        // Categoriile ramase se deschid in timpul cautarii, ca sa se vada ce s-a gasit.
+        group.open = activeGroup === id || (query.length >= 2 && count > 0);
+
+        const counter = root.querySelector<HTMLElement>(`[data-catalog-count="${id}"]`);
+        if (counter) counter.textContent = String(count);
+      }
+
+      if (status) {
+        status.textContent = visible === total ? `${total} ${noun}` : `${visible} din ${total} ${noun}`;
+      }
+      if (empty) empty.classList.toggle('hidden', visible > 0);
+      if (allButton) allButton.setAttribute('aria-pressed', String(!activeGroup));
+      for (const button of tagButtons) {
+        button.setAttribute('aria-pressed', String((button.dataset.catalogTag ?? '') === activeTag));
+      }
+      for (const button of flagButtons) {
+        button.setAttribute('aria-pressed', String(activeFlags.has(button.dataset.catalogFlag ?? '')));
+      }
+    };
+
+    /** Pastreaza filtrele in URL, ca linkul sa poata fi trimis mai departe. */
+    const syncUrl = () => {
+      const url = new URL(location.href);
+      activeGroup ? url.searchParams.set('categorie', activeGroup) : url.searchParams.delete('categorie');
+      activeTag ? url.searchParams.set('tip', activeTag) : url.searchParams.delete('tip');
+      activeFlags.size ? url.searchParams.set('doar', [...activeFlags].join(',')) : url.searchParams.delete('doar');
+      history.replaceState(null, '', url);
+    };
+
+    const selectGroup = (id: string | null) => {
+      activeGroup = id;
+      syncUrl();
+      apply();
+    };
+
+    /* Selectia categoriei se face pe click-ul din <summary>, nu pe evenimentul
+     * `toggle` al lui <details>: `toggle` se declanseaza asincron, deci si
+     * atunci cand deschidem noi categoriile din cod, in timpul cautarii - ceea
+     * ce ar filtra rezultatele fara ca utilizatorul sa fi cerut asta. */
+    for (const group of groups) {
+      group.querySelector('summary')?.addEventListener('click', (event) => {
+        event.preventDefault();
+        const id = group.dataset.catalogGroup ?? null;
+        selectGroup(activeGroup === id ? null : id);
+      });
+    }
+
+    allButton?.addEventListener('click', () => selectGroup(null));
+
+    for (const button of tagButtons) {
+      button.addEventListener('click', () => {
+        activeTag = button.dataset.catalogTag ?? '';
+        syncUrl();
+        apply();
+      });
+    }
+
+    for (const button of flagButtons) {
+      button.addEventListener('click', () => {
+        const flag = button.dataset.catalogFlag ?? '';
+        activeFlags.has(flag) ? activeFlags.delete(flag) : activeFlags.add(flag);
+        syncUrl();
+        apply();
+      });
+    }
+
+    // O cautare noua cauta in tot catalogul: altfel o categorie deschisa mai
+    // devreme ar ascunde tacut rezultate din alte specializari.
+    search?.addEventListener('input', () => {
+      if ((search.value.trim().length >= 2) && activeGroup) {
+        activeGroup = null;
+        syncUrl();
+      }
+      apply();
+    });
+
+    form?.addEventListener('submit', (event) => event.preventDefault());
+
+    // Permite /servicii?categorie=urologie&tip=interventie&q=biopsie
+    const params = new URLSearchParams(location.search);
+    const initialQuery = params.get('q');
+    if (initialQuery && search) search.value = initialQuery;
+
+    const initialTag = params.get('tip');
+    if (initialTag && tagButtons.some((button) => button.dataset.catalogTag === initialTag)) activeTag = initialTag;
+
+    for (const flag of (params.get('doar') ?? '').split(',').filter(Boolean)) {
+      if (flagButtons.some((button) => button.dataset.catalogFlag === flag)) activeFlags.add(flag);
+    }
+
+    const initialGroup = params.get('categorie');
+    if (initialGroup && groups.some((group) => group.dataset.catalogGroup === initialGroup)) {
+      activeGroup = initialGroup;
+    }
+
+    apply();
+  }
+</script>

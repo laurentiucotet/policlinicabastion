@@ -4,8 +4,14 @@
       "label": "Acasă",
       "href": "/",
       "children": [
-        { "label": "Despre noi", "href": "/despre-noi" },
-        { "label": "Echipa noastră", "href": "/medici" }
+        {
+          "label": "Despre noi",
+          "href": "/despre-noi"
+        },
+        {
+          "label": "Echipa noastră",
+          "href": "/medici"
+        }
       ]
     },
     {
@@ -13,18 +19,111 @@
       "href": "/specializari",
       "children": []
     },
-    { "label": "Programări", "href": "/contact", "children": [] },
-    { "label": "Contact", "href": "/contact", "children": [] },
-    { "label": "Noutăți", "href": "/noutati", "children": [] },
-    { "label": "Proiecte Europene", "href": "/proiecte-europene", "children": [] }
+    {
+      "label": "Servicii",
+      "href": "/servicii",
+      "children": []
+    },
+    {
+      "label": "Afecțiuni",
+      "href": "/afectiuni",
+      "children": []
+    },
+    {
+      "label": "Noutăți",
+      "href": "/noutati",
+      "children": []
+    }
   ],
-  "footer": [
-    { "label": "Drepturi și obligații asigurați", "href": "/drepturi-si-obligatii-asigurati" },
-    { "label": "Drepturile și obligațiile pacienților", "href": "/drepturile-pacientilor" },
-    { "label": "Servicii decontate prin C.N.A.S", "href": "/servicii-decontate-cnas" },
-    { "label": "Termeni și Condiții", "href": "/termeni-si-conditii" },
-    { "label": "Politica de Confidențialitate", "href": "/politica-de-confidentialitate" },
-    { "label": "Newsletter", "href": "/newsletter" },
-    { "label": "Feedback Pacienți", "href": "/feedback" }
+  "footerGroups": [
+    {
+      "title": "Clinica",
+      "links": [
+        {
+          "label": "Despre noi",
+          "href": "/despre-noi"
+        },
+        {
+          "label": "Echipa noastră",
+          "href": "/medici"
+        },
+        {
+          "label": "Cariere",
+          "href": "/cariere"
+        },
+        {
+          "label": "Proiecte Europene",
+          "href": "/proiecte-europene"
+        },
+        {
+          "label": "Noutăți",
+          "href": "/noutati"
+        }
+      ]
+    },
+    {
+      "title": "Pentru pacienți",
+      "links": [
+        {
+          "label": "Programări online",
+          "href": "/programari"
+        },
+        {
+          "label": "Servicii și intervenții",
+          "href": "/servicii"
+        },
+        {
+          "label": "Afecțiuni tratate",
+          "href": "/afectiuni"
+        },
+        {
+          "label": "Specializări",
+          "href": "/specializari"
+        },
+        {
+          "label": "Centrul de suport",
+          "href": "/suport"
+        },
+        {
+          "label": "Servicii decontate prin C.N.A.S",
+          "href": "/servicii-decontate-cnas"
+        }
+      ]
+    },
+    {
+      "title": "Informații utile",
+      "links": [
+        {
+          "label": "Drepturi și obligații asigurați",
+          "href": "/drepturi-si-obligatii-asigurati"
+        },
+        {
+          "label": "Drepturile și obligațiile pacienților",
+          "href": "/drepturile-pacientilor"
+        },
+        {
+          "label": "Feedback pacienți",
+          "href": "/feedback"
+        },
+        {
+          "label": "Contact",
+          "href": "/contact"
+        }
+      ]
+    }
+  ],
+  "footerLegal": [
+    {
+      "label": "Termeni și Condiții",
+      "href": "/termeni-si-conditii"
+    },
+    {
+      "label": "Politica de Confidențialitate",
+      "href": "/politica-de-confidentialitate"
+    },
+    {
+      "label": "Politica de Cookie-uri",
+      "href": "/politica-cookies"
+    }
   ]
 }

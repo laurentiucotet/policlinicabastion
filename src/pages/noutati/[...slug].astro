@@ -11,6 +11,8 @@ import LatestNews from '../../components/sections/LatestNews.astro';
 import { getArticole } from '../../lib/content';
 import { formatDate, isoDate } from '../../lib/utils';
 import { site } from '../../lib/site';
+import { clinicRef } from '../../lib/schema';
+import ReadingProgress from '../../components/ui/ReadingProgress.astro';
 
 export const getStaticPaths = (async () => {
   const posts = await getArticole();
@@ -27,19 +29,34 @@ const { post, sidebarPosts } = Astro.props;
 const { Content, headings } = await render(post);
 const { title, date, updated, excerpt, cover, coverAlt, category, author, seo } = post.data;
 
-const categoryEntry = category ? await getEntry(category) : undefined;
-const authorEntry = author ? await getEntry(author) : undefined;
+const categoryEntry = category ? await getEntry(category): undefined;
+const authorEntry = author ? await getEntry(author): undefined;
 const url = new URL(Astro.url.pathname, Astro.site ?? Astro.url.origin).toString();
 
+const origin = (Astro.site ?? new URL(Astro.url.origin)).toString();
+
+/**
+ * `MedicalWebPage`, nu doar `Article`: textul e conținut medical, iar tipul
+ * spune asta explicit. Autorul trimite la pagina medicului, iar editorul la
+ * clinică prin `@id`, vezi `lib/schema.ts` pentru graf.
+ */
 const schema = {
-  '@context': 'https://schema.org',
-  '@type': 'Article',
+  '@type': ['Article', 'MedicalWebPage'],
   headline: title,
   description: excerpt,
   datePublished: date.toISOString(),
   dateModified: (updated ?? date).toISOString(),
-  author: { '@type': authorEntry ? 'Person' : 'Organization', name: authorEntry?.data.name ?? site.name },
-  publisher: { '@type': 'Organization', name: site.name },
+  inLanguage: 'ro-RO',
+  author: authorEntry
+    ? {
+        '@type': 'Physician',
+        name: authorEntry.data.name,
+        jobTitle: authorEntry.data.role,
+        url: new URL(`/medici/${authorEntry.id}`, origin).toString(),
+        worksFor: clinicRef(origin),
+      }
+: clinicRef(origin),
+  publisher: clinicRef(origin),
   mainEntityOfPage: url,
 };
 ---
@@ -50,7 +67,20 @@ const schema = {
   noindex={seo?.noindex}
   schema={schema}
 >
-  <PageTitleHeader badge={categoryEntry?.data.name ?? 'Blog & Noutăți'} title={title} subtitle={excerpt} />
+  <PageTitleHeader
+    breadcrumbs={[
+      { label: 'Noutăți', href: '/noutati' },
+...(categoryEntry
+        ? [{ label: categoryEntry.data.name, href: `/noutati/categorie/${categoryEntry.id}` }]
+: []),
+      { label: title },
+    ]}
+    badge={categoryEntry?.data.name ?? 'Blog & Noutăți'}
+    title={title}
+    subtitle={excerpt}
+  />
+
+  <ReadingProgress />
 
   <section class="bg-surface py-12">
     <div class="container-page grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -81,7 +111,7 @@ const schema = {
           }
         </p>
 
-        <div class="prose-bastion mt-6 max-w-none">
+        <div class="prose-bastion mt-6 max-w-none" data-article-body>
           <Content />
         </div>
 
