@@ -815,6 +815,32 @@ Tina scrie în câmp valoarea `/src/assets/uploads/poza.jpg`, iar helperul
 În producție, imaginile sunt servite prin Vercel Image Optimization
 (`/_vercel/image?...`).
 
+### Sigla și iconițele
+
+`public/favicon.svg` e sigla primită de la client, o singură formă într-o
+singură culoare (`#008CFF`). Aceeași formă e desenată inline în
+`components/layout/Logo.astro`, colorată prin `currentColor`: albastrul ei pe
+fundal deschis, alb în subsol și în bara de sus.
+
+Culoarea siglei e puțin diferită de albastrul interfeței (`--color-brand`,
+`#2563EB`). Nu am uniformizat-o: sigla e un fișier primit, nu o culoare aleasă
+în design. Există ca token separat, `--color-logo`, dacă se decide altfel.
+
+`public/apple-touch-icon.png` se generează din SVG cu
+`node scripts/make-icons.mjs`. Safari pe iOS nu citește favicon SVG, iar fără
+fișierul acesta iconița de pe ecranul de start ar fi o captură a paginii.
+
+### Fotografiile medicilor
+
+Cele 21 de fotografii primite de la client au fost convertite în WebP, la cel
+mult 900px pe latura lungă (cardul cere 592px, portretul 200px). Originalele
+aveau între 1 și 1,9 MB fiecare, aproape 28 MB în total; convertite, ocupă
+704 KB. Un depozit nu trebuie să care fișiere de zece ori mai mari decât ce
+ajunge la browser.
+
+Trei medici nu au încă fotografie (Gădălean, Peagu, Georgescu); cardurile lor
+arată inițialele, ceea ce e comportamentul normal al componentei.
+
 ---
 
 ## 6. Static vs. server
@@ -997,7 +1023,11 @@ Lucruri conștient lăsate pentru pașii următori:
       fost blocat în acest mediu; vezi §8).
 - [ ] Recenzii reale, copiate din Google Business Profile (rating actual: ~4,2/5,
       ~70 de recenzii), în locul celor 4 generice din `src/content/testimoniale/`.
-- [ ] Fotografiile medicilor și imaginile pentru articole.
+- [x] ~~Fotografiile medicilor~~ (21 din 24, primite de la client și importate).
+      Lipsesc Gădălean Florica-Nicoleta, Peagu Ana-Constanța și Georgescu Carmen.
+- [ ] Imaginile pentru articole: `node scripts/import-media.mjs`, de pe o mașină
+      care ajunge la policlinicabastion.ro (61 de coperți, plus fotografiile
+      pentru Peagu și Georgescu). Scriptul sare peste ce are deja imagine.
 - [ ] Datele financiare ale proiectului european (cod, valoare, perioadă exactă).
 - [ ] Paginare pe `/noutati` (acum se afișează toate articolele nepublicate ca draft).
 - [ ] Redirect-uri 301 din URL-urile vechi de WordPress (`vercel.json`), vezi

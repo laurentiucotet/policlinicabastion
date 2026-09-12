@@ -30,6 +30,7 @@ const HEIGHT = 630;
 
 /* Aceleasi valori ca in src/styles/global.css. */
 const BRAND = '#2563eb';
+const LOGO = '#008cff'; /* culoarea siglei, ca in public/favicon.svg */
 const BRAND_50 = '#eff6ff';
 const INK = '#1f2937';
 const INK_MUTED = '#4b5563';
@@ -77,13 +78,9 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${
   <!-- Pata de brand din coltul din dreapta-sus, ca imaginea sa nu fie o foaie alba. -->
   <circle cx="${WIDTH - 60}" cy="-40" r="330" fill="${BRAND_50}"/>
 
-  <!-- Semnul din antet: patrat rotunjit albastru cu cruce alba. -->
-  <g transform="translate(96, 132)">
-    <rect width="112" height="112" rx="34" fill="${BRAND}"/>
-    <g transform="translate(16, 16) scale(2.4)">
-      <path d="M17 10h6a1 1 0 0 1 1 1v5h5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-5v5a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-5h-5a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h5v-5a1 1 0 0 1 1-1Z"
-        fill="#ffffff" transform="translate(-10, -10)"/>
-    </g>
+  <!-- Sigla clinicii, la 112px: acelasi fisier ca favicon-ul. -->
+  <g transform="translate(96, 132) scale(0.285714)">
+    <path d="M391.297 224.256L355.131 160.813L367.64 88.5439L299.659 63.4427L263.493 0L195.513 25.1012L127.668 0L91.5021 63.5806L23.5213 88.6818L36.1658 160.951L0 224.532L55.4723 271.7L68.1167 343.97H140.448L195.92 391.138L234.534 358.175L251.257 343.97H323.588L336.097 271.7L391.433 224.532L391.297 224.256ZM293.541 226.049H228.007V292.526H163.018V226.049H97.7563V160.124H163.29V93.7848H228.279V160.262H293.813V226.187L293.541 226.049Z" fill="${LOGO}"/>
   </g>
 
   <text x="240" y="182" font-family="${FONT}" font-size="58" font-weight="700" fill="${INK}">Policlinica</text>

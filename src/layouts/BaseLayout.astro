@@ -65,6 +65,9 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': graph };
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {/* Safari pe iOS nu citeste favicon SVG; fara asta, iconita de pe ecranul
+        de start ar fi o captura a paginii. */}
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="canonical" href={canonical} />
     <link rel="sitemap" href="/sitemap-index.xml" />
 

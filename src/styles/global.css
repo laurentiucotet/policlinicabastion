@@ -18,6 +18,9 @@
   --color-brand-light: #3b82f6; /* blue-500 */
   --color-brand-50: #eff6ff;
   --color-brand-100: #dbeafe;
+  /* Albastrul siglei, diferit de brand-ul interfetei: sigla e un fisier primit
+     de la client, nu o culoare aleasa in design. */
+  --color-logo: #008cff;
 
   /* Text ------------------------------------------------------------------- */
   --color-ink: #1f2937; /* text-primary   / gray-800 */

@@ -109,6 +109,13 @@ for (const [collection, entries] of Object.entries(manifest)) {
       continue;
     }
 
+    // Deja importata altfel (de pilda dintr-o arhiva trimisa de client): nu o
+    // inlocuim cu versiunea de pe site-ul vechi.
+    if (!force && /^\s*photo:|^\s*cover:/m.test(await readFile(contentFile, 'utf8'))) {
+      skipped += 1;
+      continue;
+    }
+
     if ((await exists(destination)) && !force) {
       skipped += 1;
     } else if (dryRun) {
