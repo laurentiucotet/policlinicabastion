@@ -31,7 +31,7 @@ export default defineConfig({
   output: 'static',
   adapter: vercel({
     imageService: true,
-    webAnalytics: { enabled: false },
+    webAnalytics: { enabled: true },
   }),
 
   // /cautare nu mai e o pagina de sine statatoare: cautarea e o functie in
